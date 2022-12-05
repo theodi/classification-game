@@ -1,0 +1,51 @@
+<%- include('../../partials/header') %>
+<style>
+    label {
+        display: inline;
+    }
+    .para {
+        font-size: 18px;
+        line-height: 24px;
+    }
+</style>
+<div class="container box">
+    <div class="jumbotron text-center text-primary">
+        <h1><span class="fa fa-lock"></span>Edit leaderboard</h1>
+    </div>
+    <form action="/leaderboard/<%= id %>" method="post" id="lform">
+      <label class="para" for="name">Leaderboard name:</label><br/><br/>
+      <input type="text" id="name" name="name" placeholder="Name"><br><br/>
+      <p>Leadbroad type:</p>
+      <input type="radio" id="pre" name="type" value="pre">
+        <label for="pre">Pre-training</label><br>
+      <input type="radio" id="post" name="type" value="post">
+        <label for="post">Post-training</label><br><br/>
+      <p>Card sets:</p>
+        <input type="checkbox" id="cardset_1" name="cardset" value="1">
+        <label for="carset_1">Set 1</label><br>
+        <input type="checkbox" id="cardset_2" name="cardset" value="2">
+        <label for="carset_2">Set 2</label><br>
+        <input type="checkbox" id="cardset_3" name="cardset" value="3">
+        <label for="carset_3">Set 3</label><br>
+        <input type="checkbox" id="cardset_4" name="cardset" value="4">
+        <label for="carset_4">Set 4</label><br>
+        <input type="checkbox" id="cardset_5" name="cardset" value="5">
+        <label for="carset_5">Set 5</label><br>
+        <input type="checkbox" id="cardset_6" name="cardset" value="6">
+        <label for="carset_6">Set 6</label><br><br/>
+      <input type="submit" value="Submit">
+    </form>
+</div>
+<script>
+    $(document).ready( function () {
+        $.getJSON('/leaderboard/<%= id %>', function(data) {
+            document.getElementById("name").setAttribute("value",data.name);
+            document.getElementById(data.type).checked = true;
+            cardset = data.cardset;
+            for(var i=0;i<cardset.length;i++) {
+                document.getElementById("cardset_"+cardset[i]).checked = true;
+            }
+        });
+    });
+</script>
+<%- include('../../partials/footer') %>

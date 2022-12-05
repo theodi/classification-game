@@ -1,0 +1,124 @@
+<%- include('../../partials/header') %>
+<link rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.12.1/css/jquery.dataTables.css">
+<link rel="stylesheet" type="text/css" href="//cdn.datatables.net/responsive/2.3.0/css/responsive.dataTables.min.css">
+<link rel="stylesheet" type="text/css" href="//cdn.datatables.net/buttons/2.2.3/css/buttons.dataTables.min.css"/>
+<script type="text/javascript" charset="utf8" src="//cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" charset="utf8" src="//cdn.datatables.net/responsive/2.3.0/js/dataTables.responsive.min.js"></script>
+<script type="text/javascript" charset="utf8" src="//cdn.datatables.net/buttons/2.2.3/js/dataTables.buttons.min.js"></script>
+<script type="text/javascript" charset="utf8" src="//cdn.datatables.net/buttons/2.2.3/js/buttons.colVis.min.js"></script>
+<script type="text/javascript" src="//cdn.datatables.net/buttons/2.2.3/js/buttons.html5.min.js"></script>
+<script type="text/javascript" src="//cdn.datatables.net/buttons/2.2.3/js/buttons.print.min.js"></script>
+<div class="container box">
+    <div class="jumbotron text-center text-primary">
+        <h1><span class="fa fa-lock"></span>Leaderboards</h1>
+        <a href="/leaderboard/create"><button>Create New Leaderboard</button></a>
+        <h2 style="color:red;" id="message"><%= msg %></h2>
+        <table id="table" class="display responsive wrap" cellspacing="0" width="100%">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Cardsets</th>
+                <th>No. of Sessions</th>
+                <th>View</th>
+                <th>Edit</th>
+                <th>Sessions</th>
+                <th>Delete</th>
+            </tr>
+        </thead>
+        <tbody id="table_body">
+        
+        </tbody>
+        </table>
+    </div>
+</div>
+<script>
+    function addToRow(row,value) {
+        var td = document.createElement('td');
+        td.innerHTML = value;
+        row.append(td);
+    }
+    function addToRowWithId(row,id,value) {
+        var td = document.createElement('td');
+        td.setAttribute("id",id);
+        td.innerHTML = value;
+        row.append(td);
+    }
+    function addToRowLink(row,link,value) {
+        var td = document.createElement('td');
+        var a = document.createElement('a');
+        a.setAttribute('href', link);
+        a.innerHTML = value;
+        td.append(a)
+        row.append(td);
+    }
+    function addArrayToRow(row,array) {
+        var output = "";
+        for(var i=0;i<array.length;i++) {
+            if (i>0) {
+                output += ", ";
+            }
+            output += array[i];
+        }
+        addToRow(row,output);
+    }
+    function updateSessions(id) {
+        $.getJSON('/leaderboard/'+ id + '/sessions', function(sessions) {
+            document.getElementById("sessions_" + id).innerHTML = sessions.length;
+        });
+    }
+    function addDeleteLink(row,id,link,value) {
+        var td = document.createElement('td');
+        var a = document.createElement('a');
+        a.setAttribute('href', '#');
+        a.setAttribute('onClick','processDelete("'+id+'","'+link+'");')
+        a.innerHTML = value;
+        td.append(a)
+        row.append(td);
+    }
+    function processDelete(id,link) {
+        $.getJSON('/leaderboard/'+ id + '/sessions', function(sessions) { 
+            if (sessions.length > 0) {
+                alert("Cannot delete leaderboard with sessions");
+            } else {
+                $.ajax({
+                    url: link,
+                    type: 'DELETE',
+                    success: function(result) {
+                        alert('Leaderboard deleted');
+                        location.reload();
+                    }
+                });
+            }
+        });
+    }
+    $(document).ready( function () {
+        $.getJSON('/leaderboards', function(data) {
+            console.log(data);
+            for (var i=0;i<data.length;i++) {
+                var row = document.createElement('tr');
+                addToRow(row,data[i].name);
+                addToRow(row,data[i].type);
+                addArrayToRow(row,data[i].cardset);
+                addToRowWithId(row,"sessions_" + data[i]._id,"Loading");
+                updateSessions(data[i]._id);
+                addToRowLink(row,"/leaderboard/" + data[i]._id,"View");
+                addToRowLink(row,"/leaderboard/" + data[i]._id + "/edit","Edit");
+                addToRowLink(row,"/leaderboard/" + data[i]._id + "/sessions","Manage Sessions");
+                addDeleteLink(row,data[i]._id,"/leaderboard/" + data[i]._id,"Delete");
+                if (data[i].name) {
+                    document.getElementById('table_body').append(row);
+                }
+            }
+            $('#table').DataTable({
+                dom: 'Bfrtip',
+                responsive: true,
+                pageLength: 25,
+                buttons: [
+                   'copy', 'excel', 'csv'
+                ]
+            });
+        });
+    });
+</script>
+<%- include('../../partials/footer') %>

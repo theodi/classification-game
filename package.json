@@ -1,0 +1,30 @@
+{
+  "name": "odi-nodejs-template",
+  "version": "1.0.0",
+  "description": "The ODI NodeJS Template (Express + PassportJS + Google Oauth)",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/theodi/nodejs-oauth-template.git"
+  },
+  "author": "David Tarrant",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/theodi/nodejs-oauth-template/issues"
+  },
+  "homepage": "https://github.com/theodi/nodejs-oauth-template/#readme",
+  "dependencies": {
+    "ejs": "^3.1.8",
+    "express": "^4.18.2",
+    "express-session": "^1.17.3",
+    "passport": "^0.6.0",
+    "passport-google-oauth": "^2.0.0",
+    "nodemon": "^2.0.19",
+    "dotenv": "^16.0.2",
+    "mongodb": "^3.6.6"
+  }
+}

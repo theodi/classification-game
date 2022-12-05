@@ -1,0 +1,28 @@
+<%- include('../../partials/header') %>
+<style>
+    label {
+        display: inline;
+    }
+    .para {
+        font-size: 18px;
+        line-height: 24px;
+    }
+</style>
+<div class="container box">
+    <div class="jumbotron text-center text-primary">
+        <h1><span class="fa fa-lock"></span>Create session</h1>
+    </div>
+    <form action="/leaderboard/<%= id %>" method="post" id="lform">
+      <label class="para" for="name">Session mame:</label><br/><br/>
+      <input type="text" id="name" name="name" placeholder="Name" required><br><br/>
+      <label class="para" for="startTime" required>Start time:</label><br/><br/>
+      <input type="datetime-local" id="startTime" name="startTime"><br/><br/>
+      <label class="para" for="endTime">End time:</label><br/><br/>
+      <input type="datetime-local" id="endTime" name="endTime"><br/><br/>
+      <label class="para" for="timeLimit">User time limit (minutes):</label><br/><br/>
+      <input type="number" id="timeLimit" name="timeLimit"><br/><br/>
+
+      <input type="submit" value="Submit">
+    </form>
+</div>
+<%- include('../../partials/footer') %>

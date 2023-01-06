@@ -90,19 +90,27 @@
             }
         });
     }
+    function getResponses(leaderboardId,sessionId) {
+        $.getJSON('/leaderboard/'+leaderboardId+'/'+sessionId, function(data) {
+            document.getElementById('responses_'+sessionId).innerHTML = data.length;
+        });
+    }
     $(document).ready( function () {
         $.getJSON('/leaderboard/<%= id %>', function(data) {
             document.getElementById('leaderboard-name').innerHTML = data.name;
         });
         $.getJSON('/leaderboard/<%= id %>/sessions', function(data) {
-            console.log(data);
             for (var i=0;i<data.length;i++) {
                 var row = document.createElement('tr');
                 addToRow(row,data[i].name);
                 addToRow(row,data[i].startTime);
                 addToRow(row,data[i].endTime);
                 addToRow(row,data[i].timeLimit);
-                addToRow(row,"TODO");
+                var td = document.createElement('td');
+                td.setAttribute('id','responses_'+data[i]._id);
+                td.innerHTML = "";
+                row.append(td);
+                getResponses("<%= id %>",data[i]._id,);
                 addCopyLink(row,"/play/" + data[i]._id,"Copy");
                 addToRowLink(row,"/leaderboard/<%= id %>/" + data[i]._id,"View");
                 addToRowLink(row,"/leaderboard/<%= id %>/" + data[i]._id + "/edit","Edit");

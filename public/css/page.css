@@ -1,0 +1,92 @@
+@import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@700&family=Nunito:wght@400&display=swap');
+
+
+@font-face {
+  font-family: "Summer";
+  src: url(https://s3-us-west-2.amazonaws.com/s.cdpn.io/162656/Summer%20Font%20Regular.woff);
+}
+
+@font-face {
+  font-family: "Summer Bold";
+  src: url(https://s3-us-west-2.amazonaws.com/s.cdpn.io/162656/Summer%20Font%20Bold.woff);
+}
+:root {
+  /* define colours for elements */
+  --bgbody: lightgray;
+  --bghover: lightslategray;
+  --outline: darkslategray;
+  --warm: ivory;
+  --pop: coral;
+  --fade: gainsboro;
+  --button: cadetblue;
+  --bginput: white;
+  --background: #222;
+}
+
+body {
+  font: 32px/1.2 'Nunito', sans-serif;
+  margin: 5px;
+  background-color: var(--background);
+  color: white;
+}
+
+
+.logo {
+  float: right;
+  width: 150px;
+  margin-right: 10px;
+  margin-top: -20px;
+}
+#decision-tree-wrapper {
+  min-width: 1400px;
+  align-items: center;
+  width: calc(100vw - 500px);
+  margin-right: -50vw;
+  color: black;
+}
+#cards-wrapper {
+  display: inline-block;
+  z-index: 1000;
+}
+.header {
+  padding-top: 20px;
+}
+
+.highlight-container, .highlight {
+    position: relative;
+  }
+  
+  .highlight-container {
+    z-index:-1;
+    font-weight: 450;
+  }
+  .highlight-container:before {
+    content: " ";
+    display: block;
+    height: 100%;
+    width: 100%;
+    margin-left: -3px;
+    margin-right: -3px;
+    position: absolute;
+    background: rgba(255, 245, 48, 0.815);
+    transform: rotate(2deg);
+    top: -1px;
+    left: -1px;
+    border-radius: 20% 25% 20% 24%;
+    padding: 10px 3px 3px 10px;
+    z-index:-1;
+  }
+
+a {
+  color: inherit;
+}
+.results table,.results tr,.results th,.results td {
+  font-size: 1em;
+  color:white;
+  text-align: center;
+}
+.results th,.results td {
+  border: 1px solid white;
+  border-collapse: collapse;
+  padding: 0.2em;
+}

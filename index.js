@@ -28,6 +28,7 @@ app.use(session({
 }));
 
 app.use(express.urlencoded());
+app.use(express.json());
 
 //Put the user object in a global veriable so it can be accessed from templates
 app.use(function(req, res, next) {
@@ -129,14 +130,21 @@ function badRequest(res,start,end) {
 }
 
 function renderPlay(req,res,data) {
+  var sessionId = data._id;
   var dbConnect = dbo.getDb();
   dbConnect
     .collection('Leaderboards')
     .findOne({"_id": new ObjectId(data.leaderboardId)},function(err,data2) {
+      var chosenSet = data2.cardset[Math.floor(Math.random() * data2.cardset.length)];
+
+      /*
       delete data["leaderboardId"];
       data.leaderboard = data2;
       res.set('Content-Type', 'application/json');
       res.send(JSON.stringify(data, null, 4));
+      */
+      
+      res.render('pages/game',{session: sessionId, set: chosenSet});
   });
 }
 
@@ -281,10 +289,22 @@ app.get('/leaderboard/:id/session/create', function(req, res) {
 });
 
 app.get('/leaderboard/:id/:sessionId', function(req, res) {
-  res.locals.pageTitle ="View session for leaderboard";
-  res.locals.id = req.params.id;
-  res.locals.sessionId = req.params.sessionId;
-  res.render('pages/session/view', {})
+  type = req.headers.accept.split(',')[0];
+  if (type=="application/json") {
+    var dbConnect = dbo.getDb();
+    dbConnect
+      .collection('Results')
+      .find({"sessionId" : req.params.sessionId})
+      .toArray(function(err,data) {
+        res.set('Content-Type', 'application/json');
+        res.send(JSON.stringify(data, null, 4));    
+      });
+  } else {
+    res.locals.pageTitle ="View single session leaderboard";
+    res.locals.id = req.params.id;
+    res.locals.sessionId = req.params.sessionId;
+    res.render('pages/session/view', {})
+  }
 });
 
 /* Post methods */
@@ -334,8 +354,23 @@ app.post('/leaderboard/:id/createSession', function(req, res) {
       }
       res.redirect("/leaderboard/"+ req.params.id + "/sessions");
     });
-  });
+});
 
+app.post('/result', function(req, res) {
+  if (!req.body.result.player) {
+    return res.status(400).send("Result not accepted");
+  }
+  var dbConnect = dbo.getDb();
+  dbConnect
+    .collection('Results')
+    .updateOne({"id":req.body.id},{ $set: req.body},{upsert:true},
+    function(err,result) {
+      if (err) {
+        return res.status(500).send("Result not accepted");
+      }
+      return res.status(201).send("Result accepted");      
+    });
+});
 app.delete('/leaderboard/:id/:sessionId', function(req, res) {
   console.log('in delete method');
   res.locals.id = req.params.id;

@@ -1,18 +1,238 @@
 <%- include('../../partials/header') %>
+<link rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.12.1/css/jquery.dataTables.css">
+<link rel="stylesheet" type="text/css" href="//cdn.datatables.net/responsive/2.3.0/css/responsive.dataTables.min.css">
+<link rel="stylesheet" type="text/css" href="//cdn.datatables.net/buttons/2.2.3/css/buttons.dataTables.min.css"/>
+<script type="text/javascript" charset="utf8" src="//cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" charset="utf8" src="//cdn.datatables.net/responsive/2.3.0/js/dataTables.responsive.min.js"></script>
+<script type="text/javascript" charset="utf8" src="//cdn.datatables.net/buttons/2.2.3/js/dataTables.buttons.min.js"></script>
+<script type="text/javascript" charset="utf8" src="//cdn.datatables.net/buttons/2.2.3/js/buttons.colVis.min.js"></script>
+<script type="text/javascript" src="//cdn.datatables.net/buttons/2.2.3/js/buttons.html5.min.js"></script>
+<script type="text/javascript" src="//cdn.datatables.net/buttons/2.2.3/js/buttons.print.min.js"></script>
+<style>
+.statsBubble {
+    list-style-type: none;
+}
+.statsBubble li {
+    display: inline-grid;
+    width: 350px;
+    height: 150px;
+    margin: 1em;
+    border: 1px solid black;
+}
+.statsBubble h2 {
+    font-size: 1.2em;
+}
+.statsBubble p {
+    font-size: 3em;
+    font-weight: bold;
+}
+</style>
 <div class="container box">
     <div class="jumbotron text-center text-primary">
-        <h1><span class="fa fa-lock"></span>View session leaderboard</h1>
+        <h1><span class="fa fa-lock"></span>Session dashboard</h1>
     </div>
-    <p>
-        This page will show:
-    </p>
-    <ol>
-        <li>The current best/worst/average rusults againt others players</li>
-        <li>The top 10 with names anonymised</li>
-        <li>Percentage of people (%) with a 100% confident model</li>
-        <li>Percentage of people who beat stoopid AI</li>
-        <li>Percentage of people who beat trained AI</li>
-    </ol>
-     <p><b>This page will also show the complete leaderboard in non-anonymised form</b></p>
+    <ul class="statsBubble">
+        <li><h2>Best score</h2><p id="bestScore"></p></li>
+        <li><h2>Worst score</h2><p id="worstScore"></p></li>
+        <li><h2>Average score</h2><p id="averageScore"></p></li>
+        <li><h2>100% Confident</h2><p id="oneHundredClub"></p></li>
+        <li><h2>Better than machine only model</h2><p id="beatMachine"></p></li>
+        <li><h2>Better than human+machine model</h2><p id="beatHybrid"></p></li>
+    </ul>
+    <h2>Best results</h2>
+    <table id="leaders" class="display responsive wrap" cellspacing="0" width="100%">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Date</th>
+                <th>Confidence</th>
+                <th>Score (lower is better)</th>
+                <th>Beat machine?</th>
+                <th>Beat human+machine?</th>
+                <th>View tree</th>
+            </tr>
+        </thead>
+        <tbody id="leaders_body">
+            
+        </tbody>
+    </table>
+    <h2>Worst results</h2>
+    <table id="loosers" class="display responsive wrap" cellspacing="0" width="100%">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Date</th>
+                <th>Confidence</th>
+                <th>Score (lower is better)</th>
+                <th>Beat machine?</th>
+                <th>Beat human+machine?</th>
+                <th>View tree</th>
+            </tr>
+        </thead>
+        <tbody id="loosers_body">
+            
+        </tbody>
+    </table>
+    <h2>Leaderboard (all results)</h2>
+    <table id="table" class="display responsive wrap" cellspacing="0" width="100%">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Date</th>
+                <th>Confidence</th>
+                <th>Score (lower is better)</th>
+                <th>Beat machine?</th>
+                <th>Beat human+machine?</th>
+                <th>View tree</th>
+            </tr>
+        </thead>
+        <tbody id="table_body">
+            
+        </tbody>
+    </table>
+
 </div>
+<script>
+    var interval;
+
+    function addToRow(row,value) {
+        var td = document.createElement('td');
+        td.innerHTML = value;
+        row.append(td);
+    }
+    function addToRowLink(row,link,value) {
+        var td = document.createElement('td');
+        var a = document.createElement('a');
+        a.setAttribute('href', link);
+        a.innerHTML = value;
+        td.append(a)
+        row.append(td);
+    }
+
+    var leader = false;
+    var leaders = [];
+    var looser = false;
+    var loosers = [];
+    var averageScore = 0;
+    var oneHundredClub = 0;
+    var beatMachine = 0;
+    var beatHybrid = 0;
+    var resultsCount = 0;
+    var resultsTotal = 0;
+    var resultsProcessed = 0;
+
+    function addResultToTable(result,table) {
+        var row = document.createElement('tr');
+        addToRow(row,result.playerName);
+        addToRow(row,new Date(result.date).toISOString().split('.')[0].replace('T',' '));
+        addToRow(row,result.confidences.player);
+        addToRow(row,result.playerDiff);
+        addToRow(row,result.beatMachine);
+        addToRow(row,result.beatHybrid);
+        addToRowLink(row,"tree/"+result.id,"View");
+        if (result.playerName) {
+            table.append(row);
+        }
+    }
+
+    function populateTable(results,table) {
+        for(var i=0;i<results.length;i++) {
+            addResultToTable(results[i],table);
+        }
+        
+    }
+
+    function processResult(result) {
+        console.log(result);
+        if (result.beatMachine) { beatMachine = beatMachine + 1; }
+        if (result.beatHybrid) { beatHybrid = beatHybrid + 1; }
+        if (result.confidences.player > 99) { oneHundredClub = oneHundredClub + 1; }
+        resultsTotal += result.playerDiff;
+        if (!leader) {
+            leader = result;
+            leaders.push(result);
+        } else {
+            if (result.confidences.player > leader.confidences.player && result.playerDiff < leader.playerDiff) {
+                leader = result;
+                leaders = [];
+                leaders.push(result);
+            }
+            if (result.confidences.player == leader.confidences.player && result.playerDiff == leader.playerDiff) {
+                leaders.push(result);
+            }
+        }
+        
+        if (!looser) {
+            looser = result;
+            loosers.push(result);
+        } else {
+            if (result.confidences.player <= looser.confidences.player && result.playerDiff > looser.playerDiff) {
+                looser = result;
+                loosers = [];
+                loosers.push(result);
+            }
+            if (result.confidences.player == looser.confidences.player && result.playerDiff == looser.playerDiff) {
+                loosers.push(result);
+            }
+        }
+
+        addResultToTable(result,document.getElementById('table_body'));
+
+        resultsProcessed += 1;
+
+    }
+
+    function checkReady() {
+        if (resultsProcessed >= resultsCount) {
+            averageScore = resultsTotal / resultsCount;
+            $('#averageScore').html(averageScore);
+            $('#bestScore').html(leader.playerDiff);
+            $('#worstScore').html(looser.playerDiff);
+            $('#oneHundredClub').html((oneHundredClub / resultsCount)*100 + "%");
+            $('#beatMachine').html((beatMachine / resultsCount)*100 + "%");
+            $('#beatHybrid').html((beatHybrid / resultsCount)*100 + "%");
+            populateTable(leaders,document.getElementById('leaders_body'));
+            $('#leaders').DataTable({
+                dom: 'Bfrtip',
+                responsive: true,
+                pageLength: 25,
+                buttons: [
+                   'copy', 'excel', 'csv'
+                ]
+            });
+            populateTable(loosers,document.getElementById('loosers_body'));
+            $('#loosers').DataTable({
+                dom: 'Bfrtip',
+                responsive: true,
+                pageLength: 25,
+                buttons: [
+                   'copy', 'excel', 'csv'
+                ]
+            });
+            clearInterval(interval);
+            resultsProcessed = 0;
+        }
+    }
+
+    $(document).ready( function () {
+        $.getJSON('/leaderboard/<%= id %>/<%= sessionId %>', function(data) {
+            resultsCount = data.length;
+            for (i=0;i<data.length;i++) {
+                processResult(data[i]);
+            }
+            $('#table').DataTable({
+                dom: 'Bfrtip',
+                responsive: true,
+                pageLength: 25,
+                order: [[3, 'asc'],[2, 'desc'],[5, 'desc'],[4, 'desc']],
+                buttons: [
+                   'copy', 'excel', 'csv'
+                ]
+            });
+        });
+        interval = setInterval(function () {
+            checkReady();
+        }, 1000);
+    });
+</script>
 <%- include('../../partials/footer') %>

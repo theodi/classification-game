@@ -1,0 +1,316 @@
+/* Decision tree elements */
+input,
+textarea, 
+select {
+  font-family: inherit;
+  font-size: 60%;
+  color: darkslategray;
+  background: var(--bginput);
+  outline: darkgray;
+  height: 100%;
+  max-width: 100%;
+  margin: 4px;
+  padding: 4px;
+}
+label {
+  font-size: 0.8em;
+}
+.prediction {
+  display: none;
+}
+.prediction label {
+  font-size: 0.5em;
+}
+.prediction input {
+  font-size: 0.5em;
+  width: 6.5em;
+}
+.decision_l, .decision_r, .decision_ll, .decision_lr, .decision_rl, .decision_rr {
+  display: none;
+}
+.condition label {
+  font-size: 0.8em;
+}
+.condition input {
+  max-width: 100px;
+}
+.conditions, .conditions .invisbox-fill {
+  text-align: center;
+}
+.condition-left {
+  text-align: right;
+}
+.condition-left img {
+  padding-right: 15px;
+}
+.condition-right {
+  text-align: left;
+}
+.condition-right img {
+  padding-left: 15px;
+}
+.arrows {
+  position: relative;
+  top: -0.7em;
+  margin-bottom: -1em;
+}
+.arrows div {
+    padding: 0px;
+    margin: 0px;
+    max-height: 1.7em;
+}
+.arrows .invisbox-fill {
+    text-align: center;
+    padding: 0px;
+    margin: 0px;
+    max-height: 1.7em;
+    background-color: #0000;
+}
+.arrow {
+  max-width: 3em;
+  max-height: 2em;
+}
+.factor {
+  margin-left: auto;
+  margin-right: auto;
+}
+.add-branch {
+  color: var(--outline);
+}
+
+/* Card boxes - where cards drop */
+.cardbox {
+  height: 300px;
+  max-height: 300px;
+  overflow-y: hidden;
+  background-color: silver;
+  width:100%;
+  text-align: left;
+  padding: 1%;
+  padding-right: 20%;
+  padding-left: 5%;
+}
+.cardbox card {
+  position: relative;
+}
+.cardbox card:nth-child(2) {
+  left: 160px;
+  top: -229px;
+}
+.cardbox card:nth-child(3) {
+  top: calc(calc(-229px * 2) + calc(25px * 1));
+}
+.cardbox card:nth-child(4) {
+  left: 160px;
+  top: calc(calc(-229px * 3) + calc(25px * 1));
+}
+.cardbox card:nth-child(5) {
+  top: calc(calc(-229px * 4) + calc(25px * 2));
+}
+.cardbox card:nth-child(6) {
+  left: 160px;
+  top: calc(calc(-229px * 5) + calc(25px * 2));
+}
+.cardbox card:nth-child(7) {
+  top: calc(calc(-229px * 6) + calc(25px * 3));
+}
+.cardbox card:nth-child(8) {
+  left: 160px;
+  top: calc(calc(-229px * 7) + calc(25px * 3));
+}
+.cardbox card:nth-child(9) {
+  top: calc(calc(-229px * 8) + calc(25px * 4));
+}
+.cardbox card:nth-child(10) {
+  left: 160px;
+  top: calc(calc(-229px * 9) + calc(25px * 4));
+}
+.cardbox card:nth-child(11) {
+  top: calc(calc(-229px * 10) + calc(25px * 5));
+}
+.cardbox card:nth-child(12) {
+  left: 160px;
+  top: calc(calc(-229px * 11) + calc(25px * 5));
+}
+.cardbox card:nth-child(13) {
+  top: calc(calc(-229px * 12) + calc(25px * 6));
+}
+.cardbox card:nth-child(14) {
+  left: 160px;
+  top: calc(calc(-229px * 13) + calc(25px * 6));
+}
+.cardbox card:nth-child(15) {
+  top: calc(calc(-229px * 14) + calc(25px * 7));
+}
+.cardbox card:nth-child(16) {
+  left: 160px;
+  top: calc(calc(-229px * 15) + calc(25px * 7));
+}
+.cardbox card:nth-child(17) {
+  top: calc(calc(-229px * 16) + calc(25px * 8));
+}
+.cardbox card:nth-child(18) {
+  left: 160px;
+  top: calc(calc(-229px * 17) + calc(25px * 8));
+}
+.cardbox card:nth-child(19) {
+  top: calc(calc(-229px * 18) + calc(25px * 9));
+}
+.cardbox card:nth-child(20) {
+  left: 160px;
+  top: calc(calc(-229px * 19) + calc(25px * 9));
+}
+
+.cardbox-thin {
+  height: 300px;
+  max-height: 300px;
+  overflow-y: hidden;
+  background-color: silver;
+  width:100%;
+  text-align: left;
+  padding: 1%;
+  padding-left: 3%;
+  padding-top: 5%;
+}
+
+.cardbox-thin card {
+  position: relative;
+}
+.cardbox-thin card:nth-child(2) {
+  top: calc(calc(-229px * 1) + calc(25px * 1));
+}
+.cardbox-thin card:nth-child(3) {
+  top: calc(calc(-229px * 2) + calc(25px * 2));
+}
+.cardbox-thin card:nth-child(4) {
+  top: calc(calc(-229px * 3) + calc(25px * 3));
+}
+.cardbox-thin card:nth-child(5) {
+  top: calc(calc(-229px * 4) + calc(25px * 4));
+}
+.cardbox-thin card:nth-child(6) {
+  top: calc(calc(-229px * 5) + calc(25px * 5));
+}
+.cardbox-thin card:nth-child(7) {
+  top: calc(calc(-229px * 6) + calc(25px * 6));
+}
+.cardbox-thin card:nth-child(8) {
+  top: calc(calc(-229px * 7) + calc(25px * 7));
+}
+.cardbox-thin card:nth-child(9) {
+  top: calc(calc(-229px * 8) + calc(25px * 8));
+}
+.cardbox-thin card:nth-child(10) {
+  top: calc(calc(-229px * 9) + calc(25px * 9));
+}
+.cardbox-thin card:nth-child(11) {
+  top: calc(calc(-229px * 10) + calc(25px * 10));
+}
+.cardbox-thin card:nth-child(12) {
+  top: calc(calc(-229px * 11) + calc(25px * 11));
+}
+.cardbox-thin card:nth-child(13) {
+  top: calc(calc(-229px * 12) + calc(25px * 12));
+}
+.cardbox-thin card:nth-child(14) {
+  top: calc(calc(-229px * 13) + calc(25px * 13));
+}
+.cardbox-thin card:nth-child(15) {
+  top: calc(calc(-229px * 14) + calc(25px * 14));
+}
+.cardbox-thin card:nth-child(16) {
+  top: calc(calc(-229px * 15) + calc(25px * 15));
+}
+.cardbox-thin card:nth-child(17) {
+  top: calc(calc(-229px * 16) + calc(25px * 16));
+}
+.cardbox-thin card:nth-child(18) {
+  top: calc(calc(-229px * 17) + calc(25px * 17));
+}
+.cardbox-thin card:nth-child(19) {
+  top: calc(calc(-229px * 18) + calc(25px * 18));
+}
+@media screen and (max-width: 1400px) {
+  .cardbox {
+    padding-left: 2%;
+  }
+  .cardbox-thin {
+    padding-left: 0.5%;
+    padding-top: 0.5%;
+  }
+}
+@media screen and (max-width: 1300px) {
+  .cardbox {
+    padding-left: 0.5%;
+  }
+}
+
+/* Decision tree container */
+
+#container {
+  width: 100%;
+  background-color: #333;
+  display: flex;
+  align-items: center;
+  justify-content: left;
+  overflow: hidden;
+  border-radius: 7px;
+  touch-action: none;
+}
+
+.container {
+  max-width: 1020px;
+  margin: 0 auto;
+  margin-top: 80px;
+  padding: 0 6.5rem;
+  background-color: var(--bgbody);
+}
+
+.flex-container {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+}
+.flex-container .invisbox-tiny {
+  background-color: var(--bgbody);
+  width: 4%;
+  text-align: center;
+  padding: 0px;
+  align-items: center;
+  justify-content: center;
+}
+
+.flex-container .invisbox-small {
+  background-color: var(--bgbody);
+  max-width: 33%;
+  width: 33%;
+  text-align: left;
+  padding: 10px;
+  align-items: center;
+  justify-content: center;
+}
+.flex-container .invisbox {
+  background-color: var(--bgbody);
+  max-width: 50%;
+  width: 50%;
+  text-align: left;
+  padding: 10px;
+  align-items: center;
+  justify-content: center;
+}
+
+.flex-container .invisbox-big {
+  background-color: var(--bgbody);
+  max-width: 67%;
+  width: 67%;
+  text-align: left;
+  padding: 10px;
+}
+
+.flex-container .invisbox-fill {
+  background-color: var(--bgbody);
+  max-width: 22%;
+  width: 22%;
+  text-align: left;
+  padding: 10px;
+}

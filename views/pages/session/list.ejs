@@ -10,7 +10,7 @@
 <script type="text/javascript" src="//cdn.datatables.net/buttons/2.2.3/js/buttons.print.min.js"></script>
 <div class="container box">
     <div class="jumbotron text-center text-primary">
-        <h1><span class="fa fa-lock"></span>Sessions for leaderboard <%= id %></h1>
+        <h1 id="title"><span class="fa fa-lock"></span>Sessions for leaderboard <span id="leaderboard-name"><%= id  %></span></h1>
         <a href="/leaderboard/<%= id %>/session/create"><button>Create New Session</button></a>
         <h2 style="color:red;" id="message"><%= msg %></h2>
         <table id="table" class="display responsive wrap" cellspacing="0" width="100%">
@@ -21,6 +21,7 @@
                 <th>End data</th>
                 <th>User time limit</th>
                 <th>Responses</th>
+                <th>Play link</th>
                 <th>View</th>
                 <th>Edit</th>
                 <th>Delete</th>
@@ -65,6 +66,19 @@
         td.append(a)
         row.append(td);
     }
+    function addCopyLink(row,link,value) {
+        var td = document.createElement('td');
+        var a = document.createElement('a');
+        a.setAttribute('href', '#');
+        a.setAttribute('onClick','copyText("'+link+'");')
+        a.innerHTML = value;
+        td.append(a)
+        row.append(td);
+    }
+    function copyText(text) {
+      navigator.clipboard.writeText(text);
+      alert("Copied the text: " + text);
+    }    
     function processDelete(link) {
 
         $.ajax({
@@ -77,6 +91,9 @@
         });
     }
     $(document).ready( function () {
+        $.getJSON('/leaderboard/<%= id %>', function(data) {
+            document.getElementById('leaderboard-name').innerHTML = data.name;
+        });
         $.getJSON('/leaderboard/<%= id %>/sessions', function(data) {
             console.log(data);
             for (var i=0;i<data.length;i++) {
@@ -86,6 +103,7 @@
                 addToRow(row,data[i].endTime);
                 addToRow(row,data[i].timeLimit);
                 addToRow(row,"TODO");
+                addCopyLink(row,"/play/" + data[i]._id,"Copy");
                 addToRowLink(row,"/leaderboard/<%= id %>/" + data[i]._id,"View");
                 addToRowLink(row,"/leaderboard/<%= id %>/" + data[i]._id + "/edit","Edit");
                 addDeleteLink(row,"/leaderboard/<%= id %>/" + data[i]._id,"Delete");

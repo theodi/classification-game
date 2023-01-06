@@ -1,0 +1,10 @@
+<%- include('../partials/header') %>
+<div class="container box">
+    <div class="jumbotron text-center text-primary">
+        <h1><span class="fa fa-lock"></span>400: Bad Request</h1>
+        <% if(start){ %>
+            <p>The page you requested is online available between <%= start %> and <%= start %>.<br/>Please try again between these times.</p>
+        <% } %>
+    </div>
+</div>
+<%- include('../partials/footer') %>

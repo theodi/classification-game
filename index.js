@@ -123,6 +123,23 @@ function unauthorised(res) {
   return res.status(401).render("errors/401");
 }
 
+function badRequest(res,start,end) {
+  res.locals.pageTitle ="400 Bad Request";
+  return res.status(400).render("errors/400",{start: start, end: end});
+}
+
+function renderPlay(req,res,data) {
+  var dbConnect = dbo.getDb();
+  dbConnect
+    .collection('Leaderboards')
+    .findOne({"_id": new ObjectId(data.leaderboardId)},function(err,data2) {
+      delete data["leaderboardId"];
+      data.leaderboard = data2;
+      res.set('Content-Type', 'application/json');
+      res.send(JSON.stringify(data, null, 4));
+  });
+}
+
 /* Setup private directory, everything in here requires authentication */
 
 app.use('/private', ensureAuthenticated);
@@ -136,6 +153,41 @@ app.get('/leaderboard', function(req, res) {
   res.locals.pageTitle ="Leaderboard";
   res.render('pages/leaderboard')
 });
+
+
+app.get('/play/:id', function(req,res) {
+  var dbConnect = dbo.getDb();
+  dbConnect
+    .collection('Sessions')
+    .findOne({"_id": new ObjectId(req.params.id)},function(err,data) {
+      if (data.startTime) {
+        var now = new Date().getTime();
+        var start = new Date(data.startTime).getTime();
+        if (now >= start) {
+          if (data.endTime) {
+            var end = new Date(data.endTime).getTime();
+            if (now <= end) {
+              console.log("Valid both");
+              renderPlay(req,res,data);
+            } else {
+              console.log("Too late");
+              badRequest(res,data.startTime,data.endTime);
+            }
+          } else {
+            console.log("Valid (no end)");
+            renderPlay(req,res,data);
+          }
+        } else {
+          console.log("Too early");
+          badRequest(res,data.startTime,data.endTime);
+        }
+      } else {
+        console.log("Valid (no start or end)");
+        renderPlay(req,res,data);
+      }
+    });
+});
+/* Require login */
 
 app.get('/leaderboard/create', function(req, res) {
   if (!req.isAuthenticated()) {
@@ -262,8 +314,7 @@ app.post('/leaderboard/:id', function(req, res) {
       if (err) {
         var msg = "Error updating leaderboard";
       }
-      res.locals.pageTitle = "Dashboards";
-      res.render('pages/leaderboard/list', { msg: msg });
+      res.redirect("/leaderboards");
     });
 });
 
@@ -281,8 +332,7 @@ app.post('/leaderboard/:id/createSession', function(req, res) {
       if (err) {
         var msg = "Error creating session";
       }
-      res.locals.pageTitle = "Sessions";
-      res.render('pages/session/list', { msg: msg });
+      res.redirect("/leaderboard/"+ req.params.id + "/sessions");
     });
   });
 

@@ -46,10 +46,11 @@
                 <th>Name</th>
                 <th>Date</th>
                 <th>Confidence</th>
-                <th>Score (lower is better)</th>
+                <th>Score</th>
                 <th>Beat machine?</th>
                 <th>Beat human+machine?</th>
                 <th>View tree</th>
+                <th class="none">Raw Results</th>
             </tr>
         </thead>
         <tbody id="leaders_body">
@@ -63,10 +64,11 @@
                 <th>Name</th>
                 <th>Date</th>
                 <th>Confidence</th>
-                <th>Score (lower is better)</th>
+                <th>Score</th>
                 <th>Beat machine?</th>
                 <th>Beat human+machine?</th>
                 <th>View tree</th>
+                <th class="none">Raw Results</th>
             </tr>
         </thead>
         <tbody id="loosers_body">
@@ -80,10 +82,11 @@
                 <th>Name</th>
                 <th>Date</th>
                 <th>Confidence</th>
-                <th>Score (lower is better)</th>
+                <th>Score</th>
                 <th>Beat machine?</th>
                 <th>Beat human+machine?</th>
                 <th>View tree</th>
+                <th class="none">Raw Results</th>
             </tr>
         </thead>
         <tbody id="table_body">
@@ -108,6 +111,12 @@
         td.append(a)
         row.append(td);
     }
+    function addToRowHidden(row,value) {
+        var td = document.createElement('td');
+        td.className = "none";
+        td.innerHTML = value;
+        row.append(td);
+    }
 
     var leader = false;
     var leaders = [];
@@ -126,10 +135,15 @@
         addToRow(row,result.playerName);
         addToRow(row,new Date(result.date).toISOString().split('.')[0].replace('T',' '));
         addToRow(row,result.confidences.player);
-        addToRow(row,result.playerDiff);
-        addToRow(row,result.beatMachine);
-        addToRow(row,result.beatHybrid);
+        addToRow(row,result.score);
+        addToRow(row,(result.vsMachine.win * 100)+"%");
+        addToRow(row,(result.vsHybrid.win * 100)+"%");
         addToRowLink(row,"tree/"+result.id,"View");
+        var rawResultsTable = "<table><tr><th>Player</th><th>Claims</th><th>Run 1</th><th>Run 2</th><th>Run 3</th><th>Run 4</th></tr>";
+        rawResultsTable += "<tr><td>Player</td><td>" + result.confidences.player + "%</td><td>" + result.result[1].player + "%</td><td>" + result.result[2].player + "%</td><td>" + result.result[3].player + "%</td><td>" + result.result[4].player + "%</td><td></tr>";
+        rawResultsTable += "<tr><td>Machine</td><td>" + result.confidences.machine + "%</td><td>" + result.result[1].machine + "%</td><td>" + result.result[2].machine + "%</td><td>" + result.result[3].machine + "%</td><td>" + result.result[4].machine + "%</td><td></tr>";
+        rawResultsTable += "<tr><td>Hybrid</td><td>" + result.confidences.hybrid + "%</td><td>" + result.result[1].hybrid + "%</td><td>" + result.result[2].hybrid + "%</td><td>" + result.result[3].hybrid + "%</td><td>" + result.result[4].hybrid + "%</td></tr></table>";
+        addToRowHidden(row,rawResultsTable);
         if (result.playerName) {
             table.append(row);
         }
@@ -144,20 +158,19 @@
 
     function processResult(result) {
         console.log(result);
-        if (result.beatMachine) { beatMachine = beatMachine + 1; }
-        if (result.beatHybrid) { beatHybrid = beatHybrid + 1; }
+        if (result.vsMachine.win) { beatMachine = beatMachine + (result.vsMachine.win * 4); }
+        if (result.vsHybrid.win) { beatHybrid = beatHybrid + (result.vsHybrid.win * 4); }
         if (result.confidences.player > 99) { oneHundredClub = oneHundredClub + 1; }
-        resultsTotal += result.playerDiff;
+        resultsTotal += result.score;
         if (!leader) {
             leader = result;
             leaders.push(result);
         } else {
-            if (result.confidences.player > leader.confidences.player && result.playerDiff < leader.playerDiff) {
+            if (result.confidences.player > leader.confidences.player && result.score > leader.score) {
                 leader = result;
                 leaders = [];
                 leaders.push(result);
-            }
-            if (result.confidences.player == leader.confidences.player && result.playerDiff == leader.playerDiff) {
+            } else if (result.score == leader.score) {
                 leaders.push(result);
             }
         }
@@ -166,14 +179,13 @@
             looser = result;
             loosers.push(result);
         } else {
-            if (result.confidences.player <= looser.confidences.player && result.playerDiff > looser.playerDiff) {
+            if (result.score < looser.score) {
                 looser = result;
                 loosers = [];
                 loosers.push(result);
-            }
-            if (result.confidences.player == looser.confidences.player && result.playerDiff == looser.playerDiff) {
+            } else if (result.score == looser.score) {
                 loosers.push(result);
-            }
+            } 
         }
 
         addResultToTable(result,document.getElementById('table_body'));
@@ -186,11 +198,11 @@
         if (resultsProcessed >= resultsCount) {
             averageScore = resultsTotal / resultsCount;
             $('#averageScore').html(averageScore);
-            $('#bestScore').html(leader.playerDiff);
-            $('#worstScore').html(looser.playerDiff);
+            $('#bestScore').html(leader.score);
+            $('#worstScore').html(looser.score);
             $('#oneHundredClub').html((oneHundredClub / resultsCount)*100 + "%");
-            $('#beatMachine').html((beatMachine / resultsCount)*100 + "%");
-            $('#beatHybrid').html((beatHybrid / resultsCount)*100 + "%");
+            $('#beatMachine').html((beatMachine / (resultsCount*4))*100 + "%");
+            $('#beatHybrid').html((beatHybrid / (resultsCount*4))*100 + "%");
             populateTable(leaders,document.getElementById('leaders_body'));
             $('#leaders').DataTable({
                 dom: 'Bfrtip',
@@ -224,7 +236,7 @@
                 dom: 'Bfrtip',
                 responsive: true,
                 pageLength: 25,
-                order: [[3, 'asc'],[2, 'desc'],[5, 'desc'],[4, 'desc']],
+                order: [[3, 'desc'],[2, 'desc'],[5, 'desc'],[4, 'desc']],
                 buttons: [
                    'copy', 'excel', 'csv'
                 ]

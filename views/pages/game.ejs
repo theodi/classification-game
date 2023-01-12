@@ -50,6 +50,54 @@
       <h3>Evaluating your decision tree</h3>
       <p>Use the <a href="#" onClick="selectSet('evaluation');" style="text-decoration: underline;">evaluation set</a> to see if your tree works. You can select your own set of evaluation cards or generate 20 random cards.</p>
       <p>Good luck!</p>
+      <section id="leaderboards">
+      <h2>Leaderboards (your results in red)</h2>
+      <leaderboard id="session">
+        <h3>Session leaderboard</h3>
+        <table id="session-leaderboard" class="display responsive wrap" cellspacing="0" width="100%">
+          <thead>
+              <tr>
+                  <th>Rank</th>
+                  <th>Name</th>
+                  <th>Score</th>
+              </tr>
+          </thead>
+          <tbody id="session-leaderboard-body">
+              
+          </tbody>
+          </table>
+      </leaderboard>
+      <leaderboard id="group">
+        <h3>Organisation leaderboard</h3>
+        <table id="organisation-leaderboard" class="display responsive wrap" cellspacing="0" width="100%">
+          <thead>
+              <tr>
+                  <th>Rank</th>
+                  <th>Name</th>
+                  <th>Score</th>
+              </tr>
+          </thead>
+          <tbody id="organisation-leaderboard-body">
+              
+          </tbody>
+          </table>
+      </leaderboard>
+      <leaderboard id="group">
+        <h3>Overall leaderboard</h3>
+        <table id="public-leaderboard" class="display responsive wrap" cellspacing="0" width="100%">
+          <thead>
+              <tr>
+                  <th>Rank</th>
+                  <th>Name</th>
+                  <th>Score</th>
+              </tr>
+          </thead>
+          <tbody id="public-leaderboard-body">
+              
+          </tbody>
+          </table>
+      </leaderboard>
+    </section>
     </div>
     <div id='training-set' class='invisbox-small dropzone snapzone' style="display: none;">
       <div id="buttons" style="width: 100%">
@@ -71,18 +119,48 @@
     </div>
     <div id='evaluation-set' class="invisbox-small" style="display: none;">
       <div id="buttons" style="width: 100%">
-        <button type="button" name="evaluation-button" onClick="startInput();">Add card</button>
+        <h3 id="evaluationStatus">Click the button below to evaluate your model and obtain a score</h3>
+        <button type="button" id="evaluationButton" name="evaluation-button" onClick="autoEvaluate(1);">Evaluate model</button>
+        <!--<button type="button" name="evaluation-button" onClick="startInput();">Add card</button>
         <button type="button" id="fill-reds" name="fill-button" onClick="getRandomReds(20);">Fill random</button>
         <button type="button" id="remove-reds" name="remove-button" onClick="removeCards(cards.evaluationSet,'r');" style="display: none;">Remove all</button>
         <button type="button" name="returnTrainingData" onClick="returnCards(cards.evaluationSet,'evaluation-set','r');">Reset</button>
-        <button type="button" class="evaluation-button" name="runEvaluationData" onClick="sortCards(cards.evaluationSet,'r');">Run model</button>
+        <button type="button" class="evaluation-button" name="runEvaluationData" onClick="sortCards(cards.evaluationSet,'r');">Run model</button>-->
       </div>
       <div id="results" class="results">
         <table>
-          <tr><th>Actor</th><th>Confidence<br/>(from training set)</th><th>Result<br/>(from evaluation set)</th></tr>
-          <tr><td>Your model</td><td id="confidence-user"></td><td id="result-user"></td></tr>
-          <tr><td>Machine only model</td><td id="confidence-stoopid-ai"></td><td id="result-stoopid-ai"></td></tr>
-          <tr><td>Human+ML model</td><td id="confidence-hybrid"></td><td id="result-hybrid"></td></tr>
+          <tr>
+            <th>Actor</th>
+            <th>Confidence<br/>(from training set)</th>
+            <th>Result<br/>(run 1)</th>
+            <th>Result<br/>(run 2)</th>
+            <th>Result<br/>(run 3)</th>
+            <th>Result<br/>(run 4)</th>
+          </tr>
+          <tr>
+            <td>Your model</td>
+            <td id="confidence-user"></td>
+            <td id="result1-user"></td>
+            <td id="result2-user"></td>
+            <td id="result3-user"></td>
+            <td id="result4-user"></td>
+          </tr>
+          <tr>
+            <td>Machine only model</td>
+            <td id="confidence-stoopid-ai"></td>
+            <td id="result1-stoopid-ai"></td>
+            <td id="result2-stoopid-ai"></td>
+            <td id="result3-stoopid-ai"></td>
+            <td id="result4-stoopid-ai"></td>
+          </tr>
+          <tr>
+            <td>Human+ML model</td>
+            <td id="confidence-hybrid"></td>
+            <td id="result1-hybrid"></td>
+            <td id="result2-hybrid"></td>
+            <td id="result3-hybrid"></td>
+            <td id="result4-hybrid"></td>
+          </tr>
         </table>
       </div>
     </div>
@@ -404,6 +482,7 @@
 <script type="text/javascript">
   var group = <%= set %>;
   var sessionId = "<%= session %>";
+  var leaderboardId = "<%= leaderboardId %>";
   var player_name = "";
   /*
   const queryString = window.location.search;
@@ -418,6 +497,7 @@
     document.getElementById("groupcsv").href="/data/csvs/Group_" + group + ".csv"; 
     document.getElementById("grouppdf").href="/data/pdfs/Group_" + group + ".pdf"; 
     loadData();
+    loadLeaderboards();
 
     $('#condition_a').on('change', onchange);
     $('#condition_la').on('change', onchange);

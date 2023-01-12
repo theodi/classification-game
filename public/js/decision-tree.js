@@ -100,34 +100,20 @@ function saveResult() {
 
 	result.confidences = confidences;
 	result.result = results;
+	
+	result.score = results.score;
+	result.vsHybrid = results.vsHybrid;
+	result.vsMachine = results.vsMachine;
 
-	result.playerDiff = confidences.player - results.player;
-	result.beatMachine = false;
-	result.beatHybrid = false;
-	machineDiff = confidences.machine - results.machine;
-	hybridDiff = confidences.hybrid - results.hybrid;
-	if (result.playerDiff < 0) {
-		result.playerDiff = result.playerDiff * -1;
-	}
-	if (machineDiff < 0) {
-		machineDiff = machineDiff * -1;
-	}
-	if (hybridDiff < 0) {
-		hybridDiff = hybridDiff * -1;
-	}
-	if (result.playerDiff < machineDiff) {
-		result.beatMachine = true;
-	}
-	if (result.playerDiff < hybridDiff) {
-		result.beatHybrid = true;
-	}
+	delete result.result.score;
+	delete result.result.vsMachine;
+	delete result.result.vsHybrid;
 
 	storage.results.push(result);
 
 	for (var i=0;i<storage.results.length;i++) {
 		sendResult(storage.results[i]);
 	}
-
 	window.localStorage.setItem("classification-game",JSON.stringify(storage));
 
 }
@@ -247,4 +233,45 @@ function updatePredictions() {
 function addBranch(branch) {
 	$('.'+branch).show();
 	$('.'+branch+'_invert').hide();
+}
+
+function renderLeaderboard(data,prefix) {
+	resultsCount = data.length;
+  var rank = 0;
+  var currentScore = 0;
+  for (i=0;i<data.length;i++) {
+  	var userClass = "";
+  	if (data[i].score != currentScore) {
+  		currentScore = data[i].score;
+  		rank = rank + 1;
+  	}
+  	for (j=0;j<storage.results.length;j++) {
+  		if (storage.results[j]["id"] == data[i].id) {
+  			userClass = "user";
+  			data[i].playerName = storage.playerName;
+  		}
+  	}
+  	if (data[i].playerName) {
+  		var row = '<tr class="'+userClass+'"><td>#'+rank+'</td><td>'+data[i].playerName.substring(0,16)+'</td><td>'+data[i].score+'</td></tr>';
+  		$('#'+prefix+'-leaderboard-body').append(row);
+  	} else {
+  		var row = '<tr class="'+userClass+'"><td>#'+rank+'</td><td>'+data[i].id.substring(0,10)+'</td><td>'+data[i].score+'</td></tr>';
+  		$('#'+prefix+'-leaderboard-body').append(row);
+  	}
+  }
+}
+
+function loadLeaderboards() {
+	$('#session-leaderboard-body').html("");
+	$('#organisation-leaderboard-body').html("");
+	$('#public-leaderboard-body').html("");
+	$.getJSON('/leaderboard/' + leaderboardId + '/' + sessionId, function(data) {
+		renderLeaderboard(data,"session");
+  });
+  $.getJSON('/leaderboard/' + leaderboardId, function(data) {
+		renderLeaderboard(data,"organisation");
+  });
+  $.getJSON('/leaderboard', function(data) {
+		renderLeaderboard(data,"public");
+  });
 }

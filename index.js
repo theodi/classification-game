@@ -144,7 +144,7 @@ function renderPlay(req,res,data) {
       res.send(JSON.stringify(data, null, 4));
       */
       
-      res.render('pages/game',{session: sessionId, set: chosenSet});
+      res.render('pages/game',{session: sessionId, leaderboardId: data.leaderboardId, set: chosenSet});
   });
 }
 
@@ -158,10 +158,39 @@ app.use('/private', express.static(__dirname + '/private'));
 /* Do not require login */
 
 app.get('/leaderboard', function(req, res) {
-  res.locals.pageTitle ="Leaderboard";
-  res.render('pages/leaderboard')
+  type = req.headers.accept.split(',')[0];
+  if (req.isAuthenticated()) {
+     if (type=="application/json") {
+      var dbConnect = dbo.getDb();
+      dbConnect
+        .collection("Results")
+        .find()
+        .sort( {"score": -1} )
+        .toArray(function(err,output) {
+          res.set('Content-Type', 'application/json');
+          res.send(JSON.stringify(output, null, 4));    
+        });
+     } else {
+      res.render('pages/leaderboard');  
+     }
+  } else {
+    if (type=="application/json") {
+      var dbConnect = dbo.getDb();
+      dbConnect
+        .collection("Results")
+        .find()
+        .project({"id":1,"score":1,"_id":0})
+        .sort( {"score": -1} )
+        .toArray(function(err,output) {
+          res.set('Content-Type', 'application/json');
+          res.send(JSON.stringify(output, null, 4));    
+        });
+    } else {
+      res.locals.pageTitle ="Leaderboard";
+      res.render('pages/leaderboard');
+    }
+  }
 });
-
 
 app.get('/play/:id', function(req,res) {
   var dbConnect = dbo.getDb();
@@ -175,22 +204,17 @@ app.get('/play/:id', function(req,res) {
           if (data.endTime) {
             var end = new Date(data.endTime).getTime();
             if (now <= end) {
-              console.log("Valid both");
               renderPlay(req,res,data);
             } else {
-              console.log("Too late");
               badRequest(res,data.startTime,data.endTime);
             }
           } else {
-            console.log("Valid (no end)");
             renderPlay(req,res,data);
           }
         } else {
-          console.log("Too early");
           badRequest(res,data.startTime,data.endTime);
         }
       } else {
-        console.log("Valid (no start or end)");
         renderPlay(req,res,data);
       }
     });
@@ -219,21 +243,55 @@ app.get('/leaderboard/:id/edit', function(req, res) {
 app.get('/leaderboard/:id', function(req, res) {
   res.locals.pageTitle ="Leaderboard for " + req.params.id;
   res.locals.id = req.params.id;
+  type = req.headers.accept.split(',')[0];
   if (req.isAuthenticated()) {
-     type = req.headers.accept.split(',')[0];
      if (type=="application/json") {
       var dbConnect = dbo.getDb();
       dbConnect
-      .collection('Leaderboards')
-      .findOne({"_id": new ObjectId(req.params.id)},function(err,data) {
-        res.set('Content-Type', 'application/json');
-        res.send(JSON.stringify(data, null, 4));
-      });
+        .collection('Sessions')
+        .find({"leaderboardId" : req.params.id})
+        .toArray(function(err,data) {
+          var sessions = [];
+          for(i=0;i<data.length;i++) {
+            sessions.push(data[i]._id.toString());
+          }
+          dbConnect
+            .collection("Results")
+            .find({ sessionId: { $in: sessions} } )
+            .sort( {"score": -1} )
+            .toArray(function(err,output) {
+              res.set('Content-Type', 'application/json');
+              res.send(JSON.stringify(output, null, 4));    
+            });
+        });
      } else {
       res.render('pages/leaderboard/view', {})  
      }
   } else {
-    res.render('pages/leaderboard', {})
+    if (type=="application/json") {
+      var dbConnect = dbo.getDb();
+      dbConnect
+        .collection('Sessions')
+        .find({"leaderboardId" : req.params.id})
+        .toArray(function(err,data) {
+          var sessions = [];
+          for(i=0;i<data.length;i++) {
+            sessions.push(data[i]._id.toString());
+          }
+          dbConnect
+            .collection("Results")
+            .find({ sessionId: { $in: sessions} } )
+            .project({"id":1,"score":1,"_id":0})
+            .sort( {"score": -1} )
+            .toArray(function(err,output) {
+              res.set('Content-Type', 'application/json');
+              res.send(JSON.stringify(output, null, 4));    
+            });
+        });
+    } else {
+      res.locals.pageTitle ="401 Unauthorised";
+      return res.status(401).render("errors/401");
+    }
   }
 });
 
@@ -290,20 +348,39 @@ app.get('/leaderboard/:id/session/create', function(req, res) {
 
 app.get('/leaderboard/:id/:sessionId', function(req, res) {
   type = req.headers.accept.split(',')[0];
-  if (type=="application/json") {
-    var dbConnect = dbo.getDb();
-    dbConnect
-      .collection('Results')
-      .find({"sessionId" : req.params.sessionId})
-      .toArray(function(err,data) {
-        res.set('Content-Type', 'application/json');
-        res.send(JSON.stringify(data, null, 4));    
-      });
+   if (!req.isAuthenticated()) {
+    if (type=="application/json") {
+      var dbConnect = dbo.getDb();
+      dbConnect
+        .collection('Results')
+        .find({"sessionId" : req.params.sessionId})
+        .project({"id":1,"playerName": 1,"score":1,"_id":0})
+        .sort( {"score": -1} )
+        .toArray(function(err,data) {
+          res.set('Content-Type', 'application/json');
+          res.send(JSON.stringify(data, null, 4));    
+        });
+    } else {
+      res.locals.pageTitle ="401 Unauthorised";
+      return res.status(401).render("errors/401");
+    }
   } else {
-    res.locals.pageTitle ="View single session leaderboard";
-    res.locals.id = req.params.id;
-    res.locals.sessionId = req.params.sessionId;
-    res.render('pages/session/view', {})
+    if (type=="application/json") {
+      var dbConnect = dbo.getDb();
+      dbConnect
+        .collection('Results')
+        .find({"sessionId" : req.params.sessionId})
+        .sort( {"score": -1} )
+        .toArray(function(err,data) {
+          res.set('Content-Type', 'application/json');
+          res.send(JSON.stringify(data, null, 4));    
+        });
+    } else {
+      res.locals.pageTitle ="View single session leaderboard";
+      res.locals.id = req.params.id;
+      res.locals.sessionId = req.params.sessionId;
+      res.render('pages/session/view', {})
+    }
   }
 });
 
@@ -357,7 +434,7 @@ app.post('/leaderboard/:id/createSession', function(req, res) {
 });
 
 app.post('/result', function(req, res) {
-  if (!req.body.result.player) {
+  if (!req.body.score) {
     return res.status(400).send("Result not accepted");
   }
   var dbConnect = dbo.getDb();
@@ -372,7 +449,6 @@ app.post('/result', function(req, res) {
     });
 });
 app.delete('/leaderboard/:id/:sessionId', function(req, res) {
-  console.log('in delete method');
   res.locals.id = req.params.id;
   var dbConnect = dbo.getDb();
   dbConnect
@@ -389,7 +465,6 @@ app.delete('/leaderboard/:id/:sessionId', function(req, res) {
   });
 
 app.delete('/leaderboard/:id', function(req, res) {
-  console.log('in delete method');
   res.locals.id = req.params.id;
   var dbConnect = dbo.getDb();
   dbConnect

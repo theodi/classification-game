@@ -265,13 +265,13 @@ function loadLeaderboards() {
 	$('#session-leaderboard-body').html("");
 	$('#organisation-leaderboard-body').html("");
 	$('#public-leaderboard-body').html("");
-	$.getJSON('/leaderboard/' + leaderboardId + '/' + sessionId, function(data) {
+	$.getJSON('/leaderboard/' + leaderboardId + '/' + sessionId + '/results', function(data) {
 		renderLeaderboard(data,"session");
   });
-  $.getJSON('/leaderboard/' + leaderboardId, function(data) {
+  $.getJSON('/leaderboard/' + leaderboardId + '/results', function(data) {
 		renderLeaderboard(data,"organisation");
   });
-  $.getJSON('/leaderboard', function(data) {
+  $.getJSON('/leaderboard/public/results', function(data) {
 		renderLeaderboard(data,"public");
   });
 }

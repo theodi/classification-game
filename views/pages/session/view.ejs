@@ -197,12 +197,12 @@
     function checkReady() {
         if (resultsProcessed >= resultsCount) {
             averageScore = resultsTotal / resultsCount;
-            $('#averageScore').html(averageScore);
-            $('#bestScore').html(leader.score);
-            $('#worstScore').html(looser.score);
-            $('#oneHundredClub').html((oneHundredClub / resultsCount)*100 + "%");
-            $('#beatMachine').html((beatMachine / (resultsCount*4))*100 + "%");
-            $('#beatHybrid').html((beatHybrid / (resultsCount*4))*100 + "%");
+            $('#averageScore').html(Math.round(averageScore * 100) / 100);
+            $('#bestScore').html(Math.round(leader.score * 100) / 100);
+            $('#worstScore').html(Math.round(looser.score * 100) / 100);
+            $('#oneHundredClub').html((Math.round((oneHundredClub / resultsCount)*10000)/100) + "%");
+            $('#beatMachine').html((Math.round((beatMachine / (resultsCount*4))*10000)/100) + "%");
+            $('#beatHybrid').html((Math.round((beatHybrid / (resultsCount*4))*10000)/100) + "%");
             populateTable(leaders,document.getElementById('leaders_body'));
             $('#leaders').DataTable({
                 dom: 'Bfrtip',
@@ -227,7 +227,7 @@
     }
 
     $(document).ready( function () {
-        $.getJSON('/leaderboard/<%= id %>/<%= sessionId %>', function(data) {
+        $.getJSON('/leaderboard/<%= id %>/<%= sessionId %>/results', function(data) {
             resultsCount = data.length;
             for (i=0;i<data.length;i++) {
                 processResult(data[i]);

@@ -129,7 +129,7 @@ function badRequest(res,start,end) {
   return res.status(400).render("errors/400",{start: start, end: end});
 }
 
-function renderPlay(req,res,data) {
+function renderGame(req,res,data) {
   var sessionId = data._id;
   var dbConnect = dbo.getDb();
   dbConnect
@@ -144,7 +144,7 @@ function renderPlay(req,res,data) {
       res.send(JSON.stringify(data, null, 4));
       */
       
-      res.render('pages/game',{session: sessionId, leaderboardId: data.leaderboardId, set: chosenSet});
+      res.render('pages/game',{session: sessionId, leaderboardId: data.leaderboardId, set: chosenSet, resultId: null, isTutor: data.isTutor});
   });
 }
 
@@ -158,30 +158,35 @@ app.use('/private', express.static(__dirname + '/private'));
  * 
  */
 
-app.get('/play/:id', function(req,res) {
+app.get('/game/:id', function(req,res) {
   var dbConnect = dbo.getDb();
   dbConnect
     .collection('Sessions')
     .findOne({"_id": new ObjectId(req.params.id)},function(err,data) {
-      if (data.startTime) {
-        var now = new Date().getTime();
-        var start = new Date(data.startTime).getTime();
-        if (now >= start) {
-          if (data.endTime) {
-            var end = new Date(data.endTime).getTime();
-            if (now <= end) {
-              renderPlay(req,res,data);
+      if (req.isAuthenticated()) {
+        data.isTutor = true;
+        renderGame(req,res,data);
+      } else {
+        if (data.startTime) {
+          var now = new Date().getTime();
+          var start = new Date(data.startTime).getTime();
+          if (now >= start) {
+            if (data.endTime) {
+              var end = new Date(data.endTime).getTime();
+              if (now <= end) {
+                renderGame(req,res,data);
+              } else {
+                badRequest(res,data.startTime,data.endTime);
+              }
             } else {
-              badRequest(res,data.startTime,data.endTime);
+              renderGame(req,res,data);
             }
           } else {
-            renderPlay(req,res,data);
+            badRequest(res,data.startTime,data.endTime);
           }
         } else {
-          badRequest(res,data.startTime,data.endTime);
+          renderGame(req,res,data);
         }
-      } else {
-        renderPlay(req,res,data);
       }
     });
 });
@@ -190,7 +195,7 @@ app.get('/play/:id', function(req,res) {
  * Methods to get leaderboard results
  */
 
-app.get('/leaderboard/public/results', function(req, res) {
+app.get('/leaderboard/all/results', function(req, res) {
   type = req.headers.accept.split(',')[0];
   if (req.isAuthenticated()) {
      if (type=="application/json") {
@@ -212,7 +217,7 @@ app.get('/leaderboard/public/results', function(req, res) {
       dbConnect
         .collection("Results")
         .find()
-        .project({"id":1,"score":1,"_id":0})
+        .project({"id":1,"score":1,"_id":0,"confidences":1,"result":1,"vsHybrid":1,"vsMachine":1,"date":1})
         .sort( {"score": -1} )
         .toArray(function(err,output) {
           res.set('Content-Type', 'application/json');
@@ -318,6 +323,39 @@ app.get('/leaderboard/:id/:sessionId/results', function(req, res) {
   }
 });
 
+app.get('/result/:resultId', function(req, res) {
+  if (!req.isAuthenticated()) {
+    res.locals.pageTitle ="401 Unauthorised";
+    return res.status(401).render("errors/401");
+  } else {
+    var dbConnect = dbo.getDb();
+    dbConnect
+      .collection('Results')
+      .findOne({"id" : req.params.resultId}, function(err,data) {
+        res.set('Content-Type', 'application/json');
+        res.send(JSON.stringify(data, null, 4));
+      });
+  }
+});
+
+app.get('/result/:resultId/tree', function(req, res) {
+  if (!req.isAuthenticated()) {
+    res.locals.pageTitle ="401 Unauthorised";
+    return res.status(401).render("errors/401");
+  } else {
+    var dbConnect = dbo.getDb();
+    dbConnect
+      .collection('Results')
+      .findOne({"id" : req.params.resultId}, function(err,data) {
+        dbConnect
+          .collection('Sessions')
+          .findOne({"_id": new ObjectId(data.sessionId)},function(err,lbdata) {
+            res.render('pages/game',{session: data.sessionId, leaderboardId: lbdata.leaderboardId, set: data.cardSet, resultId: req.params.resultId,  isTutor: true});    
+          });
+      });
+  }
+});
+
 app.post('/result', function(req, res) {
   if (!req.body.score) {
     return res.status(400).send("Result not accepted");
@@ -396,7 +434,7 @@ app.get('/leaderboard/:id', function(req, res) {
       res.render('pages/leaderboard/view', {})  
      }
   } else {
-    res.render('pages/leaderboard', {})
+    res.render('pages/leaderboard/view', {})
   }
 });
 

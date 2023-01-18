@@ -138,7 +138,7 @@
         addToRow(row,result.score);
         addToRow(row,(result.vsMachine.win * 100)+"%");
         addToRow(row,(result.vsHybrid.win * 100)+"%");
-        addToRowLink(row,"tree/"+result.id,"View");
+        addToRowLink(row,"/result/"+result.id+"/tree","View");
         var rawResultsTable = "<table><tr><th>Player</th><th>Claims</th><th>Run 1</th><th>Run 2</th><th>Run 3</th><th>Run 4</th></tr>";
         rawResultsTable += "<tr><td>Player</td><td>" + result.confidences.player + "%</td><td>" + result.result[1].player + "%</td><td>" + result.result[2].player + "%</td><td>" + result.result[3].player + "%</td><td>" + result.result[4].player + "%</td><td></tr>";
         rawResultsTable += "<tr><td>Machine</td><td>" + result.confidences.machine + "%</td><td>" + result.result[1].machine + "%</td><td>" + result.result[2].machine + "%</td><td>" + result.result[3].machine + "%</td><td>" + result.result[4].machine + "%</td><td></tr>";
@@ -157,7 +157,9 @@
     }
 
     function processResult(result) {
-        console.log(result);
+        if (!result.playerName) {
+            return;
+        }
         if (result.vsMachine.win) { beatMachine = beatMachine + (result.vsMachine.win * 4); }
         if (result.vsHybrid.win) { beatHybrid = beatHybrid + (result.vsHybrid.win * 4); }
         if (result.confidences.player > 99) { oneHundredClub = oneHundredClub + 1; }
@@ -230,7 +232,11 @@
         $.getJSON('/leaderboard/<%= id %>/<%= sessionId %>/results', function(data) {
             resultsCount = data.length;
             for (i=0;i<data.length;i++) {
-                processResult(data[i]);
+                if (data[i].playerName) {
+                    processResult(data[i]);
+                } else {
+                    resultsCount = resultsCount - 1;
+                }
             }
             $('#table').DataTable({
                 dom: 'Bfrtip',
@@ -242,7 +248,7 @@
                 ]
             });
         });
-        interval = setInterval(function () {
+        var interval = setInterval(function () {
             checkReady();
         }, 1000);
     });

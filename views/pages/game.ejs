@@ -43,7 +43,8 @@
       <ul>
       <li><b>Download cards (csv): </b> Download the training data in CSV format for use in a spreadsheet application.</li> 
       <li><b>Download cards (pdf): </b> Download the training data cards in PDF format for printing.</li> 
-      <li><b>Reset: </b> Moves the cards back into the panel after an evaluation.</li> 
+      <li><b>Reset cards: </b> Moves the cards back into the panel after an evaluation.</li> 
+      <li><b>Reset tree: </b> Blanks the tree so you can start again fresh.</li> 
       <li><b>Run model: </b> Try your tree with the cards.</li>
       </ul>
 
@@ -103,7 +104,8 @@
       <div id="buttons" style="width: 100%">
         <button type="button" name="getTrainingDataCSV"><a id="groupcsv" href="/data/csvs/Group_1.csv">Download cards (csv)</a></button>
         <button type="button" name="getTrainingDataPDF"><a id="grouppdf" href="/data/Group_1.pdf">Download cards (pdf)</a></button>
-        <button type="button" name="returnTrainingData" onClick="returnCards(cards.trainingSet,'area','b');">Reset</button>
+        <button type="button" name="returnTrainingData" onClick="returnCards(cards.trainingSet,'area','b');">Reset cards</button>
+        <button type="button" name="returnTrainingData" onClick="resetTree();">Reset tree</button>
         <button type="button" class="model-button" name="runTrainingData" onClick="sortCards(cards.trainingSet,'b');">Run model</button>
       </div>
        <div id="area"></div>
@@ -113,7 +115,7 @@
         <button type="button" name="evaluation-button" onClick="startInputPurple();">Add card</button>
         <button type="button" id="fill-purples" name="fill-button" onClick="getRandomPurples(20);">Fill random</button>
         <button type="button" id="remove-purples" name="remove-button" onClick="removeCards(cards.testSet,'p');" style="display: none;">Remove all</button>
-        <button type="button" name="returnTrainingData" onClick="returnCards(cards.testSet,'test-set','p');">Reset</button>
+        <button type="button" name="returnTrainingData" onClick="returnCards(cards.testSet,'test-set','p');">Reset cards</button>
         <button type="button" class="model-button" name="runEvaluationData" onClick="sortCards(cards.testSet,'p');">Run model</button>
       </div>
     </div>
@@ -483,7 +485,10 @@
   var group = <%= set %>;
   var sessionId = "<%= session %>";
   var leaderboardId = "<%= leaderboardId %>";
+  var resultId = "<%= resultId %>";
+  var isTutor = "<%= isTutor %>";
   var player_name = "";
+  var storage = {};
   /*
   const queryString = window.location.search;
   const urlParams = new URLSearchParams(queryString);
@@ -495,9 +500,8 @@
   $('document').ready(function(){
     getBlueCards(group,"blue");
     document.getElementById("groupcsv").href="/data/csvs/Group_" + group + ".csv"; 
-    document.getElementById("grouppdf").href="/data/pdfs/Group_" + group + ".pdf"; 
+    document.getElementById("grouppdf").href="/data/pdfs/Group_" + group + ".pdf";
     loadData();
-    loadLeaderboards();
 
     $('#condition_a').on('change', onchange);
     $('#condition_la').on('change', onchange);

@@ -132,36 +132,39 @@
       <div id="results" class="results">
         <table>
           <tr>
-            <th>Actor</th>
-            <th>Confidence<br/>(from training set)</th>
-            <th>Result<br/>(run 1)</th>
-            <th>Result<br/>(run 2)</th>
-            <th>Result<br/>(run 3)</th>
-            <th>Result<br/>(run 4)</th>
+            <th>Player</th>
+            <th>Score / Result<br/>(run 1)</th>
+            <th>Score / Result<br/>(run 2)</th>
+            <th>Score / Result<br/>(run 3)</th>
+            <th>Score / Result<br/>(run 4)</th>
           </tr>
           <tr>
-            <td>Your model</td>
-            <td id="confidence-user"></td>
+            <td>You<br/><span id="confidence-user"></span> confident</td>
             <td id="result1-user"></td>
             <td id="result2-user"></td>
             <td id="result3-user"></td>
             <td id="result4-user"></td>
           </tr>
           <tr>
-            <td>Machine only model</td>
-            <td id="confidence-stoopid-ai"></td>
+            <td>vs Machine<br/><span id="confidence-stoopid-ai"></span> confident</td>
             <td id="result1-stoopid-ai"></td>
             <td id="result2-stoopid-ai"></td>
             <td id="result3-stoopid-ai"></td>
             <td id="result4-stoopid-ai"></td>
           </tr>
           <tr>
-            <td>Human+ML model</td>
-            <td id="confidence-hybrid"></td>
+            <td>vs Human+ML<br/><span id="confidence-hybrid"></span> confident</td>
             <td id="result1-hybrid"></td>
             <td id="result2-hybrid"></td>
             <td id="result3-hybrid"></td>
             <td id="result4-hybrid"></td>
+          </tr>
+          <tr>
+            <td>Total</td>
+            <td id="result1-score"></td>
+            <td id="result2-score"></td>
+            <td id="result3-score"></td>
+            <td id="result4-score"></td>
           </tr>
         </table>
       </div>

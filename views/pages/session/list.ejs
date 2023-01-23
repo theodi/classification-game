@@ -56,11 +56,11 @@
         }
         addToRow(row,output);
     }
-    function addDeleteLink(row,link,value) {
+    function addDeleteLink(row,link,leaderboardId,sessionId,value) {
         var td = document.createElement('td');
         var a = document.createElement('a');
         a.setAttribute('href', '#');
-        a.setAttribute('onClick','processDelete("'+link+'");')
+        a.setAttribute('onClick','processDelete("'+link+'","'+leaderboardId+'","'+sessionId+'");')
         a.innerHTML = value;
         td.append(a)
         row.append(td);
@@ -77,15 +77,21 @@
     function copyText(text) {
       navigator.clipboard.writeText(text);
       alert("Copied the text: " + text);
-    }    
-    function processDelete(link) {
+    }
 
-        $.ajax({
-            url: link,
-            type: 'DELETE',
-            success: function(result) {
-                alert('session deleted');
-                location.reload();
+    function processDelete(link,leaderboardId,sessionId) {
+        $.getJSON('/leaderboard/'+leaderboardId+'/'+sessionId+'/results', function(data) {
+            if (data.length > 0) {
+                alert("Cannot delete session with results");
+            } else {
+                $.ajax({
+                    url: link,
+                    type: 'DELETE',
+                    success: function(result) {
+                        alert('Session deleted');
+                        location.reload();
+                    }
+                });
             }
         });
     }
@@ -113,7 +119,7 @@
                 addCopyLink(row,"/game/" + data[i]._id,"Copy");
                 addToRowLink(row,"/leaderboard/<%= id %>/" + data[i]._id,"Leaderboard");
                 addToRowLink(row,"/leaderboard/<%= id %>/" + data[i]._id + "/edit","Edit");
-                addDeleteLink(row,"/leaderboard/<%= id %>/" + data[i]._id,"Delete");
+                addDeleteLink(row,"/leaderboard/<%= id %>/" + data[i]._id,"<%= id %>",data[i]._id,"Delete");
                 if (data[i].name) {
                     document.getElementById('table_body').append(row);
                 }

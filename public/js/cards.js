@@ -422,8 +422,16 @@ function getResult(cardset,number) {
     if (results[number].playerDiff < 0) {
         results[number].playerDiff = results[number].playerDiff * -1;
     }
+
+    pscore = Math.round(pres) - results[number].playerDiff;
+    results[number].score += pscore;
+    $("#result"+number+"-user").html(pscore + "<br/>" + "(= "+Math.round(pres)+" - " + results[number].playerDiff + ")");
+
+    /* Old scoring
+
     results[number].score += 100 - results[number].playerDiff;
     document.getElementById("result"+number+"-user").innerHTML = Math.round(pres) + "%";
+    */
     getAIResult_Hybrid(cardset,number);
     if (group == 1) {
         getAIResult_Stoopid_1(cardset,number);
@@ -458,16 +466,19 @@ function getAIResult_Hybrid(cardset,number) {
     }
     if (results[number].playerDiff < hybridDiff) {
         results[number].beatHybrid = true;
-        results[number].score += 40;
+        results[number].score += 25;
         results.vsHybrid.win += 0.25;
+        $("#result"+number+"-hybrid").html("+25<br/>(You win)");
     } else if (results[number].playerDiff == hybridDiff) {
-        results[number].score += 40;   
+        results[number].score += 10;   
         results.vsHybrid.draw += 0.25;
+        $("#result"+number+"-hybrid").html("+10<br/>(Draw)");
     } else {
         results.vsHybrid.lost += 0.25;
+        $("#result"+number+"-hybrid").html("+0<br/>(You loose)");
     }
 
-    document.getElementById("result"+number+"-hybrid").innerHTML = Math.round(hres) + "%";
+    //document.getElementById("result"+number+"-hybrid").innerHTML = Math.round(hres) + "%";
 }
 
 function processMachineResult(right,number) {
@@ -482,12 +493,16 @@ function processMachineResult(right,number) {
         results[number].beatMachine = true;
         results[number].score += 10;
         results.vsMachine.win += 0.25;
+        $("#result"+number+"-stoopid-ai").html("+10<br/>(You win)");
     } else if (results[number].playerDiff == machineDiff) {
         results.vsMachine.draw += 0.25;
+        $("#result"+number+"-stoopid-ai").html("+0<br/>(Draw)");
     } else {
         results.vsMachine.lost += 0.25;
+        results[number].score -= 20;
+        $("#result"+number+"-stoopid-ai").html("-20<br/>(You loose)");
     }
-    document.getElementById("result"+number+"-stoopid-ai").innerHTML = Math.round(mres) + "%";
+    //document.getElementById("result"+number+"-stoopid-ai").innerHTML = Math.round(mres) + "%";
 }
 
 function getAIResult_Stoopid_1(cardset,number) {
@@ -540,7 +555,7 @@ function getAIResult_Stoopid_2(cardset,number) {
 
 function autoEvaluate(number) {
     results[number] = {};
-    results[number].score = confidences.player;
+    results[number].score = 0;
     if(number == 1) {
         returnCards(cards.trainingSet,'area','b');
     }
@@ -563,13 +578,18 @@ function autoEvaluate(number) {
     if (number == 4) {
         setTimeout(function() {
             $("#evaluationStatus").html("Caluculating scores");
-            results.score = results[1].score + results[2].score + results[3].score + results[4].score;
+            $('#result1-score').html(results[1].score);
+            $('#result2-score').html(results[2].score);
+            $('#result3-score').html(results[3].score);
+            $('#result4-score').html(results[4].score);
+            results.score = confidences.player + results[1].score + results[2].score + results[3].score + results[4].score;
             saveResult();
         }, 12000)
         setTimeout(function() {
             loadLeaderboards();
-            var score = results[1].score + results[2].score + results[3].score + results[4].score;
-            $("#evaluationStatus").html("Your score: " + score);
+            var score = confidences.player + results[1].score + results[2].score + results[3].score + results[4].score;
+            var guide = '<table class="results" style="font-size: 0.8em; max-width: 66%; margin-left: auto; margin-right: auto;"><tr><td>500+</td><td>Incredible!</td></tr><tr><td>450 - 500</td><td>Expert</td></tr><tr><td>400 - 450</td><td>Solid effort</td></tr><tr><td>300 - 400</td><td>Average</td></tr><tr><td>0 - 300</td><td>Points for trying (did you overfit?)</td></tr></table>';
+            $("#evaluationStatus").html("Your score: " + score + "<br/><br/>" + guide);
         }, 14000)
         setTimeout(function() {
             $( "#leaderboards" ).clone().appendTo( "#evaluation-set" );

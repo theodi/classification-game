@@ -129,7 +129,7 @@ function badRequest(res,start,end) {
   return res.status(400).render("errors/400",{start: start, end: end});
 }
 
-function renderPlay(req,res,data) {
+function renderGame(req,res,data) {
   var sessionId = data._id;
   var dbConnect = dbo.getDb();
   dbConnect
@@ -144,7 +144,7 @@ function renderPlay(req,res,data) {
       res.send(JSON.stringify(data, null, 4));
       */
       
-      res.render('pages/game',{session: sessionId, set: chosenSet});
+      res.render('pages/game',{session: sessionId, leaderboardId: data.leaderboardId, set: chosenSet, resultId: null, isTutor: data.isTutor});
   });
 }
 
@@ -153,49 +153,229 @@ function renderPlay(req,res,data) {
 app.use('/private', ensureAuthenticated);
 app.use('/private', express.static(__dirname + '/private'));
 
-/* Define all the pages */
+/**
+ * Methods to allow users to play the game
+ * 
+ */
 
-/* Do not require login */
-
-app.get('/leaderboard', function(req, res) {
-  res.locals.pageTitle ="Leaderboard";
-  res.render('pages/leaderboard')
-});
-
-
-app.get('/play/:id', function(req,res) {
+app.get('/game/:id', function(req,res) {
   var dbConnect = dbo.getDb();
   dbConnect
     .collection('Sessions')
     .findOne({"_id": new ObjectId(req.params.id)},function(err,data) {
-      if (data.startTime) {
-        var now = new Date().getTime();
-        var start = new Date(data.startTime).getTime();
-        if (now >= start) {
-          if (data.endTime) {
-            var end = new Date(data.endTime).getTime();
-            if (now <= end) {
-              console.log("Valid both");
-              renderPlay(req,res,data);
+      if (req.isAuthenticated()) {
+        data.isTutor = true;
+        renderGame(req,res,data);
+      } else {
+        if (data.startTime) {
+          var now = new Date().getTime();
+          var start = new Date(data.startTime).getTime();
+          if (now >= start) {
+            if (data.endTime) {
+              var end = new Date(data.endTime).getTime();
+              if (now <= end) {
+                renderGame(req,res,data);
+              } else {
+                badRequest(res,data.startTime,data.endTime);
+              }
             } else {
-              console.log("Too late");
-              badRequest(res,data.startTime,data.endTime);
+              renderGame(req,res,data);
             }
           } else {
-            console.log("Valid (no end)");
-            renderPlay(req,res,data);
+            badRequest(res,data.startTime,data.endTime);
           }
         } else {
-          console.log("Too early");
-          badRequest(res,data.startTime,data.endTime);
+          renderGame(req,res,data);
         }
-      } else {
-        console.log("Valid (no start or end)");
-        renderPlay(req,res,data);
       }
     });
 });
-/* Require login */
+
+/**
+ * Methods to get leaderboard results
+ */
+
+app.get('/leaderboard/all/results', function(req, res) {
+  type = req.headers.accept.split(',')[0];
+  if (req.isAuthenticated()) {
+     if (type=="application/json") {
+      var dbConnect = dbo.getDb();
+      dbConnect
+        .collection("Results")
+        .find()
+        .sort( {"score": -1} )
+        .toArray(function(err,output) {
+          res.set('Content-Type', 'application/json');
+          res.send(JSON.stringify(output, null, 4));    
+        });
+     } else {
+      res.render('pages/leaderboard');  
+     }
+  } else {
+    if (type=="application/json") {
+      var dbConnect = dbo.getDb();
+      dbConnect
+        .collection("Results")
+        .find()
+        .project({"id":1,"score":1,"_id":0,"confidences":1,"result":1,"vsHybrid":1,"vsMachine":1,"date":1})
+        .sort( {"score": -1} )
+        .toArray(function(err,output) {
+          res.set('Content-Type', 'application/json');
+          res.send(JSON.stringify(output, null, 4));    
+        });
+    } else {
+      res.locals.pageTitle ="Leaderboard";
+      res.render('pages/leaderboard');
+    }
+  }
+});
+
+app.get('/leaderboard/:id/results', function(req, res) {
+  res.locals.pageTitle ="Leaderboard for " + req.params.id;
+  res.locals.id = req.params.id;
+  type = req.headers.accept.split(',')[0];
+  if (req.isAuthenticated()) {
+     if (type=="application/json") {
+      var dbConnect = dbo.getDb();
+      dbConnect
+        .collection('Sessions')
+        .find({"leaderboardId" : req.params.id})
+        .toArray(function(err,data) {
+          var sessions = [];
+          for(i=0;i<data.length;i++) {
+            sessions.push(data[i]._id.toString());
+          }
+          dbConnect
+            .collection("Results")
+            .find({ sessionId: { $in: sessions} } )
+            .sort( {"score": -1} )
+            .toArray(function(err,output) {
+              res.set('Content-Type', 'application/json');
+              res.send(JSON.stringify(output, null, 4));    
+            });
+        });
+     } else {
+      res.render('pages/leaderboard/view', {})  
+     }
+  } else {
+    if (type=="application/json") {
+      var dbConnect = dbo.getDb();
+      dbConnect
+        .collection('Sessions')
+        .find({"leaderboardId" : req.params.id})
+        .toArray(function(err,data) {
+          var sessions = [];
+          for(i=0;i<data.length;i++) {
+            sessions.push(data[i]._id.toString());
+          }
+          dbConnect
+            .collection("Results")
+            .find({ sessionId: { $in: sessions} } )
+            .project({"id":1,"score":1,"_id":0})
+            .sort( {"score": -1} )
+            .toArray(function(err,output) {
+              res.set('Content-Type', 'application/json');
+              res.send(JSON.stringify(output, null, 4));    
+            });
+        });
+    } else {
+      res.locals.pageTitle ="401 Unauthorised";
+      return res.status(401).render("errors/401");
+    }
+  }
+});
+
+app.get('/leaderboard/:id/:sessionId/results', function(req, res) {
+  type = req.headers.accept.split(',')[0];
+   if (!req.isAuthenticated()) {
+    if (type=="application/json") {
+      var dbConnect = dbo.getDb();
+      dbConnect
+        .collection('Results')
+        .find({"sessionId" : req.params.sessionId})
+        .project({"id":1,"playerName": 1,"score":1,"_id":0})
+        .sort( {"score": -1} )
+        .toArray(function(err,data) {
+          res.set('Content-Type', 'application/json');
+          res.send(JSON.stringify(data, null, 4));    
+        });
+    } else {
+      res.locals.pageTitle ="401 Unauthorised";
+      return res.status(401).render("errors/401");
+    }
+  } else {
+    if (type=="application/json") {
+      var dbConnect = dbo.getDb();
+      dbConnect
+        .collection('Results')
+        .find({"sessionId" : req.params.sessionId})
+        .sort( {"score": -1} )
+        .toArray(function(err,data) {
+          res.set('Content-Type', 'application/json');
+          res.send(JSON.stringify(data, null, 4));    
+        });
+    } else {
+      res.locals.pageTitle ="View single session leaderboard";
+      res.locals.id = req.params.id;
+      res.locals.sessionId = req.params.sessionId;
+      res.render('pages/session/view', {})
+    }
+  }
+});
+
+app.get('/result/:resultId', function(req, res) {
+  if (!req.isAuthenticated()) {
+    res.locals.pageTitle ="401 Unauthorised";
+    return res.status(401).render("errors/401");
+  } else {
+    var dbConnect = dbo.getDb();
+    dbConnect
+      .collection('Results')
+      .findOne({"id" : req.params.resultId}, function(err,data) {
+        res.set('Content-Type', 'application/json');
+        res.send(JSON.stringify(data, null, 4));
+      });
+  }
+});
+
+app.get('/result/:resultId/tree', function(req, res) {
+  if (!req.isAuthenticated()) {
+    res.locals.pageTitle ="401 Unauthorised";
+    return res.status(401).render("errors/401");
+  } else {
+    var dbConnect = dbo.getDb();
+    dbConnect
+      .collection('Results')
+      .findOne({"id" : req.params.resultId}, function(err,data) {
+        dbConnect
+          .collection('Sessions')
+          .findOne({"_id": new ObjectId(data.sessionId)},function(err,lbdata) {
+            res.render('pages/game',{session: data.sessionId, leaderboardId: lbdata.leaderboardId, set: data.cardSet, resultId: req.params.resultId,  isTutor: true});    
+          });
+      });
+  }
+});
+
+app.post('/result', function(req, res) {
+  if (!req.body.score) {
+    return res.status(400).send("Result not accepted");
+  }
+  var dbConnect = dbo.getDb();
+  dbConnect
+    .collection('Results')
+    .updateOne({"id":req.body.id},{ $set: req.body},{upsert:true},
+    function(err,result) {
+      if (err) {
+        return res.status(500).send("Result not accepted");
+      }
+      return res.status(201).send("Result accepted");      
+    });
+});
+
+/**
+ * Methods to crete, view and edit leaderboards 
+ * 
+ */
 
 app.get('/leaderboard/create', function(req, res) {
   if (!req.isAuthenticated()) {
@@ -215,29 +395,6 @@ app.get('/leaderboard/:id/edit', function(req, res) {
   res.locals.id = req.params.id;
   res.render('pages/leaderboard/edit', {})
 });
-
-app.get('/leaderboard/:id', function(req, res) {
-  res.locals.pageTitle ="Leaderboard for " + req.params.id;
-  res.locals.id = req.params.id;
-  if (req.isAuthenticated()) {
-     type = req.headers.accept.split(',')[0];
-     if (type=="application/json") {
-      var dbConnect = dbo.getDb();
-      dbConnect
-      .collection('Leaderboards')
-      .findOne({"_id": new ObjectId(req.params.id)},function(err,data) {
-        res.set('Content-Type', 'application/json');
-        res.send(JSON.stringify(data, null, 4));
-      });
-     } else {
-      res.render('pages/leaderboard/view', {})  
-     }
-  } else {
-    res.render('pages/leaderboard', {})
-  }
-});
-
-/* Require user to be logged in */
 
 app.get('/leaderboards', function(req, res) {
   if (!req.isAuthenticated()) {
@@ -260,54 +417,26 @@ app.get('/leaderboards', function(req, res) {
   }
 });
 
-app.get('/leaderboard/:id/sessions', function(req, res) {
-  if (!req.isAuthenticated()) {
-    res.locals.pageTitle ="401 Unauthorised";
-    return res.status(401).render("errors/401");
-  }
-  type = req.headers.accept.split(',')[0];
-  if (type=="application/json") {
-    var dbConnect = dbo.getDb();
-    dbConnect
-      .collection('Sessions')
-      .find({"leaderboardId" : req.params.id})
-      .toArray(function(err,data) {
-        res.set('Content-Type', 'application/json');
-        res.send(JSON.stringify(data, null, 4));    
-      });
-  } else {
-    res.locals.pageTitle ="View sessions for leaderboard";
-    res.locals.id = req.params.id;
-    res.render('pages/session/list', {msg: ""})
-  }
-});
-
-app.get('/leaderboard/:id/session/create', function(req, res) {
-  res.locals.pageTitle ="Create session for leaderboard";
+app.get('/leaderboard/:id', function(req, res) {
+  res.locals.pageTitle ="Leaderboard for " + req.params.id;
   res.locals.id = req.params.id;
-  res.render('pages/session/create', {})
-});
-
-app.get('/leaderboard/:id/:sessionId', function(req, res) {
-  type = req.headers.accept.split(',')[0];
-  if (type=="application/json") {
-    var dbConnect = dbo.getDb();
-    dbConnect
-      .collection('Results')
-      .find({"sessionId" : req.params.sessionId})
-      .toArray(function(err,data) {
+  if (req.isAuthenticated()) {
+     type = req.headers.accept.split(',')[0];
+     if (type=="application/json") {
+      var dbConnect = dbo.getDb();
+      dbConnect
+      .collection('Leaderboards')
+      .findOne({"_id": new ObjectId(req.params.id)},function(err,data) {
         res.set('Content-Type', 'application/json');
-        res.send(JSON.stringify(data, null, 4));    
+        res.send(JSON.stringify(data, null, 4));
       });
+     } else {
+      res.render('pages/leaderboard/view', {})  
+     }
   } else {
-    res.locals.pageTitle ="View single session leaderboard";
-    res.locals.id = req.params.id;
-    res.locals.sessionId = req.params.sessionId;
-    res.render('pages/session/view', {})
+    res.render('pages/leaderboard/view', {})
   }
 });
-
-/* Post methods */
 
 app.post('/leaderboard', function(req, res) {
   var dbConnect = dbo.getDb();
@@ -338,6 +467,54 @@ app.post('/leaderboard/:id', function(req, res) {
     });
 });
 
+app.delete('/leaderboard/:id', function(req, res) {
+  res.locals.id = req.params.id;
+  var dbConnect = dbo.getDb();
+  dbConnect
+    .collection('Leaderboards')
+    .deleteOne({"_id": new ObjectId(req.params.id)},
+    function(err,result) {
+      var msg = "Leaderboard deleted";
+      if (err) {
+        var msg = "Error deleting leaderboard";
+      }
+      res.locals.pageTitle = "Sessions";
+      res.render('pages/session/list', { msg: msg });
+    });
+  });
+
+/**
+ * Methods to crete, view and edit sessions
+ * 
+ */
+
+app.get('/leaderboard/:id/sessions', function(req, res) {
+  if (!req.isAuthenticated()) {
+    res.locals.pageTitle ="401 Unauthorised";
+    return res.status(401).render("errors/401");
+  }
+  type = req.headers.accept.split(',')[0];
+  if (type=="application/json") {
+    var dbConnect = dbo.getDb();
+    dbConnect
+      .collection('Sessions')
+      .find({"leaderboardId" : req.params.id})
+      .toArray(function(err,data) {
+        res.set('Content-Type', 'application/json');
+        res.send(JSON.stringify(data, null, 4));    
+      });
+  } else {
+    res.locals.pageTitle ="View sessions for leaderboard";
+    res.locals.id = req.params.id;
+    res.render('pages/session/list', {msg: ""})
+  }
+});
+
+app.get('/leaderboard/:id/session/create', function(req, res) {
+  res.locals.pageTitle ="Create session for leaderboard";
+  res.locals.id = req.params.id;
+  res.render('pages/session/create', {})
+});
 
 app.post('/leaderboard/:id/createSession', function(req, res) {
   var dbConnect = dbo.getDb();
@@ -356,23 +533,29 @@ app.post('/leaderboard/:id/createSession', function(req, res) {
     });
 });
 
-app.post('/result', function(req, res) {
-  if (!req.body.result.player) {
-    return res.status(400).send("Result not accepted");
+app.get('/leaderboard/:id/:sessionId', function(req, res) {
+  res.locals.pageTitle ="Leaderboard for session " + req.params.sessionId;
+  res.locals.id = req.params.id;
+  res.locals.sessionId = req.params.sessionId;
+  if (req.isAuthenticated()) {
+     type = req.headers.accept.split(',')[0];
+     if (type=="application/json") {
+      var dbConnect = dbo.getDb();
+      dbConnect
+      .collection('Sessions')
+      .findOne({"_id": new ObjectId(req.params.sessionId)},function(err,data) {
+        res.set('Content-Type', 'application/json');
+        res.send(JSON.stringify(data, null, 4));
+      });
+     } else {
+      res.render('pages/session/view', {})
+     }
+  } else {
+    res.render('pages/session/view', {})
   }
-  var dbConnect = dbo.getDb();
-  dbConnect
-    .collection('Results')
-    .updateOne({"id":req.body.id},{ $set: req.body},{upsert:true},
-    function(err,result) {
-      if (err) {
-        return res.status(500).send("Result not accepted");
-      }
-      return res.status(201).send("Result accepted");      
-    });
 });
+
 app.delete('/leaderboard/:id/:sessionId', function(req, res) {
-  console.log('in delete method');
   res.locals.id = req.params.id;
   var dbConnect = dbo.getDb();
   dbConnect
@@ -388,22 +571,6 @@ app.delete('/leaderboard/:id/:sessionId', function(req, res) {
     });
   });
 
-app.delete('/leaderboard/:id', function(req, res) {
-  console.log('in delete method');
-  res.locals.id = req.params.id;
-  var dbConnect = dbo.getDb();
-  dbConnect
-    .collection('Leaderboards')
-    .deleteOne({"_id": new ObjectId(req.params.id)},
-    function(err,result) {
-      var msg = "Leaderboard deleted";
-      if (err) {
-        var msg = "Error deleting leaderboard";
-      }
-      res.locals.pageTitle = "Sessions";
-      res.render('pages/session/list', { msg: msg });
-    });
-  });
 /* Other methods */
 
 app.get('/profile', function(req, res) {

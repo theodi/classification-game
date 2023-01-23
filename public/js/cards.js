@@ -11,6 +11,14 @@ var maxCount = 20;
 var predictions = {};
 var confidences = {};
 var results = {};
+results.vsMachine = {};
+results.vsMachine.win = 0;
+results.vsMachine.draw = 0;
+results.vsMachine.lost = 0;
+results.vsHybrid = {};
+results.vsHybrid.win = 0;
+results.vsHybrid.draw = 0;
+results.vsHybrid.lost = 0;
 confidences.player = 0;
 
 /* Page functions */
@@ -178,11 +186,11 @@ function getRandomPurples(count) {
 /* Remove card functions */
 
 function removeCards(cardset,color) {
-    var temp = cardset;
-    temp.forEach(function(card,value,index) {
-        cardset = removeCard(card.index,cardset,color);
-    });
-    removeCards(cardset,color);
+    while (cardset.length > 0) {
+        cardset.forEach(function(card,value,index) {
+            cardset = removeCard(card.index,cardset,color);
+        });
+    }
 }
 
 function removeCard(id,cardset,color){
@@ -270,7 +278,7 @@ function returnCards(cardset,boxid,color) {
 
 /* Card sorter */
 
-function sortCards(cardset,color) {
+function sortCards(cardset,color,number) {
     var currentPosition = "";
     var interval = 0;
     cardset.forEach(function(card,value,index) {
@@ -287,7 +295,7 @@ function sortCards(cardset,color) {
     }
     if (color=="r") {
         setTimeout(function() {
-            getResult(cardset);
+            getResult(cardset,number);
         },5000);
     }
 }
@@ -360,12 +368,31 @@ function getPredictions(cardset) {
     $('.prediction').show();
     document.getElementById("confidence-user").innerHTML = confidences.player + "%";
     $('.evaluation-button').show();
-    if (group == 1) {
+    if (group == 1 || group == 5) {
         confidences.machine = 100;
         confidences.hybrid = 90;
         document.getElementById("confidence-stoopid-ai").innerHTML = "100%";
         document.getElementById("confidence-hybrid").innerHTML = "90%";
     }
+    if (group == 2) {
+        confidences.machine = 100;
+        confidences.hybrid = 70;
+        document.getElementById("confidence-stoopid-ai").innerHTML = "100%";
+        document.getElementById("confidence-hybrid").innerHTML = "70%";   
+    }
+    if (group == 4 || group == 3) {
+        confidences.machine = 100;
+        confidences.hybrid = 85;
+        document.getElementById("confidence-stoopid-ai").innerHTML = "100%";
+        document.getElementById("confidence-hybrid").innerHTML = "85%";   
+    }
+    if (group == 6) {
+        confidences.machine = 100;
+        confidences.hybrid = 80;
+        document.getElementById("confidence-stoopid-ai").innerHTML = "100%";
+        document.getElementById("confidence-hybrid").innerHTML = "80%";   
+    }
+    console.log("Group = " + group);
     saveData();
 }
 
@@ -378,33 +405,47 @@ function updateConfidence(cardset) {
     document.getElementById("confidence-user").innerHTML = confidences.player + "%";
 }
 
-function getResult(cardset) {
-    console.log("Group = " + group);
+function getResult(cardset,number) {
     var right = 0;
-    var targets = ["New York","San Francisco"]
+    var targets = ["New York","San Francisco"];
+    var pres = 0;
     cardset.forEach(function(card,value,index) {
         if (targets[card.target] == predictions[card.box]["prediction"]) {
             right +=1;
         }
     });
-    result = (right / 20) * 100;
-    results.player = Math.round(result);
-    document.getElementById("result-user").innerHTML = Math.round(result) + "%";
+    pres = (right / 20) * 100;
+    results[number].player = Math.round(pres);
+    results[number].beatMachine = "unknown";
+    results[number].beatHybrid = "unknown";
+    results[number].playerDiff = confidences.player - results[number].player;
+    if (results[number].playerDiff < 0) {
+        results[number].playerDiff = results[number].playerDiff * -1;
+    }
+
+    pscore = Math.round(pres) - results[number].playerDiff;
+    results[number].score += pscore;
+    $("#result"+number+"-user").html(pscore + "<br/>" + "(= "+Math.round(pres)+" - " + results[number].playerDiff + ")");
+
+    /* Old scoring
+
+    results[number].score += 100 - results[number].playerDiff;
+    document.getElementById("result"+number+"-user").innerHTML = Math.round(pres) + "%";
+    */
+    getAIResult_Hybrid(cardset,number);
     if (group == 1) {
-        getAIResult_Hybrid_1(cardset);
-        getAIResult_Stoopid_1(cardset);
+        getAIResult_Stoopid_1(cardset,number);
+    }
+     if (group == 2) {
+        getAIResult_Stoopid_2(cardset,number);
     }
     saveData();
-    saveResult();
-    if (sessionId)  {
-        console.log("Have a session ID, send result object");
-        console.log(sessionId);
-    }
 } 
 
-function getAIResult_Hybrid_1(cardset) {
+function getAIResult_Hybrid(cardset,number) {
     var right = 0;
-    var targets = ["New York","San Francisco"]
+    var targets = ["New York","San Francisco"];
+    var hres = 0;
     cardset.forEach(function(card,value,index) {
         if (card.price_per_sqft <= 875 && card.target == 1) {
             right += 1;
@@ -417,14 +458,56 @@ function getAIResult_Hybrid_1(cardset) {
             }
         }
     });
-    result = (right / 20) * 100;
-    results.hybrid = Math.round(result);
-    document.getElementById("result-hybrid").innerHTML = Math.round(result) + "%";
+    hres = (right / 20) * 100;
+    results[number]["hybrid"] = Math.round(hres);
+    hybridDiff = confidences.hybrid - results[number].hybrid;
+    if (hybridDiff < 0) {
+        hybridDiff = hybridDiff * -1;
+    }
+    if (results[number].playerDiff < hybridDiff) {
+        results[number].beatHybrid = true;
+        results[number].score += 25;
+        results.vsHybrid.win += 0.25;
+        $("#result"+number+"-hybrid").html("+25<br/>(You win)");
+    } else if (results[number].playerDiff == hybridDiff) {
+        results[number].score += 10;   
+        results.vsHybrid.draw += 0.25;
+        $("#result"+number+"-hybrid").html("+10<br/>(Draw)");
+    } else {
+        results.vsHybrid.lost += 0.25;
+        $("#result"+number+"-hybrid").html("+0<br/>(You loose)");
+    }
+
+    //document.getElementById("result"+number+"-hybrid").innerHTML = Math.round(hres) + "%";
 }
 
-function getAIResult_Stoopid_1(cardset) {
+function processMachineResult(right,number) {
+    var mres = 0;
+    mres = (right / 20) * 100;
+    results[number]["machine"] = Math.round(mres);
+    machineDiff = confidences.machine - results[number].machine;
+    if (machineDiff < 0) {
+        machineDiff = machineDiff * -1;
+    }
+    if (results[number].playerDiff < machineDiff) {
+        results[number].beatMachine = true;
+        results[number].score += 10;
+        results.vsMachine.win += 0.25;
+        $("#result"+number+"-stoopid-ai").html("+10<br/>(You win)");
+    } else if (results[number].playerDiff == machineDiff) {
+        results.vsMachine.draw += 0.25;
+        $("#result"+number+"-stoopid-ai").html("+0<br/>(Draw)");
+    } else {
+        results.vsMachine.lost += 0.25;
+        results[number].score -= 20;
+        $("#result"+number+"-stoopid-ai").html("-20<br/>(You loose)");
+    }
+    //document.getElementById("result"+number+"-stoopid-ai").innerHTML = Math.round(mres) + "%";
+}
+
+function getAIResult_Stoopid_1(cardset,number) {
     var right = 0;
-    var targets = ["New York","San Francisco"]
+    var targets = ["New York","San Francisco"];
     cardset.forEach(function(card,value,index) {
         if (card.price_per_sqft <= 875 && card.target == 1) {
             right += 1;
@@ -441,7 +524,75 @@ function getAIResult_Stoopid_1(cardset) {
             }
         }
     });
-    result = (right / 20) * 100;
-    results.machine = Math.round(result);
-    document.getElementById("result-stoopid-ai").innerHTML = Math.round(result) + "%";
+    processMachineResult(right,number);
+}
+
+function getAIResult_Stoopid_2(cardset,number) {
+    var right = 0;
+    var targets = ["New York","San Francisco"];
+    cardset.forEach(function(card,value,index) {
+        if (card.price_per_sqft <= 1022) {
+            if (card.year_built <= 1912) {
+                if (card.year_built <= 1905 && card.target == 1) {
+                    right += 1;
+                } 
+                if (card.year_built > 1905 && card.target == 0) {
+                    right += 1;
+                } 
+            } else if (card.year_built > 1912 && card.target == 1) {
+                right += 1;
+            }
+        } else {
+            if (card.elevation <= 43 && card.target == 0) {
+                right += 1;
+            } else if (card.elevation > 43 && card.target == 1) {
+                right += 1;
+            }
+        }
+    });
+    processMachineResult(right,number);
+}
+
+function autoEvaluate(number) {
+    results[number] = {};
+    results[number].score = 0;
+    if(number == 1) {
+        returnCards(cards.trainingSet,'area','b');
+    }
+    $("#evaluationButton").hide();
+    $("#evaluationStatus").html("Selecting random cards for run " + number);
+    setTimeout(function() { 
+        getRandomReds(20); 
+    },3000);
+    setTimeout(function() {
+        $("#evaluationStatus").html("Running models");
+        sortCards(cards.evaluationSet,'r',number) 
+    },5000);
+    if (number < 4) {
+        setTimeout(function() {
+            removeCards(cards.evaluationSet,'r');
+            number = number + 1;
+            autoEvaluate(number);
+        },12000);
+    }
+    if (number == 4) {
+        setTimeout(function() {
+            $("#evaluationStatus").html("Caluculating scores");
+            $('#result1-score').html(results[1].score);
+            $('#result2-score').html(results[2].score);
+            $('#result3-score').html(results[3].score);
+            $('#result4-score').html(results[4].score);
+            results.score = confidences.player + results[1].score + results[2].score + results[3].score + results[4].score;
+            saveResult();
+        }, 12000)
+        setTimeout(function() {
+            loadLeaderboards();
+            var score = confidences.player + results[1].score + results[2].score + results[3].score + results[4].score;
+            var guide = '<table class="results" style="font-size: 0.8em; max-width: 66%; margin-left: auto; margin-right: auto;"><tr><td>500+</td><td>Incredible!</td></tr><tr><td>450 - 500</td><td>Expert</td></tr><tr><td>400 - 450</td><td>Solid effort</td></tr><tr><td>300 - 400</td><td>Average</td></tr><tr><td>0 - 300</td><td>Points for trying (did you overfit?)</td></tr></table>';
+            $("#evaluationStatus").html("Your score: " + score + "<br/><br/>" + guide);
+        }, 14000)
+        setTimeout(function() {
+            $( "#leaderboards" ).clone().appendTo( "#evaluation-set" );
+        }, 15000)
+    }
 }

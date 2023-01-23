@@ -43,19 +43,69 @@
       <ul>
       <li><b>Download cards (csv): </b> Download the training data in CSV format for use in a spreadsheet application.</li> 
       <li><b>Download cards (pdf): </b> Download the training data cards in PDF format for printing.</li> 
-      <li><b>Reset: </b> Moves the cards back into the panel after an evaluation.</li> 
+      <li><b>Reset cards: </b> Moves the cards back into the panel after an evaluation.</li> 
+      <li><b>Reset tree: </b> Blanks the tree so you can start again fresh.</li> 
       <li><b>Run model: </b> Try your tree with the cards.</li>
       </ul>
 
       <h3>Evaluating your decision tree</h3>
       <p>Use the <a href="#" onClick="selectSet('evaluation');" style="text-decoration: underline;">evaluation set</a> to see if your tree works. You can select your own set of evaluation cards or generate 20 random cards.</p>
       <p>Good luck!</p>
+      <section id="leaderboards">
+      <h2>Leaderboards (your results in red)</h2>
+      <leaderboard id="session">
+        <h3>Session leaderboard</h3>
+        <table id="session-leaderboard" class="display responsive wrap" cellspacing="0" width="100%">
+          <thead>
+              <tr>
+                  <th>Rank</th>
+                  <th>Name</th>
+                  <th>Score</th>
+              </tr>
+          </thead>
+          <tbody id="session-leaderboard-body">
+              
+          </tbody>
+          </table>
+      </leaderboard>
+      <leaderboard id="group">
+        <h3>Organisation leaderboard</h3>
+        <table id="organisation-leaderboard" class="display responsive wrap" cellspacing="0" width="100%">
+          <thead>
+              <tr>
+                  <th>Rank</th>
+                  <th>Name</th>
+                  <th>Score</th>
+              </tr>
+          </thead>
+          <tbody id="organisation-leaderboard-body">
+              
+          </tbody>
+          </table>
+      </leaderboard>
+      <leaderboard id="group">
+        <h3>Overall leaderboard</h3>
+        <table id="public-leaderboard" class="display responsive wrap" cellspacing="0" width="100%">
+          <thead>
+              <tr>
+                  <th>Rank</th>
+                  <th>Name</th>
+                  <th>Score</th>
+              </tr>
+          </thead>
+          <tbody id="public-leaderboard-body">
+              
+          </tbody>
+          </table>
+      </leaderboard>
+    </section>
     </div>
     <div id='training-set' class='invisbox-small dropzone snapzone' style="display: none;">
       <div id="buttons" style="width: 100%">
         <button type="button" name="getTrainingDataCSV"><a id="groupcsv" href="/data/csvs/Group_1.csv">Download cards (csv)</a></button>
         <button type="button" name="getTrainingDataPDF"><a id="grouppdf" href="/data/Group_1.pdf">Download cards (pdf)</a></button>
-        <button type="button" name="returnTrainingData" onClick="returnCards(cards.trainingSet,'area','b');">Reset</button>
+        <button type="button" name="returnTrainingData" onClick="returnCards(cards.trainingSet,'area','b');">Reset cards</button>
+        <button type="button" name="returnTrainingData" onClick="resetTree();">Reset tree</button>
         <button type="button" class="model-button" name="runTrainingData" onClick="sortCards(cards.trainingSet,'b');">Run model</button>
       </div>
        <div id="area"></div>
@@ -65,24 +115,57 @@
         <button type="button" name="evaluation-button" onClick="startInputPurple();">Add card</button>
         <button type="button" id="fill-purples" name="fill-button" onClick="getRandomPurples(20);">Fill random</button>
         <button type="button" id="remove-purples" name="remove-button" onClick="removeCards(cards.testSet,'p');" style="display: none;">Remove all</button>
-        <button type="button" name="returnTrainingData" onClick="returnCards(cards.testSet,'test-set','p');">Reset</button>
+        <button type="button" name="returnTrainingData" onClick="returnCards(cards.testSet,'test-set','p');">Reset cards</button>
         <button type="button" class="model-button" name="runEvaluationData" onClick="sortCards(cards.testSet,'p');">Run model</button>
       </div>
     </div>
     <div id='evaluation-set' class="invisbox-small" style="display: none;">
       <div id="buttons" style="width: 100%">
-        <button type="button" name="evaluation-button" onClick="startInput();">Add card</button>
+        <h3 id="evaluationStatus">Click the button below to evaluate your model and obtain a score</h3>
+        <button type="button" id="evaluationButton" name="evaluation-button" onClick="autoEvaluate(1);">Evaluate model</button>
+        <!--<button type="button" name="evaluation-button" onClick="startInput();">Add card</button>
         <button type="button" id="fill-reds" name="fill-button" onClick="getRandomReds(20);">Fill random</button>
         <button type="button" id="remove-reds" name="remove-button" onClick="removeCards(cards.evaluationSet,'r');" style="display: none;">Remove all</button>
         <button type="button" name="returnTrainingData" onClick="returnCards(cards.evaluationSet,'evaluation-set','r');">Reset</button>
-        <button type="button" class="evaluation-button" name="runEvaluationData" onClick="sortCards(cards.evaluationSet,'r');">Run model</button>
+        <button type="button" class="evaluation-button" name="runEvaluationData" onClick="sortCards(cards.evaluationSet,'r');">Run model</button>-->
       </div>
       <div id="results" class="results">
         <table>
-          <tr><th>Actor</th><th>Confidence<br/>(from training set)</th><th>Result<br/>(from evaluation set)</th></tr>
-          <tr><td>Your model</td><td id="confidence-user"></td><td id="result-user"></td></tr>
-          <tr><td>Machine only model</td><td id="confidence-stoopid-ai"></td><td id="result-stoopid-ai"></td></tr>
-          <tr><td>Human+ML model</td><td id="confidence-hybrid"></td><td id="result-hybrid"></td></tr>
+          <tr>
+            <th>Player</th>
+            <th>Score / Result<br/>(run 1)</th>
+            <th>Score / Result<br/>(run 2)</th>
+            <th>Score / Result<br/>(run 3)</th>
+            <th>Score / Result<br/>(run 4)</th>
+          </tr>
+          <tr>
+            <td>You<br/><span id="confidence-user"></span> confident</td>
+            <td id="result1-user"></td>
+            <td id="result2-user"></td>
+            <td id="result3-user"></td>
+            <td id="result4-user"></td>
+          </tr>
+          <tr>
+            <td>vs Machine<br/><span id="confidence-stoopid-ai"></span> confident</td>
+            <td id="result1-stoopid-ai"></td>
+            <td id="result2-stoopid-ai"></td>
+            <td id="result3-stoopid-ai"></td>
+            <td id="result4-stoopid-ai"></td>
+          </tr>
+          <tr>
+            <td>vs Human+ML<br/><span id="confidence-hybrid"></span> confident</td>
+            <td id="result1-hybrid"></td>
+            <td id="result2-hybrid"></td>
+            <td id="result3-hybrid"></td>
+            <td id="result4-hybrid"></td>
+          </tr>
+          <tr>
+            <td>Total</td>
+            <td id="result1-score"></td>
+            <td id="result2-score"></td>
+            <td id="result3-score"></td>
+            <td id="result4-score"></td>
+          </tr>
         </table>
       </div>
     </div>
@@ -404,7 +487,11 @@
 <script type="text/javascript">
   var group = <%= set %>;
   var sessionId = "<%= session %>";
+  var leaderboardId = "<%= leaderboardId %>";
+  var resultId = "<%= resultId %>";
+  var isTutor = "<%= isTutor %>";
   var player_name = "";
+  var storage = {};
   /*
   const queryString = window.location.search;
   const urlParams = new URLSearchParams(queryString);
@@ -416,7 +503,7 @@
   $('document').ready(function(){
     getBlueCards(group,"blue");
     document.getElementById("groupcsv").href="/data/csvs/Group_" + group + ".csv"; 
-    document.getElementById("grouppdf").href="/data/pdfs/Group_" + group + ".pdf"; 
+    document.getElementById("grouppdf").href="/data/pdfs/Group_" + group + ".pdf";
     loadData();
 
     $('#condition_a').on('change', onchange);

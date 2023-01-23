@@ -19,10 +19,9 @@
                 <th>Name</th>
                 <th>Start date</th>
                 <th>End data</th>
-                <th>User time limit</th>
-                <th>Responses</th>
-                <th>Play link</th>
-                <th>View</th>
+                <th>Results</th>
+                <th>Game link</th>
+                <th>Leaderboard</th>
                 <th>Edit</th>
                 <th>Delete</th>
             </tr>
@@ -57,11 +56,11 @@
         }
         addToRow(row,output);
     }
-    function addDeleteLink(row,link,value) {
+    function addDeleteLink(row,link,leaderboardId,sessionId,value) {
         var td = document.createElement('td');
         var a = document.createElement('a');
         a.setAttribute('href', '#');
-        a.setAttribute('onClick','processDelete("'+link+'");')
+        a.setAttribute('onClick','processDelete("'+link+'","'+leaderboardId+'","'+sessionId+'");')
         a.innerHTML = value;
         td.append(a)
         row.append(td);
@@ -78,20 +77,26 @@
     function copyText(text) {
       navigator.clipboard.writeText(text);
       alert("Copied the text: " + text);
-    }    
-    function processDelete(link) {
+    }
 
-        $.ajax({
-            url: link,
-            type: 'DELETE',
-            success: function(result) {
-                alert('session deleted');
-                location.reload();
+    function processDelete(link,leaderboardId,sessionId) {
+        $.getJSON('/leaderboard/'+leaderboardId+'/'+sessionId+'/results', function(data) {
+            if (data.length > 0) {
+                alert("Cannot delete session with results");
+            } else {
+                $.ajax({
+                    url: link,
+                    type: 'DELETE',
+                    success: function(result) {
+                        alert('Session deleted');
+                        location.reload();
+                    }
+                });
             }
         });
     }
     function getResponses(leaderboardId,sessionId) {
-        $.getJSON('/leaderboard/'+leaderboardId+'/'+sessionId, function(data) {
+        $.getJSON('/leaderboard/'+leaderboardId+'/'+sessionId+'/results', function(data) {
             document.getElementById('responses_'+sessionId).innerHTML = data.length;
         });
     }
@@ -105,16 +110,16 @@
                 addToRow(row,data[i].name);
                 addToRow(row,data[i].startTime);
                 addToRow(row,data[i].endTime);
-                addToRow(row,data[i].timeLimit);
+                //addToRow(row,data[i].timeLimit);
                 var td = document.createElement('td');
                 td.setAttribute('id','responses_'+data[i]._id);
                 td.innerHTML = "";
                 row.append(td);
                 getResponses("<%= id %>",data[i]._id,);
-                addCopyLink(row,"/play/" + data[i]._id,"Copy");
-                addToRowLink(row,"/leaderboard/<%= id %>/" + data[i]._id,"View");
+                addCopyLink(row,"/game/" + data[i]._id,"Copy");
+                addToRowLink(row,"/leaderboard/<%= id %>/" + data[i]._id,"Leaderboard");
                 addToRowLink(row,"/leaderboard/<%= id %>/" + data[i]._id + "/edit","Edit");
-                addDeleteLink(row,"/leaderboard/<%= id %>/" + data[i]._id,"Delete");
+                addDeleteLink(row,"/leaderboard/<%= id %>/" + data[i]._id,"<%= id %>",data[i]._id,"Delete");
                 if (data[i].name) {
                     document.getElementById('table_body').append(row);
                 }

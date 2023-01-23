@@ -32,23 +32,23 @@ function onchange() {
 }
 
 function saveData() {
-	var storage = {};
-	if (window.localStorage.getItem("classification-game")) { 
+	storage = {};
+	if (window.localStorage.getItem("classification-game") != "null") { 
 		storage = JSON.parse(window.localStorage.getItem("classification-game"));
 	}
 
 	var boundaries = {};
 	boundaries["a"] = $('#condition_a').val();
     
-    boundaries["la"] = $('#condition_la').val();
-    boundaries["ra"] = $('#condition_ra').val();
-    
-    boundaries["lra"] = $('#condition_lra').val();
-    boundaries["rla"] = $('#condition_rla').val();
-    boundaries["lla"] = $('#condition_lla').val();
-    boundaries["rra"] = $('#condition_rra').val();
+  boundaries["la"] = $('#condition_la').val();
+  boundaries["ra"] = $('#condition_ra').val();
+  
+  boundaries["lra"] = $('#condition_lra').val();
+  boundaries["rla"] = $('#condition_rla').val();
+  boundaries["lla"] = $('#condition_lla').val();
+  boundaries["rra"] = $('#condition_rra').val();
 
-    var factors = {};
+  var factors = {};
 	factors["_"] = $('#factor_').val();
 	 
 	factors["l"] = $('#factor_l').val();
@@ -59,10 +59,15 @@ function saveData() {
 	factors["ll"] = $('#factor_ll').val();
 	factors["rr"] = $('#factor_rr').val();
 	    
-	storage.factors = factors;
-	storage.boundaries = boundaries;
-	storage.predictions = predictions;
-	storage.playerName = player_name;
+	try {
+		storage.factors = factors;
+		storage.boundaries = boundaries;
+		storage.predictions = predictions;
+		storage.playerName = player_name;
+	} catch(err) { 
+		console.log("Error saving data");
+		console.log(err);
+	}
 
 	window.localStorage.setItem("classification-game",JSON.stringify(storage));
 }
@@ -78,6 +83,10 @@ function sendResult(result) {
 }
 
 function saveResult() {
+	if (resultId || isTutor) {
+		console.log("Not saving result, view only");
+		return;
+	}
 	storage = JSON.parse(window.localStorage.getItem("classification-game"));
 	if (storage.results) {
 		console.log("Have results object")
@@ -100,109 +109,109 @@ function saveResult() {
 
 	result.confidences = confidences;
 	result.result = results;
+	
+	result.score = results.score;
+	result.vsHybrid = results.vsHybrid;
+	result.vsMachine = results.vsMachine;
 
-	result.playerDiff = confidences.player - results.player;
-	result.beatMachine = false;
-	result.beatHybrid = false;
-	machineDiff = confidences.machine - results.machine;
-	hybridDiff = confidences.hybrid - results.hybrid;
-	if (result.playerDiff < 0) {
-		result.playerDiff = result.playerDiff * -1;
-	}
-	if (machineDiff < 0) {
-		machineDiff = machineDiff * -1;
-	}
-	if (hybridDiff < 0) {
-		hybridDiff = hybridDiff * -1;
-	}
-	if (result.playerDiff < machineDiff) {
-		result.beatMachine = true;
-	}
-	if (result.playerDiff < hybridDiff) {
-		result.beatHybrid = true;
-	}
+	delete result.result.score;
+	delete result.result.vsMachine;
+	delete result.result.vsHybrid;
 
 	storage.results.push(result);
 
 	for (var i=0;i<storage.results.length;i++) {
 		sendResult(storage.results[i]);
 	}
-
 	window.localStorage.setItem("classification-game",JSON.stringify(storage));
+
+}
+
+function resetTree() {
+	player_name = storage.playerName;
+	storage.factors = "";
+	storage.boundaries = "";
+	storage.predictions = "";
+	storage.confidences = "";
+	window.localStorage.setItem("classification-game",JSON.stringify(storage));
+
+	alert("Tree reset, please refresh your browser!");
 
 }
 
 function changeName() {
 	player_name = prompt("Welcome to the ODI machine learning game. Please enter your player name.",player_name);
 	$('#playerWelcome').html("Welcome " + player_name);
-    $('#playerWelcome').css("display","inline");
+  $('#playerWelcome').css("display","inline");
 }
 
-function loadData() {
-	if (window.localStorage.getItem("classification-game") == null) {
-		changeName();
-		saveData();
-		return;
+function processLoad(storage) {
+	if (resultId) {
+		document.getElementById("confidence-user").innerHTML = storage.confidences.player + "%";
+		document.getElementById("confidence-stoopid-ai").innerHTML = storage.confidences.machine + "%";
+		document.getElementById("confidence-hybrid").innerHTML = storage.confidences.hybrid + "%";
 	}
-	storage = JSON.parse(window.localStorage.getItem("classification-game"));
+	try {
+		var factors = storage.factors;
+		var boundaries = storage.boundaries;
+		predictions = storage.predictions;
+		player_name = storage.playerName;
+		if (storage.playerName == ""){
+	      player_name = prompt("Welcome to the ODI machine learning game. Please enter your player name.","");
+	      $('#playerWelcome').html("Welcome " + player_name);
+	      $('#playerWelcome').css("display","inline");
+	    } else {
+	      $('#playerWelcome').html("Welcome " + player_name);
+	      $('#playerWelcome').css("display","inline");
+	    }
 
-	var factors = storage.factors;
-	var boundaries = storage.boundaries;
-	predictions = storage.predictions;
-	player_name = storage.playerName;
-	if (storage.playerName == ""){
-      player_name = prompt("Welcome to the ODI machine learning game. Please enter your player name.","");
-      $('#playerWelcome').html("Welcome " + player_name);
-      $('#playerWelcome').css("display","inline");
-    } else {
-      $('#playerWelcome').html("Welcome " + player_name);
-      $('#playerWelcome').css("display","inline");
-    }
+		$('#factor_').val(factors["_"]);
 
-	$('#factor_').val(factors["_"]);
+		if (factors["l"]) {
+			$('#factor_l').val(factors["l"]);
+			addBranch('decision_l');
+		}
+		if (factors["r"]) {
+			$('#factor_r').val(factors["r"]);
+			addBranch('decision_r');
+		}
 
-	if (factors["l"]) {
-		$('#factor_l').val(factors["l"]);
-		addBranch('decision_l');
-	}
-	if (factors["r"]) {
-		$('#factor_r').val(factors["r"]);
-		addBranch('decision_r');
-	}
+		if (factors["lr"]) {
+			$('#factor_lr').val(factors["lr"]);
+			addBranch('decision_lr');
+		}
+		if (factors["rl"]) {
+			$('#factor_rl').val(factors["rl"]);
+			addBranch('decision_rl');
+		}
+		if (factors["ll"]) {
+			$('#factor_ll').val(factors["ll"]);
+			addBranch('decision_ll');
+		}
+		if (factors["rr"]) {
+			$('#factor_rr').val(factors["rr"]);
+			addBranch('decision_rr');
+		}
 
-	if (factors["lr"]) {
-		$('#factor_lr').val(factors["lr"]);
-		addBranch('decision_lr');
-	}
-	if (factors["rl"]) {
-		$('#factor_rl').val(factors["rl"]);
-		addBranch('decision_rl');
-	}
-	if (factors["ll"]) {
-		$('#factor_ll').val(factors["ll"]);
-		addBranch('decision_ll');
-	}
-	if (factors["rr"]) {
-		$('#factor_rr').val(factors["rr"]);
-		addBranch('decision_rr');
-	}
+		$('#condition_a').val(boundaries["a"]);
+		$('#condition_b').val(boundaries["a"]);	    
+		
+		$('#condition_la').val(boundaries["la"]);
+		$('#condition_lb').val(boundaries["la"]);
+		$('#condition_ra').val(boundaries["ra"]);
+		$('#condition_rb').val(boundaries["ra"]);
 
-	$('#condition_a').val(boundaries["a"]);
-	$('#condition_b').val(boundaries["a"]);	    
-	
-	$('#condition_la').val(boundaries["la"]);
-	$('#condition_lb').val(boundaries["la"]);
-	$('#condition_ra').val(boundaries["ra"]);
-	$('#condition_rb').val(boundaries["ra"]);
+		$('#condition_lra').val(boundaries["lra"]);
+		$('#condition_lrb').val(boundaries["lra"]);
+		$('#condition_rla').val(boundaries["rla"]);
+		$('#condition_rlb').val(boundaries["rla"]);
+		$('#condition_lla').val(boundaries["lla"]);
+		$('#condition_llb').val(boundaries["lla"]);
+		$('#condition_rra').val(boundaries["rra"]);
+		$('#condition_rrb').val(boundaries["rra"]);
+	} catch (err) {
 
-	$('#condition_lra').val(boundaries["lra"]);
-	$('#condition_lrb').val(boundaries["lra"]);
-	$('#condition_rla').val(boundaries["rla"]);
-	$('#condition_rlb').val(boundaries["rla"]);
-	$('#condition_lla').val(boundaries["lla"]);
-	$('#condition_llb').val(boundaries["lla"]);
-	$('#condition_rra').val(boundaries["rra"]);
-	$('#condition_rrb').val(boundaries["rra"]);
+	}
 
 	try {
 		$('#prediction_box_l').val(predictions["l"].prediction);
@@ -223,7 +232,44 @@ function loadData() {
     if (predictions) {
 		$('.prediction').show();
 	}
+}
 
+function loadData() {
+	if ((window.localStorage.getItem("classification-game") == "null" || window.localStorage.getItem("classification-game") == null) && resultId == "") {
+		changeName();
+		saveData();
+		loadLeaderboards();
+		return;
+	} 
+	if (resultId) {
+		$('#title').html("ODI Machine learning game (tutor mode)")
+		$.getJSON('/result/' + resultId, function(data) {
+			storage = data;
+			storage.results = [];
+			var temp = {};
+			temp.id = data.id;
+			storage.results.push(temp);
+			storage.factors = data.tree.factors;
+			storage.boundaries = data.tree.boundaries;
+			storage.predictions = data.tree.predictions;
+			confidences = data.confidences;
+			window.localStorage.setItem("classification-game",JSON.stringify(data));
+			processLoad(storage);
+			loadLeaderboards();
+  	});
+	} else if (isTutor) {
+		$('#title').html("ODI Machine learning game (tutor mode)");
+		player_name = '<span style="color:red">Tutor</span>';
+		$('#playerWelcome').html("Welcome " + player_name);
+  	$('#playerWelcome').css("display","inline");
+  	storage = JSON.parse(window.localStorage.getItem("classification-game"));
+		processLoad(storage);
+		loadLeaderboards();
+	} else {
+		storage = JSON.parse(window.localStorage.getItem("classification-game"));
+		processLoad(storage);
+		loadLeaderboards();
+	}
 }
 
 function updatePredictions() {
@@ -247,4 +293,48 @@ function updatePredictions() {
 function addBranch(branch) {
 	$('.'+branch).show();
 	$('.'+branch+'_invert').hide();
+}
+
+function renderLeaderboard(data,prefix) {
+	resultsCount = data.length;
+  var rank = 0;
+  var currentScore = 0;
+  for (i=0;i<data.length;i++) {
+  	var userClass = "";
+  	if (data[i].score != currentScore) {
+  		currentScore = data[i].score;
+  		rank = rank + 1;
+  	}
+  	try {
+  		for (j=0;j<storage.results.length;j++) {
+	  		if (storage.results[j]["id"] == data[i].id) {
+  				userClass = "user";
+  				data[i].playerName = storage.playerName;
+  			}
+  		}
+  	} catch (err) {}
+  	if (data[i].playerName) {
+  		var row = '<tr class="'+userClass+'"><td>#'+rank+'</td><td>'+data[i].playerName.substring(0,16)+'</td><td>'+data[i].score+'</td></tr>';
+  		$('#'+prefix+'-leaderboard-body').append(row);
+  	} else {
+  		var row = '<tr class="'+userClass+'"><td>#'+rank+'</td><td>'+data[i].id.substring(0,10)+'</td><td>'+data[i].score+'</td></tr>';
+  		$('#'+prefix+'-leaderboard-body').append(row);
+  	}
+  }
+}
+
+function loadLeaderboards() {
+	console.log("loading leaderboards");
+	$('#session-leaderboard-body').html("");
+	$('#organisation-leaderboard-body').html("");
+	$('#public-leaderboard-body').html("");
+	$.getJSON('/leaderboard/' + leaderboardId + '/' + sessionId + '/results', function(data) {
+		renderLeaderboard(data,"session");
+  });
+  $.getJSON('/leaderboard/' + leaderboardId + '/results', function(data) {
+		renderLeaderboard(data,"organisation");
+  });
+  $.getJSON('/leaderboard/all/results', function(data) {
+		renderLeaderboard(data,"public");
+  });
 }

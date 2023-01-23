@@ -90,3 +90,31 @@ a {
   border-collapse: collapse;
   padding: 0.2em;
 }
+leaderboard {
+  display: inline-block;
+  border: 1px solid white;
+  width: 450px;
+  vertical-align: top;
+  text-align: center;
+  margin: 1em;
+}
+leaderboard table {
+  font-size: 1em;
+  color: white;
+}
+leaderboard .user {
+  color: red;
+}
+leaderboard tbody {
+    display: block;
+    height: 320px;
+    overflow: auto;
+}
+leaderboard thead, leaderboard tbody tr {
+    display: table;
+    width: 100%;
+    table-layout: fixed;/* even columns width , fix width of table too*/
+}
+leaderboard thead {
+    width: calc( 100% - 1em )/* scrollbar is average 1em/16px width, remove it from thead width */
+}

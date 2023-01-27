@@ -100,7 +100,7 @@ tab button.active {
   background-color: #c006;
 }
 .model-button {
-  display: none;
+  /* display: none; */
 }
 .evaluation-button {
   display: none;

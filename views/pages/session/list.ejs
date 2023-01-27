@@ -111,7 +111,7 @@
                 td.innerHTML = "";
                 row.append(td);
                 getResponses("<%= id %>",data[i]._id,);
-                addCopyLink(row,"/play/" + data[i]._id,"Copy");
+                addToRowLink(row,"/play/" + data[i]._id,"Copy");
                 addToRowLink(row,"/leaderboard/<%= id %>/" + data[i]._id,"View");
                 addToRowLink(row,"/leaderboard/<%= id %>/" + data[i]._id + "/edit","Edit");
                 addDeleteLink(row,"/leaderboard/<%= id %>/" + data[i]._id,"Delete");

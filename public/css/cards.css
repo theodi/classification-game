@@ -27,6 +27,8 @@ button a {
 }
 #evaluation-set button {
   background-color: #c006;
+  width: 12em;
+  margin: 2em;
 }
 tab {
   border-left: 1px solid white;
@@ -98,7 +100,7 @@ tab button.active {
   background-color: #c006;
 }
 .model-button {
-  display: none;
+  /* display: none; */
 }
 .evaluation-button {
   display: none;

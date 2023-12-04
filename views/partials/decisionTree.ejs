@@ -1,0 +1,332 @@
+<subsection id="decisionTree" class="hidden">
+  <div class="invisbox-big" id="decision-tree-wrapper">
+    <div class="switch-wrapper" style="text-align: right;">
+      <!-- <span style="color:white;">Enable drag</span> -->
+      <!-- <label class="switch" value="Enable Drag">
+        <input id="myCheck" type="checkbox" onclick="toggleDrag()">
+        <span class="slider round"></span>
+      </label> -->
+      <div>
+        <div id="canvas" class="dropzone" style="width: 100%; height: 100%; margin: auto;">
+          <div style="margin: auto;">
+            <svg style="display:none;">
+              <symbol id="sort-box" width="100%" height="300" preserveAspectRatio="none">
+                <rect width="100%" height="300" style="fill:silver;stroke-width:3;stroke:none" />
+                <text x="50%" y="50%" fill="white" dominant-baseline="middle" text-anchor="middle">CARDS</text>
+              </symbol>
+            </svg>
+
+            <!-- html form -->
+            <form id="decisionTreeForm">
+              <div class="container">
+                <!-- ROW 1 -->
+                <!-- first sort factor ................................ -->
+                <div class="flex-container">
+                  <select id="factor_" name="factor" class="factor">
+                    <option value="" disabled selected>Select first factor</option>
+                    <option value="bath">Bathrooms</option>
+                    <option value="beds">Bedrooms</option>
+                    <option value="year_built">Year built</option>
+                    <option value="elevation">Elevation</option>
+                    <option value="sqft">Square Footage</option>
+                    <option value="price">Price</option>
+                    <option value="price_per_sqft">Price per sqft</option>
+                  </select>
+                </div>
+                <!-- ROW 2 -->
+                <div class="flex-container arrows">
+                  <div class="condition-left" style="width:100%;">
+                    <img src="/elements/neat-arrow-left.svg" class="arrow"/>
+                  </div>
+                  <div class="invisbox-tiny" style="width:14%;"></div>
+                  <div class="condition-right" style="width:100%;">
+                    <img src="/elements/neat-arrow-right.svg" class="arrow"/>
+                  </div>
+                </div>
+                <div class="flex-container conditions">
+                  <condition>
+                    <label for="condition_a">&lt;=</label>
+                    <input type="number" placeholder="condition" id="condition_a" name="condition_a" style="max-width: 100px;">
+                  </condition>
+                  <div class="invisbox-tiny" style="width:14%;">
+                  </div>
+                  <condition>
+                    <label for="condition_b">&gt;</label>
+                    <input disabled type="number" placeholder="condition" id="condition_b" name="condition_b" style="max-width: 100px; background-color: silver;">
+                  </condition>
+                </div>
+                <!-- ROW 3 ................................ -->
+                <div class="flex-container">
+                  <div id="box_l" class="cardbox" style="width:100%;"></div>
+                  <div class="invisbox-tiny" style="width:14%;"></div>
+                  <div id="box_r" class="cardbox" style="width:100%;"></div>
+                </div>
+                <!-- ROW 4 -->
+                <div class="flex-container">
+                  <div style="width:100%">
+                    <button class="browseButton" id="browse_l" onclick="browseCluster('l');">Browse cluster</button>
+                    <div class="prediction"><label for="prediction_box_l">Prediction</label><select id="prediction_box_l"><option value="?">?</option><option value="New York">New York</option><option value="San Francisco">San Francisco</option></select></div>
+                    <textarea name="notes3" rows="1" style="width: 95%;" placeholder="Write your notes here"></textarea>
+                  </div>
+                  <div class="invisbox-tiny" style="width:14%;"></div>
+                  <div style="width:100%">
+                    <button class="browseButton" id="browse_r" onclick="browseCluster('r');">Browse cluster</button>
+                    <div class="prediction"><label for="prediction_box_r">Prediction</label><select id="prediction_box_r"><option value="?">?</option><option value="New York">New York</option><option value="San Francisco">San Francisco</option></select></div>
+                    <textarea name="notes3" rows="1" style="width: 95%;" placeholder="Write your notes here"></textarea>
+                  </div>
+                </div>
+                <!-- SET 2 -->
+                <div class="flex-container conditions">
+                  <div style="width:100%;">
+                    <button type="button" name="Add Branch" class="add-branch decision_l_invert" onclick="addBranch('decision_l');">Add Branch</button>
+                    <select id="factor_l" name="factor_l" class="decision_l">
+                      <option value="" selected>No factor</option>
+                      <option value="bath">Bathrooms</option>
+                      <option value="beds">Bedrooms</option>
+                      <option value="year_built">Year built</option>
+                      <option value="elevation">Elevation</option>
+                      <option value="sqft">Square Footage</option>
+                      <option value="price">Price</option>
+                      <option value="price_per_sqft">Price per sqft</option>
+                    </select>
+                  </div>
+                  <div class="invisbox-tiny">
+                  </div>
+                  <div style="width:100%;">
+                    <button type="button" name="Add Branch" class="add-branch decision_r_invert" onclick="addBranch('decision_r');">Add Branch</button>
+                    <select id="factor_r" name="factor_r" class="decision_r">
+                      <option value="" selected>No factor</option>
+                      <option value="bath">Bathrooms</option>
+                      <option value="beds">Bedrooms</option>
+                      <option value="year_built">Year built</option>
+                      <option value="elevation">Elevation</option>
+                      <option value="sqft">Square Footage</option>
+                      <option value="price">Price</option>
+                      <option value="price_per_sqft">Price per sqft</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="flex-container conditions">
+                  <div class="invisbox-fill">
+                    <condition class="decision_l">
+                      <label for="condition_la">&lt;=</label>
+                      <input type="number" placeholder="condition" id="condition_la" name="condition_la">
+                    </condition>
+                  </div>
+                  <div class="invisbox-fill">
+                    <condition class="decision_l">
+                      <label for="condition_lb">&gt;</label>
+                      <input disabled type="number" placeholder="condition" id="condition_lb" name="condition_lb" >
+                    </condition>
+                  </div>
+                  <div class="invisbox-tiny">
+                  </div>
+                  <div class="invisbox-fill">
+                    <condition class="decision_r">
+                      <label for="condition_ra">&lt;=</label>
+                      <input type="number" placeholder="condition" id="condition_ra" name="condition_ra">
+                    </condition>
+                  </div>
+                  <div class="invisbox-fill">
+                    <condition class="decision_r">
+                      <label for="condition_rb">&gt;</label>
+                      <input disabled type="number" placeholder="condition" id="condition_rb" name="condition_rb" >
+                    </condition>
+                  </div>
+                </div>
+                <!-- ROW 7 -->
+                <div class="flex-container">
+                  <div class="invisbox-fill">
+                    <div id="box_ll" class="cardbox-thin decision_l" style="width:100%;"></div>
+                  </div>
+                  <div class="invisbox-fill">
+                    <div id="box_lr" class="cardbox-thin decision_l" style="width:100%;"></div>
+                  </div>
+                  <div class="invisbox-tiny">
+                  </div>
+                  <div class="invisbox-fill">
+                    <div id="box_rl" class="cardbox-thin decision_r" style="width:100%;"></div>
+                  </div>
+                  <div class="invisbox-fill">
+                    <div id="box_rr" class="cardbox-thin decision_r" style="width:100%;"></div>
+                  </div>
+                </div>
+                <!-- ROW 8 -->
+                <div class="flex-container">
+                  <div class="invisbox-fill">
+                    <div class="decision_l">
+                      <button class="browseButton" id="browse_ll" onclick="browseCluster('ll');">Browse cluster</button>
+                      <div class="prediction"><label for="prediction_box_ll">Prediction</label><select id="prediction_box_ll"><option value="?">?</option><option value="New York">New York</option><option value="San Francisco">San Francisco</option></select></div>
+                      <textarea name="notes3" rows="2" style="width: 95%;" placeholder="Write your notes here"></textarea>
+                    </div>
+                  </div>
+                  <div class="invisbox-fill">
+                    <div class="decision_l">
+                      <button class="browseButton" id="browse_lr" onclick="browseCluster('lr');">Browse cluster</button>
+                      <div class="prediction"><label for="prediction_box_lr">Prediction</label><select id="prediction_box_lr"><option value="?">?</option><option value="New York">New York</option><option value="San Francisco">San Francisco</option></select></div>
+                      <textarea name="notes4" rows="2" style="width: 95%;" placeholder="Write your notes here"></textarea>
+                    </div>
+                  </div>
+                  <div class="invisbox-tiny">
+                  </div>
+                  <div class="invisbox-fill">
+                    <div class="decision_r">
+                      <button class="browseButton" id="browse_rl" onclick="browseCluster('rl');">Browse cluster</button>
+                      <div class="prediction"><label for="prediction_box_rl">Prediction</label><select id="prediction_box_rl"><option value="?">?</option><option value="New York">New York</option><option value="San Francisco">San Francisco</option></select></div>
+                      <textarea name="notes5" rows="2" style="width: 95%;" placeholder="Write your notes here"></textarea>
+                    </div>
+                  </div>
+                  <div class="invisbox-fill">
+                    <div class="decision_r">
+                      <button class="browseButton" id="browse_rr" onclick="browseCluster('rr');">Browse cluster</button>
+                      <div class="prediction"><label for="prediction_box_rr">Prediction</label><select id="prediction_box_rr"><option value="?">?</option><option value="New York">New York</option><option value="San Francisco">San Francisco</option></select></div>
+                      <textarea name="notes6" rows="2" style="width: 95%;" placeholder="Write your notes here"></textarea>
+                    </div>
+                  </div>
+                </div>
+                <!-- SET 3 -->
+                <div class="flex-container">
+                  <div class="invisbox-fill" style="text-align: center;">
+                    <button type="button" name="Add Branch" class="add-branch decision_l decision_ll_invert" onclick="addBranch('decision_ll');">Add Branch</button>
+                    <div class="decision_ll">
+                      <select id="factor_ll" name="factor_ll">
+                        <option value="" selected>No factor</option>
+                        <option value="bath">Bathrooms</option>
+                        <option value="beds">Bedrooms</option>
+                        <option value="year_built">Year built</option>
+                        <option value="elevation">Elevation</option>
+                        <option value="sqft">Square Footage</option>
+                        <option value="price">Price</option>
+                        <option value="price_per_sqft">Price per sqft</option>
+                      </select>
+                      <div class="condition">
+                        <condition>
+                          <label for="condition_lla">&lt;=</label>
+                          <input type="number" placeholder="condition" id="condition_lla" name="condition_lla">
+                        </condition>
+                      </div>
+                      <div id="box_lll" class="cardbox-thin" style="width:100%; height: 300px; margin-bottom: 0px;"></div>
+                      <div class="prediction"><label for="prediction_box_lll">Prediction</label><select id="prediction_box_lll"><option value="?">?</option><option value="New York">New York</option><option value="San Francisco">San Francisco</option></select></div>
+                      <textarea name="notes3" rows="2" style="width: 95%;" placeholder="Write your notes here"></textarea>
+                      <div class="condition">
+                        <condition>
+                          <label for="condition_llb">&gt;</label>
+                          <input disabled type="number" placeholder="condition" id="condition_llb" name="condition_llb">
+                        </condition>
+                      </div>
+                      <div id="box_llr" class="cardbox-thin" style="width:100%; height: 300px; margin-bottom: 0px;"></div>
+                      <div class="prediction"><label for="prediction_box_llr">Prediction</label><select id="prediction_box_llr"><option value="?">?</option><option value="New York">New York</option><option value="San Francisco">San Francisco</option></select></div>
+                      <textarea name="notes3" rows="2" style="width: 95%;" placeholder="Write your notes here"></textarea>
+                    </div>
+                  </div>
+                  <div class="invisbox-fill" style="text-align: center;">
+                    <button type="button" name="Add Branch" class="add-branch decision_l decision_lr_invert" onclick="addBranch('decision_lr');">Add Branch</button>
+                    <div class="decision_lr">
+                      <select id="factor_lr" name="factor_lr">
+                        <option value="" selected>No factor</option>
+                        <option value="bath">Bathrooms</option>
+                        <option value="beds">Bedrooms</option>
+                        <option value="year_built">Year built</option>
+                        <option value="elevation">Elevation</option>
+                        <option value="sqft">Square Footage</option>
+                        <option value="price">Price</option>
+                        <option value="price_per_sqft">Price per sqft</option>
+                      </select>
+                      <div class="condition">
+                        <condition>
+                          <label for="condition_lra">&lt;=</label>
+                          <input type="number" placeholder="condition" id="condition_lra" name="condition_lra">
+                        </condition>
+                      </div>
+                      <div id="box_lrl" class="cardbox-thin" style="width:100%; height: 300px; margin-bottom: 0px;"></div>
+                      <div class="prediction"><label for="prediction_box_lrl">Prediction</label><select id="prediction_box_lrl"><option value="?">?</option><option value="New York">New York</option><option value="San Francisco">San Francisco</option></select></div>
+                      <textarea name="notes3" rows="2" style="width: 95%;" placeholder="Write your notes here"></textarea>
+                      <div class="condition">
+                        <condition>
+                          <label for="condition_lrb">&gt;</label>
+                          <input disabled type="number" placeholder="condition" id="condition_lrb" name="condition_lrb">
+                        </condition>
+                      </div>
+                      <div id="box_lrr" class="cardbox-thin" style="width:100%; height: 300px; margin-bottom: 0px;"></div>
+                      <div class="prediction"><label for="prediction_box_lrr">Prediction</label><select id="prediction_box_lrr"><option value="?">?</option><option value="New York">New York</option><option value="San Francisco">San Francisco</option></select></div>
+                      <textarea name="notes3" rows="2" style="width: 95%;" placeholder="Write your notes here"></textarea>
+                    </div>
+                  </div>
+                  <div class="invisbox-tiny">
+                  </div>
+                  <div class="invisbox-fill" style="text-align: center;">
+                    <button type="button" name="Add Branch" class="add-branch decision_r decision_rl_invert" onclick="addBranch('decision_rl');">Add Branch</button>
+                    <div class="decision_rl">
+                      <select id="factor_rl" name="factor_rl">
+                        <option value="" selected>No factor</option>
+                        <option value="bath">Bathrooms</option>
+                        <option value="beds">Bedrooms</option>
+                        <option value="year_built">Year built</option>
+                        <option value="elevation">Elevation</option>
+                        <option value="sqft">Square Footage</option>
+                        <option value="price">Price</option>
+                        <option value="price_per_sqft">Price per sqft</option>
+                      </select>
+                      <div class="condition">
+                        <condition>
+                          <label for="condition_rla">&lt;=</label>
+                          <input type="number" placeholder="condition" id="condition_rla" name="condition_rla">
+                        </condition>
+                      </div>
+                      <div id="box_rll" class="cardbox-thin" style="width:100%; height: 300px; margin-bottom: 0px;"></div>
+                      <div class="prediction"><label for="prediction_box_rll">Prediction</label><select id="prediction_box_rll"><option value="?">?</option><option value="New York">New York</option><option value="San Francisco">San Francisco</option></select></div>
+                      <textarea name="notes3" rows="2" style="width: 95%;" placeholder="Write your notes here"></textarea>
+                      <div class="condition">
+                        <condition>
+                          <label for="condition_rlb">&gt;</label>
+                          <input disabled type="number" placeholder="condition" id="condition_rlb" name="condition_rlb">
+                        </condition>
+                      </div>
+                      <div id="box_rlr" class="cardbox-thin" style="width:100%; height: 300px; margin-bottom: 0px;"></div>
+                      <div class="prediction"><label for="prediction_box_rlr">Prediction</label><select id="prediction_box_rlr"><option value="?">?</option><option value="New York">New York</option><option value="San Francisco">San Francisco</option></select></div>
+                      <textarea name="notes3" rows="2" style="width: 95%;" placeholder="Write your notes here"></textarea>
+                    </div>
+                  </div>
+                  <div class="invisbox-fill" style="text-align: center;">
+                    <button type="button" name="Add Branch" class="add-branch decision_r decision_rr_invert" onclick="addBranch('decision_rr');">Add Branch</button>
+                    <div class="decision_rr">
+                      <select id="factor_rr" name="factor_rr">
+                        <option value="" selected>No factor</option>
+                        <option value="bath">Bathrooms</option>
+                        <option value="beds">Bedrooms</option>
+                        <option value="year_built">Year built</option>
+                        <option value="elevation">Elevation</option>
+                        <option value="sqft">Square Footage</option>
+                        <option value="price">Price</option>
+                        <option value="price_per_sqft">Price per sqft</option>
+                      </select>
+                      <div class="condition">
+                        <condition>
+                          <label for="condition_rra">&lt;=</label>
+                          <input type="number" placeholder="condition" id="condition_rra" name="condition_rra">
+                        </condition>
+                      </div>
+                      <div id="box_rrl" class="cardbox-thin" style="width:100%; height: 300px; margin-bottom: 0px;"></div>
+                      <div class="prediction"><label for="prediction_box_rrl">Prediction</label><select id="prediction_box_rrl"><option value="?">?</option><option value="New York">New York</option><option value="San Francisco">San Francisco</option></select></div>
+                      <textarea name="notes3" rows="2" style="width: 95%;" placeholder="Write your notes here"></textarea>
+                      <div class="condition">
+                        <condition>
+                          <label for="condition_rrb">&gt;</label>
+                          <input disabled type="number" placeholder="condition" id="condition_rrb" name="condition_rrb">
+                        </condition>
+                      </div>
+                      <div id="box_rrr" class="cardbox-thin" style="width:100%; height: 300px; margin-bottom: 0px;"></div>
+                      <div class="prediction"><label for="prediction_box_rrr">Prediction</label><select id="prediction_box_rrr"><option value="?">?</option><option value="New York">New York</option><option value="San Francisco">San Francisco</option></select></div>
+                      <textarea name="notes3" rows="2" style="width: 95%;" placeholder="Write your notes here"></textarea>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </form>
+            <!-- end of html form -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</subsection>

@@ -19,7 +19,7 @@ results.vsHybrid = {};
 results.vsHybrid.win = 0;
 results.vsHybrid.draw = 0;
 results.vsHybrid.lost = 0;
-confidences.player = 0;
+confidences.player = false;
 
 /* Page functions */
 
@@ -75,23 +75,6 @@ function processNumberPurple(val) {
     } else {
         getPurpleCard(val);
     }
-}
-
-function selectSet(set) {
-    if (set=="evaluation" && confidences.player==0) {
-        alert("Please make sure you have clicked 'run model' against the training set prior to evaluation.");
-    }
-    document.getElementById("instructions-set").style.display = "none";
-    document.getElementById("instructions-tab").classList.remove("selected");
-    document.getElementById("training-set").style.display = "none";
-    document.getElementById("training-tab").classList.remove("selected");
-    document.getElementById("test-set").style.display = "none";
-    document.getElementById("test-tab").classList.remove("selected");
-    document.getElementById("evaluation-set").style.display = "none";
-    document.getElementById("evaluation-tab").classList.remove("selected");
-
-    document.getElementById(set+"-set").style.display = "block";
-    document.getElementById(set+"-tab").classList.add("selected");  
 }
 
 window.addEventListener('keydown', function (e) {
@@ -195,17 +178,17 @@ function removeCards(cardset,color) {
 
 function removeCard(id,cardset,color){
     $('#'+color+id).remove();
-    if (color == "r") { 
+    if (color == "r") {
         rCount = rCount - 1;
         rDone[id] = false;
         $('#remove-reds').hide();
         $('#fill-reds').show();
     }
-    if (color == "b") { 
+    if (color == "b") {
         bCount = bCount - 1;
         bDone[id] = false;
     }
-    if (color == "p") { 
+    if (color == "p") {
         pCount = pCount - 1;
         pDone[id] = false;
         $('#remove-purples').hide();
@@ -221,15 +204,24 @@ function removeCard(id,cardset,color){
 
 /* Render card functions */
 
-function renderCard(data,count,color) {
-	$('#area').append('<card draggable="true" class="draggable drag-drop" id="b'+count+'"><h1 class="target">'+data.city+'</h1><h1 class="number">#'+count+'</h1><image src="/img/house.png"></image><table class="'+color+'"><tr><td class="attribute">Bathrooms</td><td class="value">'+data.bath+'</td></tr><tr><td class="attribute">Bedrooms</td><td class="value">'+data.beds+'</td></tr><tr><td class="attribute">Year built</td><td class="value">'+data.year_built+'</td></tr><tr><td class="attribute">Elevation</td><td class="value">'+formatNumber(data.elevation)+'ft</td></tr><tr><td class="attribute">Square Footage</td><td class="value">'+formatNumber(data.sqft)+'</td></tr><tr><td class="attribute">Price</td><td class="value">$'+formatNumber(data.price)+'</td></tr><tr><td class="attribute">Price per sqft</td><td class="value">$'+formatNumber(data.price_per_sqft)+'</td></tr></table></card>');
+function renderCards(cards,type) {
+    if (type == 'training') {
+        color = "blue";
+    }
+    cards.forEach(function(card) {
+        renderCard(card,card.index,color,type);
+    });
+}
+
+function renderCard(data,count,color,type) {
+	$('#'+type+'-set').append('<card draggable="true" class="draggable drag-drop card-'+type+'" id="b'+count+'"><h1 class="target">'+data.city+'</h1><h1 class="number">#'+count+'</h1><image src="/img/house.png"></image><table class="'+color+'"><tr><td class="attribute">Bathrooms</td><td class="value">'+data.bath+'</td></tr><tr><td class="attribute">Bedrooms</td><td class="value">'+data.beds+'</td></tr><tr><td class="attribute">Year built</td><td class="value">'+data.year_built+'</td></tr><tr><td class="attribute">Elevation</td><td class="value">'+formatNumber(data.elevation)+'ft</td></tr><tr><td class="attribute">Square Footage</td><td class="value">'+formatNumber(data.sqft)+'</td></tr><tr><td class="attribute">Price</td><td class="value">$'+formatNumber(data.price)+'</td></tr><tr><td class="attribute">Price per sqft</td><td class="value">$'+formatNumber(data.price_per_sqft)+'</td></tr></table></card>');
 }
 
 function renderRedCard(data,count,color) {
-    $('#evaluation-set').append('<card id="r'+count+'" class="draggable drag-drop"><h1 class="target">'+data.city+'</h1><h1 class="number">#'+count+'</h1><image src="/img/house.png"></image><table class="'+color+'"><tr><td class="attribute">Bathrooms</td><td class="value">'+data.bath+'</td></tr><tr><td class="attribute">Bedrooms</td><td class="value">'+data.beds+'</td></tr><tr><td class="attribute">Year built</td><td class="value">'+data.year_built+'</td></tr><tr><td class="attribute">Elevation</td><td class="value">'+formatNumber(data.elevation)+'ft</td></tr><tr><td class="attribute">Square Footage</td><td class="value">'+formatNumber(data.sqft)+'</td></tr><tr><td class="attribute">Price</td><td class="value">$'+formatNumber(data.price)+'</td></tr><tr><td class="attribute">Price per sqft</td><td class="value">$'+formatNumber(data.price_per_sqft)+'</td></tr></table><div></card>');
+    $('#evaluation-set').append('<card id="r'+count+'" class="draggable drag-drop card-evaluation"><h1 class="target">'+data.city+'</h1><h1 class="number">#'+count+'</h1><image src="/img/house.png"></image><table class="'+color+'"><tr><td class="attribute">Bathrooms</td><td class="value">'+data.bath+'</td></tr><tr><td class="attribute">Bedrooms</td><td class="value">'+data.beds+'</td></tr><tr><td class="attribute">Year built</td><td class="value">'+data.year_built+'</td></tr><tr><td class="attribute">Elevation</td><td class="value">'+formatNumber(data.elevation)+'ft</td></tr><tr><td class="attribute">Square Footage</td><td class="value">'+formatNumber(data.sqft)+'</td></tr><tr><td class="attribute">Price</td><td class="value">$'+formatNumber(data.price)+'</td></tr><tr><td class="attribute">Price per sqft</td><td class="value">$'+formatNumber(data.price_per_sqft)+'</td></tr></table><div></card>');
 }
 function renderPurpleCard(data,count,color) {
-    $('#test-set').append('<card id="p'+count+'" class="draggable drag-drop"><h1 class="target">'+data.city+'</h1><h1 class="number">#'+count+'</h1><image src="/img/house.png"></image><table class="'+color+'"><tr><td class="attribute">Bathrooms</td><td class="value">?????</td></tr><tr><td class="attribute">Bedrooms</td><td class="value">?????</td></tr><tr><td class="attribute">Year built</td><td class="value">?????</td></tr><tr><td class="attribute">Elevation</td><td class="value">?????</td></tr><tr><td class="attribute">Square Footage</td><td class="value">?????</td></tr><tr><td class="attribute">Price</td><td class="value">?????</td></tr><tr><td class="attribute">Price per sqft</td><td class="value">?????</td></tr></table><div></card>');
+    $('#test-set').append('<card id="p'+count+'" class="draggable drag-drop card-test"><h1 class="target">'+data.city+'</h1><h1 class="number">#'+count+'</h1><image src="/img/house.png"></image><table class="'+color+'"><tr><td class="attribute">Bathrooms</td><td class="value">?????</td></tr><tr><td class="attribute">Bedrooms</td><td class="value">?????</td></tr><tr><td class="attribute">Year built</td><td class="value">?????</td></tr><tr><td class="attribute">Elevation</td><td class="value">?????</td></tr><tr><td class="attribute">Square Footage</td><td class="value">?????</td></tr><tr><td class="attribute">Price</td><td class="value">?????</td></tr><tr><td class="attribute">Price per sqft</td><td class="value">?????</td></tr></table><div></card>');
 }
 
 function formatNumber(num) {
@@ -276,6 +268,19 @@ function returnCards(cardset,boxid,color) {
     });
 }
 
+function returnCardsInstant(cardset,boxid,color) {
+    var interval = 0;
+    cardset.forEach(function(card,value,index) {
+        $('#'+color+card.index).removeAttr('style');
+        setTimeout(function() {
+            moveAnimate('#'+color+card.index,'#'+boxid);
+        },interval);
+        interval += 0;
+    });
+}
+
+
+
 /* Card sorter */
 
 function sortCards(cardset,color,number) {
@@ -283,7 +288,7 @@ function sortCards(cardset,color,number) {
     var interval = 0;
     cardset.forEach(function(card,value,index) {
         $('#'+color+card.index).removeAttr('style');
-        setTimeout(function() { 
+        setTimeout(function() {
             animateCard(sortCard(card,currentPosition),color);
         },interval);
         interval += 200;
@@ -302,7 +307,7 @@ function sortCards(cardset,color,number) {
 
 function sortCard(card,currentPosition) {
     if (currentPosition == "") {
-        card.box = "";  
+        card.box = "";
     }
 
     var factor = $('#factor_'+currentPosition).val();
@@ -338,6 +343,16 @@ function setElementToOption(elementid,option) {
     }
 }
 
+function predictionsComplete(cardset) {
+    for (const [box, values] of Object.entries(predictions)) {
+        if (predictions[box]["prediction"] === "?") {
+            return false;
+        }
+    }
+    console.log(confidences.player);
+    return true;
+}
+
 function getPredictions(cardset) {
     predictions = {};
     var right = 0;
@@ -346,11 +361,11 @@ function getPredictions(cardset) {
             predictions[card.box] = {};
             predictions[card.box]["New York"] = 0;
             predictions[card.box]["San Francisco"] = 0;
-        } 
+        }
         predictions[card.box][card.city] += 1;
     });
     for (const [box, values] of Object.entries(predictions)) {
-        if (values["New York"] > values["San Francisco"]) { 
+        if (values["New York"] > values["San Francisco"]) {
             predictions[box]["prediction"] = "New York";
             setElementToOption("prediction_box_"+box,"New York");
             right += values["New York"];
@@ -361,7 +376,7 @@ function getPredictions(cardset) {
         } else {
             predictions[box]["prediction"] = "?";
             setElementToOption("prediction_box_"+box,"?");
-        }   
+        }
     }
     confidences.player = Math.round((right / 20) * 100);
 
@@ -378,19 +393,19 @@ function getPredictions(cardset) {
         confidences.machine = 100;
         confidences.hybrid = 70;
         document.getElementById("confidence-stoopid-ai").innerHTML = "100%";
-        document.getElementById("confidence-hybrid").innerHTML = "70%";   
+        document.getElementById("confidence-hybrid").innerHTML = "70%";
     }
     if (group == 4 || group == 3) {
         confidences.machine = 100;
         confidences.hybrid = 85;
         document.getElementById("confidence-stoopid-ai").innerHTML = "100%";
-        document.getElementById("confidence-hybrid").innerHTML = "85%";   
+        document.getElementById("confidence-hybrid").innerHTML = "85%";
     }
     if (group == 6) {
         confidences.machine = 100;
         confidences.hybrid = 80;
         document.getElementById("confidence-stoopid-ai").innerHTML = "100%";
-        document.getElementById("confidence-hybrid").innerHTML = "80%";   
+        document.getElementById("confidence-hybrid").innerHTML = "80%";
     }
     console.log("Group = " + group);
     saveData();
@@ -440,7 +455,7 @@ function getResult(cardset,number) {
         getAIResult_Stoopid_2(cardset,number);
     }
     saveData();
-} 
+}
 
 function getAIResult_Hybrid(cardset,number) {
     var right = 0;
@@ -470,7 +485,7 @@ function getAIResult_Hybrid(cardset,number) {
         results.vsHybrid.win += 0.25;
         $("#result"+number+"-hybrid").html("+25<br/>(You win)");
     } else if (results[number].playerDiff == hybridDiff) {
-        results[number].score += 10;   
+        results[number].score += 10;
         results.vsHybrid.draw += 0.25;
         $("#result"+number+"-hybrid").html("+10<br/>(Draw)");
     } else {
@@ -535,10 +550,10 @@ function getAIResult_Stoopid_2(cardset,number) {
             if (card.year_built <= 1912) {
                 if (card.year_built <= 1905 && card.target == 1) {
                     right += 1;
-                } 
+                }
                 if (card.year_built > 1905 && card.target == 0) {
                     right += 1;
-                } 
+                }
             } else if (card.year_built > 1912 && card.target == 1) {
                 right += 1;
             }
@@ -556,17 +571,14 @@ function getAIResult_Stoopid_2(cardset,number) {
 function autoEvaluate(number) {
     results[number] = {};
     results[number].score = 0;
-    if(number == 1) {
-        returnCards(cards.trainingSet,'area','b');
-    }
     $("#evaluationButton").hide();
     $("#evaluationStatus").html("Selecting random cards for run " + number);
-    setTimeout(function() { 
-        getRandomReds(20); 
-    },3000);
+    setTimeout(function() {
+        getRandomReds(20);
+    },1000);
     setTimeout(function() {
         $("#evaluationStatus").html("Running models");
-        sortCards(cards.evaluationSet,'r',number) 
+        sortCards(cards.evaluationSet,'r',number)
     },5000);
     if (number < 4) {
         setTimeout(function() {
@@ -591,8 +603,5 @@ function autoEvaluate(number) {
             var guide = '<table class="results" style="font-size: 0.8em; max-width: 66%; margin-left: auto; margin-right: auto;"><tr><td>500+</td><td>Incredible!</td></tr><tr><td>450 - 500</td><td>Expert</td></tr><tr><td>400 - 450</td><td>Solid effort</td></tr><tr><td>300 - 400</td><td>Average</td></tr><tr><td>0 - 300</td><td>Points for trying (did you overfit?)</td></tr></table>';
             $("#evaluationStatus").html("Your score: " + score + "<br/><br/>" + guide);
         }, 14000)
-        setTimeout(function() {
-            $( "#leaderboards" ).clone().appendTo( "#evaluation-set" );
-        }, 15000)
     }
 }

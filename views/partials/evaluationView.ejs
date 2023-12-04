@@ -1,0 +1,52 @@
+<section id="evaluation" class="hidden">
+    <div id='evaluation-set' class="invisbox-small">
+      <div id="buttons" style="width: 100%">
+        <h3 id="evaluationStatus">Click the button below to evaluate your model and obtain a score</h3>
+        <button type="button" id="evaluationButton" name="evaluation-button" onClick="autoEvaluate(1);">Evaluate model</button>
+      </div>
+      <div id="results" class="results">
+        <table>
+          <tr>
+            <th>Player</th>
+            <th>Confidence in model</th>
+            <th>Score / Result<br/>(run 1)</th>
+            <th>Score / Result<br/>(run 2)</th>
+            <th>Score / Result<br/>(run 3)</th>
+            <th>Score / Result<br/>(run 4)</th>
+          </tr>
+          <tr>
+            <td>You</td>
+            <td id="confidence-user"></td>
+            <td id="result1-user"></td>
+            <td id="result2-user"></td>
+            <td id="result3-user"></td>
+            <td id="result4-user"></td>
+          </tr>
+          <tr>
+            <td>vs Machine</td>
+            <td id="confidence-stoopid-ai"></td>
+            <td id="result1-stoopid-ai"></td>
+            <td id="result2-stoopid-ai"></td>
+            <td id="result3-stoopid-ai"></td>
+            <td id="result4-stoopid-ai"></td>
+          </tr>
+          <tr>
+            <td>vs Human+ML</td>
+            <td id="confidence-hybrid"></td>
+            <td id="result1-hybrid"></td>
+            <td id="result2-hybrid"></td>
+            <td id="result3-hybrid"></td>
+            <td id="result4-hybrid"></td>
+          </tr>
+          <tr>
+            <td>Total</td>
+            <td>&nbsp;</td>
+            <td id="result1-score"></td>
+            <td id="result2-score"></td>
+            <td id="result3-score"></td>
+            <td id="result4-score"></td>
+          </tr>
+        </table>
+      </div>
+    </div>
+</section>

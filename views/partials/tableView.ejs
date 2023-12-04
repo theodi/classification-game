@@ -1,0 +1,69 @@
+<section id="table" class="hidden">
+    <h1>Table view</h1>
+    <p>You can sort the table using the up/down arrows. You can multi-sort by holding shift and clicking.</p>
+    <div id="groupButtons" class="hidden">
+        <button type="button" name="getTrainingDataCSV"><a id="groupcsv" href="/data/csvs/Group_1.csv">Download cards (csv)</a></button>
+        <button type="button" name="getTrainingDataPDF"><a id="grouppdf" href="/data/Group_1.pdf">Download cards (pdf)</a></button>
+    </div>
+    <table id="cardsTable" class="display">
+        <thead>
+            <tr>
+                <th>Index</th>
+                <th>Bath</th>
+                <th>Beds</th>
+                <th>Year Built</th>
+                <th>Elevation</th>
+                <th>Sqft</th>
+                <th>Price</th>
+                <th>Price per Sqft</th>
+                <th>City</th>
+            </tr>
+        </thead>
+        <tbody id="cardsTableBody">
+        </tbody>
+    </table>
+</section>
+<script>
+    function renderCardsTable(cards) {
+        const cardsTableBody = document.getElementById('cardsTableBody');
+        cards.forEach(function(card) {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${card.index}</td>
+                <td>${card.bath}</td>
+                <td>${card.beds}</td>
+                <td>${card.year_built}</td>
+                <td>${card.elevation}</td>
+                <td>${card.sqft}</td>
+                <td>${card.price}</td>
+                <td>${card.price_per_sqft}</td>
+                <td>${card.city}</td>
+            `;
+            cardsTableBody.appendChild(row);
+        });
+
+        try {
+            if (group) {
+                console.log("Group = " + group);
+                var csvLink = document.querySelector('#groupcsv');
+                var pdfLink = document.querySelector('#grouppdf');
+                // Update download links
+                csvLink.href = '/data/csvs/Group_' + group + '.csv';
+                pdfLink.href = '/data/Group_' + group + '.pdf';
+                document.getElementById('groupButtons').classList.remove('hidden');
+                $('#cardsTable').DataTable();
+            }
+        } catch (err) {
+            $('#cardsTable').DataTable({
+                dom: 'Bfrtip', // Specify the buttons to be displayed
+                buttons: [
+                    {
+                        extend: 'csv',
+                        text: 'Download CSV' // Rename the CSV button
+                    }
+                ],
+                // Your DataTable configuration options
+            });
+        }
+    }
+</script>

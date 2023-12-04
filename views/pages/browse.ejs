@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html class="dark" data-bs-theme="dark">
+<head>
+    <title>Browse Cards</title>
+    <!-- Include DataTables.js CSS and JS files -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.js"></script>
+    <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.js"></script>
+    <script src="https://unpkg.com/chart.js@3"></script>
+    <script src="https://unpkg.com/@sgratzl/chartjs-chart-boxplot@3"></script>
+    <script src="/js/dataLoader.js"></script>
+    <script src="/js/chartjs/controller.js"></script>
+    <script src="/js/nav.js"></script>
+
+    <link href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css">
+    <link rel="stylesheet" type="text/css" href="/css/chartjsInteractive.css">
+    <link rel="stylesheet" type="text/css" href="/css/water.css">
+</head>
+<body>
+    <div class="sidebar">
+        <img class="odi-logo" src="/assets/odi-logo.png">
+        <ul>
+          <li class="arrow-icon"><a href="#charts" class="toggle-link">Chart view</a></li>
+          <li class="arrow-icon"><a href="#table" class="toggle-link">Table view</a></li>
+        </ul>
+    </div>
+    <div class="main-content">
+        <%- include('../partials/tableView') %>
+        <%- include('../partials/chartView') %>
+    </div>
+
+    <script>
+
+        // Extract queryParam from the URL and parse it as an array
+        const urlParams = new URLSearchParams(window.location.search);
+        const queryParam = urlParams.get('cards');
+        const queryParamArray = queryParam.split(',').map(Number);
+
+        // Fetch and display CSV data
+        $(document).ready( function () {
+            document.getElementById('charts').classList.remove('hidden');
+            fetchCSVData(function (csvData) {
+                const cards = filterCSVData(csvData, queryParamArray);
+                chartData = cards;
+                renderCardsTable(cards);
+                renderChart();
+            });
+        });
+
+    </script>
+</body>
+</html>

@@ -1,41 +1,45 @@
-/* Decision tree elements */
-input,
-textarea, 
-select {
-  font-family: inherit;
-  font-size: 60%;
-  color: darkslategray;
-  background: var(--bginput);
-  outline: darkgray;
-  height: 100%;
-  max-width: 100%;
-  margin: 4px;
-  padding: 4px;
-}
-label {
-  font-size: 0.8em;
-}
-.prediction {
-  display: none;
-}
-.prediction label {
-  font-size: 0.5em;
-}
-.prediction input {
-  font-size: 0.5em;
-  width: 6.5em;
-}
 .decision_l, .decision_r, .decision_ll, .decision_lr, .decision_rl, .decision_rr {
   display: none;
+  margin-left: auto;
+  margin-right: auto;
 }
-.condition label {
-  font-size: 0.8em;
+#factor_l, #factor_r, #factor_ll, #factor_lr, #factor_rl, #factor_rr {
+  margin-left: auto;
+  margin-right: auto;
 }
-.condition input {
+.conditions input {
   max-width: 100px;
+  display: inline;
 }
-.conditions, .conditions .invisbox-fill {
+.browseButton {
+  position: relative;
+  bottom: 67px;
+  float: right;
+  z-index: 100;
+}
+.prediction {
+  display: flex;
+  padding-top: 10px;
+}
+.prediction label {
+  margin-right: 10px;
+  padding-top: 10px;
+  display: inline-block;
+}
+.prediction select {
+  display: inline-block;
+}
+condition label {
+  font-size: 1.5em;
+  display: inline;
+}
+condition, .condition .invisbox-fill {
   text-align: center;
+  width: 100%;
+}
+condition input {
+  max-width: 100px;
+  display: inline;
 }
 .condition-left {
   text-align: right;
@@ -83,152 +87,112 @@ label {
   height: 300px;
   max-height: 300px;
   overflow-y: hidden;
-  background-color: silver;
+  border: 2px solid white;
   width:100%;
   text-align: left;
-  padding: 1%;
-  padding-right: 20%;
-  padding-left: 5%;
 }
 .cardbox card {
+  left: 20px;
   position: relative;
 }
 .cardbox card:nth-child(2) {
-  left: 160px;
-  top: -229px;
+  top: -0px;
 }
-.cardbox card:nth-child(3) {
-  top: calc(calc(-229px * 2) + calc(25px * 1));
+.cardbox card:nth-child(3), .cardbox card:nth-child(4){
+  top: calc(calc(-215px * 1));
 }
-.cardbox card:nth-child(4) {
-  left: 160px;
-  top: calc(calc(-229px * 3) + calc(25px * 1));
+.cardbox card:nth-child(5), .cardbox card:nth-child(6){
+  top: calc(calc(-215px * 2));
 }
-.cardbox card:nth-child(5) {
-  top: calc(calc(-229px * 4) + calc(25px * 2));
+.cardbox card:nth-child(7), .cardbox card:nth-child(8){
+  top: calc(calc(-215px * 3));
 }
-.cardbox card:nth-child(6) {
-  left: 160px;
-  top: calc(calc(-229px * 5) + calc(25px * 2));
+.cardbox card:nth-child(9), .cardbox card:nth-child(10){
+  top: calc(calc(-215px * 4));
 }
-.cardbox card:nth-child(7) {
-  top: calc(calc(-229px * 6) + calc(25px * 3));
+.cardbox card:nth-child(11), .cardbox card:nth-child(12){
+  top: calc(calc(-215px * 5));
 }
-.cardbox card:nth-child(8) {
-  left: 160px;
-  top: calc(calc(-229px * 7) + calc(25px * 3));
+.cardbox card:nth-child(13), .cardbox card:nth-child(14){
+  top: calc(calc(-215px * 6));
 }
-.cardbox card:nth-child(9) {
-  top: calc(calc(-229px * 8) + calc(25px * 4));
+.cardbox card:nth-child(15), .cardbox card:nth-child(16){
+  top: calc(calc(-215px * 7));
 }
-.cardbox card:nth-child(10) {
-  left: 160px;
-  top: calc(calc(-229px * 9) + calc(25px * 4));
+.cardbox card:nth-child(17), .cardbox card:nth-child(18){
+  top: calc(calc(-215px * 8));
 }
-.cardbox card:nth-child(11) {
-  top: calc(calc(-229px * 10) + calc(25px * 5));
-}
-.cardbox card:nth-child(12) {
-  left: 160px;
-  top: calc(calc(-229px * 11) + calc(25px * 5));
-}
-.cardbox card:nth-child(13) {
-  top: calc(calc(-229px * 12) + calc(25px * 6));
-}
-.cardbox card:nth-child(14) {
-  left: 160px;
-  top: calc(calc(-229px * 13) + calc(25px * 6));
-}
-.cardbox card:nth-child(15) {
-  top: calc(calc(-229px * 14) + calc(25px * 7));
-}
-.cardbox card:nth-child(16) {
-  left: 160px;
-  top: calc(calc(-229px * 15) + calc(25px * 7));
-}
-.cardbox card:nth-child(17) {
-  top: calc(calc(-229px * 16) + calc(25px * 8));
-}
-.cardbox card:nth-child(18) {
-  left: 160px;
-  top: calc(calc(-229px * 17) + calc(25px * 8));
-}
-.cardbox card:nth-child(19) {
-  top: calc(calc(-229px * 18) + calc(25px * 9));
-}
-.cardbox card:nth-child(20) {
-  left: 160px;
-  top: calc(calc(-229px * 19) + calc(25px * 9));
+.cardbox card:nth-child(19), .cardbox card:nth-child(20){
+  top: calc(calc(-215px * 9));
 }
 
 .cardbox-thin {
   height: 300px;
   max-height: 300px;
-  overflow-y: hidden;
-  background-color: silver;
+  overflow-y: scroll;
   width:100%;
   text-align: left;
-  padding: 1%;
-  padding-left: 3%;
-  padding-top: 5%;
+  border: 2px solid white;
+  margin-bottom: -22px;
 }
 
 .cardbox-thin card {
+  left: 20px;
   position: relative;
 }
 .cardbox-thin card:nth-child(2) {
-  top: calc(calc(-229px * 1) + calc(25px * 1));
+  top: calc(calc(-215px * 1));
 }
 .cardbox-thin card:nth-child(3) {
-  top: calc(calc(-229px * 2) + calc(25px * 2));
+  top: calc(calc(-215px * 2));
 }
 .cardbox-thin card:nth-child(4) {
-  top: calc(calc(-229px * 3) + calc(25px * 3));
+  top: calc(calc(-215px * 3));
 }
 .cardbox-thin card:nth-child(5) {
-  top: calc(calc(-229px * 4) + calc(25px * 4));
+  top: calc(calc(-215px * 4));
 }
 .cardbox-thin card:nth-child(6) {
-  top: calc(calc(-229px * 5) + calc(25px * 5));
+  top: calc(calc(-215px * 5));
 }
 .cardbox-thin card:nth-child(7) {
-  top: calc(calc(-229px * 6) + calc(25px * 6));
+  top: calc(calc(-215px * 6));
 }
 .cardbox-thin card:nth-child(8) {
-  top: calc(calc(-229px * 7) + calc(25px * 7));
+  top: calc(calc(-215px * 7));
 }
 .cardbox-thin card:nth-child(9) {
-  top: calc(calc(-229px * 8) + calc(25px * 8));
+  top: calc(calc(-215px * 8));
 }
 .cardbox-thin card:nth-child(10) {
-  top: calc(calc(-229px * 9) + calc(25px * 9));
+  top: calc(calc(-215px * 9));
 }
 .cardbox-thin card:nth-child(11) {
-  top: calc(calc(-229px * 10) + calc(25px * 10));
+  top: calc(calc(-215px * 10));
 }
 .cardbox-thin card:nth-child(12) {
-  top: calc(calc(-229px * 11) + calc(25px * 11));
+  top: calc(calc(-215px * 11));
 }
 .cardbox-thin card:nth-child(13) {
-  top: calc(calc(-229px * 12) + calc(25px * 12));
+  top: calc(calc(-215px * 12));
 }
 .cardbox-thin card:nth-child(14) {
-  top: calc(calc(-229px * 13) + calc(25px * 13));
+  top: calc(calc(-215px * 13));
 }
 .cardbox-thin card:nth-child(15) {
-  top: calc(calc(-229px * 14) + calc(25px * 14));
+  top: calc(calc(-215px * 14));
 }
 .cardbox-thin card:nth-child(16) {
-  top: calc(calc(-229px * 15) + calc(25px * 15));
+  top: calc(calc(-215px * 15));
 }
 .cardbox-thin card:nth-child(17) {
-  top: calc(calc(-229px * 16) + calc(25px * 16));
+  top: calc(calc(-215px * 16));
 }
 .cardbox-thin card:nth-child(18) {
-  top: calc(calc(-229px * 17) + calc(25px * 17));
+  top: calc(calc(-215px * 17));
 }
 .cardbox-thin card:nth-child(19) {
-  top: calc(calc(-229px * 18) + calc(25px * 18));
+  top: calc(calc(-215px * 18));
 }
 @media screen and (max-width: 1400px) {
   .cardbox {
@@ -270,6 +234,7 @@ label {
   display: flex;
   flex-wrap: nowrap;
   align-items: center;
+  text-align: center;
 }
 .flex-container .invisbox-tiny {
   background-color: var(--bgbody);
@@ -313,4 +278,7 @@ label {
   width: 22%;
   text-align: left;
   padding: 10px;
+}
+.user {
+  color: red;
 }

@@ -33,16 +33,16 @@ function onchange() {
 
 function saveData() {
 	storage = {};
-	if (window.localStorage.getItem("classification-game") != "null") { 
+	if (window.localStorage.getItem("classification-game") != "null") {
 		storage = JSON.parse(window.localStorage.getItem("classification-game"));
 	}
 
 	var boundaries = {};
 	boundaries["a"] = $('#condition_a').val();
-    
+
   boundaries["la"] = $('#condition_la').val();
   boundaries["ra"] = $('#condition_ra').val();
-  
+
   boundaries["lra"] = $('#condition_lra').val();
   boundaries["rla"] = $('#condition_rla').val();
   boundaries["lla"] = $('#condition_lla').val();
@@ -50,21 +50,22 @@ function saveData() {
 
   var factors = {};
 	factors["_"] = $('#factor_').val();
-	 
+
 	factors["l"] = $('#factor_l').val();
 	factors["r"] = $('#factor_r').val();
-	  
+
 	factors["lr"] = $('#factor_lr').val();
 	factors["rl"] = $('#factor_rl').val();
 	factors["ll"] = $('#factor_ll').val();
 	factors["rr"] = $('#factor_rr').val();
-	    
+
 	try {
 		storage.factors = factors;
 		storage.boundaries = boundaries;
 		storage.predictions = predictions;
 		storage.playerName = player_name;
-	} catch(err) { 
+		storage.attempt = attempt;
+	} catch(err) {
 		console.log("Error saving data");
 		console.log(err);
 	}
@@ -73,13 +74,21 @@ function saveData() {
 }
 
 function sendResult(result) {
-	$.ajax({
-	    url: '/result',
+    $.ajax({
+        url: '/result',
         type: 'POST',
         contentType: 'application/json',
-      	data: JSON.stringify(result),
-       	dataType: 'json'
-   	});	
+        data: JSON.stringify(result),
+        dataType: 'json',
+        success: function(response) {
+            // Handle a successful response here
+            console.log('Request successful:', response);
+        },
+        error: function(xhr, status, error) {
+            // Handle errors here
+            console.error('Request failed:', status, error);
+        }
+    });
 }
 
 function saveResult() {
@@ -109,10 +118,13 @@ function saveResult() {
 
 	result.confidences = confidences;
 	result.result = results;
-	
+
 	result.score = results.score;
 	result.vsHybrid = results.vsHybrid;
 	result.vsMachine = results.vsMachine;
+
+	attempt = attempt + 1;
+	result.attempt = attempt;
 
 	delete result.result.score;
 	delete result.result.vsMachine;
@@ -142,7 +154,9 @@ function resetTree() {
 function changeName() {
 	player_name = prompt("Welcome to the ODI machine learning game. Please enter your player name.",player_name);
 	$('#playerWelcome').html("Welcome " + player_name);
-  $('#playerWelcome').css("display","inline");
+  	$('#playerWelcome').css("display","inline");
+	saveData();
+	loadLeaderboards();
 }
 
 function processLoad(storage) {
@@ -156,6 +170,7 @@ function processLoad(storage) {
 		var boundaries = storage.boundaries;
 		predictions = storage.predictions;
 		player_name = storage.playerName;
+		attempt = storage.attempt;
 		if (storage.playerName == ""){
 	      player_name = prompt("Welcome to the ODI machine learning game. Please enter your player name.","");
 	      $('#playerWelcome').html("Welcome " + player_name);
@@ -194,8 +209,8 @@ function processLoad(storage) {
 		}
 
 		$('#condition_a').val(boundaries["a"]);
-		$('#condition_b').val(boundaries["a"]);	    
-		
+		$('#condition_b').val(boundaries["a"]);
+
 		$('#condition_la').val(boundaries["la"]);
 		$('#condition_lb').val(boundaries["la"]);
 		$('#condition_ra').val(boundaries["ra"]);
@@ -229,18 +244,15 @@ function processLoad(storage) {
     	$('#prediction_box_rrl').val(predictions["rrl"].prediction);
     	$('#prediction_box_rrr').val(predictions["rrr"].prediction);
     } catch (err) {}
-    if (predictions) {
-		$('.prediction').show();
-	}
 }
 
-function loadData() {
+function loadLeaderboardData() {
 	if ((window.localStorage.getItem("classification-game") == "null" || window.localStorage.getItem("classification-game") == null) && resultId == "") {
 		changeName();
 		saveData();
 		loadLeaderboards();
 		return;
-	} 
+	}
 	if (resultId) {
 		$('#title').html("ODI Machine learning game (tutor mode)")
 		$.getJSON('/result/' + resultId, function(data) {
@@ -256,13 +268,13 @@ function loadData() {
 			window.localStorage.setItem("classification-game",JSON.stringify(data));
 			processLoad(storage);
 			loadLeaderboards();
-  	});
+  		});
 	} else if (isTutor) {
 		$('#title').html("ODI Machine learning game (tutor mode)");
 		player_name = '<span style="color:red">Tutor</span>';
 		$('#playerWelcome').html("Welcome " + player_name);
-  	$('#playerWelcome').css("display","inline");
-  	storage = JSON.parse(window.localStorage.getItem("classification-game"));
+  		$('#playerWelcome').css("display","inline");
+  		storage = JSON.parse(window.localStorage.getItem("classification-game"));
 		processLoad(storage);
 		loadLeaderboards();
 	} else {
@@ -270,6 +282,15 @@ function loadData() {
 		processLoad(storage);
 		loadLeaderboards();
 	}
+}
+
+function browseCluster(cluster) {
+	event.preventDefault();
+	const filteredData = cards.trainingSet.filter(item => item.box === cluster);
+	const indexNumbers = filteredData.map(item => item.index);
+	const indexNumbersString = indexNumbers.join(',');
+	const url = `/browse?cards=${indexNumbersString}`;
+	window.open(url,'_blank');
 }
 
 function updatePredictions() {
@@ -296,7 +317,7 @@ function addBranch(branch) {
 }
 
 function renderLeaderboard(data,prefix) {
-	resultsCount = data.length;
+  resultsCount = data.length;
   var rank = 0;
   var currentScore = 0;
   for (i=0;i<data.length;i++) {
@@ -314,13 +335,14 @@ function renderLeaderboard(data,prefix) {
   		}
   	} catch (err) {}
   	if (data[i].playerName) {
-  		var row = '<tr class="'+userClass+'"><td>#'+rank+'</td><td>'+data[i].playerName.substring(0,16)+'</td><td>'+data[i].score+'</td></tr>';
+  		var row = '<tr class="'+userClass+'"><td>#'+rank+'</td><td>'+data[i].attempt+'</td><td>'+data[i].playerName.substring(0,16)+'</td><td>'+data[i].score+'</td></tr>';
   		$('#'+prefix+'-leaderboard-body').append(row);
   	} else {
-  		var row = '<tr class="'+userClass+'"><td>#'+rank+'</td><td>'+data[i].id.substring(0,10)+'</td><td>'+data[i].score+'</td></tr>';
+  		var row = '<tr class="'+userClass+'"><td>#'+rank+'</td><td>'+data[i].attempt+'</td><td>'+data[i].id.substring(0,10)+'</td><td>'+data[i].score+'</td></tr>';
   		$('#'+prefix+'-leaderboard-body').append(row);
   	}
   }
+  $('#'+prefix+'-leaderboard').DataTable();
 }
 
 function loadLeaderboards() {

@@ -1,0 +1,69 @@
+.dataTables_length select {
+    width: 100px;
+}
+.chart__widget {
+    max-width: 100%;
+    margin: 0 auto;
+}
+.chart-button {
+    display: inline;
+    padding: 10px;
+    margin-right: 10px;
+    border: 3px solid #8bcefb;
+    background-color: #8bcefb;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    width: 180px;
+    height: 140px;
+    margin-top: 20px;
+}
+.chart-button:hover {
+    background-color: #e0e0e0;
+}
+
+.chart-button .icon {
+    display: inline-block;
+    vertical-align: top;
+}
+
+.chart-button .title {
+    display: inline-block;
+    vertical-align: bottom;
+    color: black;
+    font-size: 1em;
+    position: relative;
+    bottom: 10px;
+}
+
+/* Example icons */
+.chart-button .icon img {
+    width: 60%;
+    min-width: 60%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.chartjs-axis-label {
+    font-size: 16px; /* Adjust the font size as needed */
+}
+
+#axisSelections {
+    font-size: 1.4em;
+    text-align: center;
+}
+#chartType {
+    font-size: 1.4em;
+    text-align: center;
+}
+#axisSelections div {
+    display: inline-block;
+    margin: 0.5em;
+}
+#axisSelections select, #axisSelections input {
+    font-family: Helvetica, Sans-Serif;
+    font-size: 1em;
+}
+#binCountSelector, #pointColorSelector {
+    display: none;
+}

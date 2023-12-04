@@ -28,7 +28,7 @@
             </tr>
         </thead>
         <tbody id="table_body">
-        
+
         </tbody>
         </table>
     </div>
@@ -78,7 +78,7 @@
         row.append(td);
     }
     function processDelete(id,link) {
-        $.getJSON('/leaderboard/'+ id + '/sessions', function(sessions) { 
+        $.getJSON('/leaderboard/'+ id + '/sessions', function(sessions) {
             if (sessions.length > 0) {
                 alert("Cannot delete leaderboard with sessions");
             } else {

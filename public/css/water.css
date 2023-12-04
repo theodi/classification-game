@@ -1,0 +1,99 @@
+.sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 200px;
+    height: 100%;
+    background-color: #f4f4f4;
+    overflow-y: auto; /* Scrollable contents if sidebar is long */
+    z-index: 1000; /* Ensures sidebar is above other content */
+  }
+  .odi-logo {
+    height: 25px;
+    margin-top: 20px;
+    margin-left: 50px;
+  }
+  .sidebar li {
+    margin: 0;
+    padding: 4px 0 6px 21px;
+    list-style: none;
+    background-image: url('data:image/svg+xml;charset=UTF-8,%3Csvg xmlns="http://www.w3.org/2000/svg" id="Layer_1" viewBox="0 0 32 32"%3E%3Cg id="KNn5AD.tif"%3E%3Cpath d="m19.3,15.95c-.09-.08-.18-.14-.26-.22-3.47-3.45-6.94-6.9-10.41-10.35-.75-.74-.81-1.88-.17-2.66.73-.88,2.04-.96,2.86-.16,1.01.99,2.01,1.99,3.01,2.98,3,2.98,5.99,5.96,8.99,8.93.39.39.64.84.67,1.39.03.6-.19,1.1-.61,1.53-.85.85-1.7,1.71-2.54,2.56-3.11,3.14-6.23,6.28-9.34,9.42-.74.74-1.83.84-2.62.23-.94-.72-1.03-2.08-.19-2.94,1.42-1.44,2.85-2.88,4.28-4.32,2.07-2.08,4.14-4.17,6.2-6.25.04-.04.07-.08.14-.15Z" style="stroke-width:0px;" fill="%23efc151"/%3E%3C/g%3E%3C/svg%3E');
+    background-repeat: no-repeat;
+    background-position: left center;
+    background-size: 25px;
+  }
+
+  .sidebar ul li a {
+    display: block;
+    padding: 10px;
+    color: #333;
+    text-decoration: none;
+  }
+  ul {
+    padding-inline: 18px;
+  }
+
+  /* Adjust content margin to account for the sidebar */
+  section {
+    margin-left: 0px; /* Same as sidebar width */
+  }
+
+.hidden {
+   display: none;
+}
+
+  /* Responsive adjustments */
+  @media screen and (max-width: 600px) {
+    .sidebar {
+      width: 100%;
+      height: auto;
+      position: relative;
+    }
+
+    .sidebar ul li a {
+      float: left;
+      padding: 15px;
+    }
+
+    body {
+      margin-left: 0;
+    }
+  }
+
+  .main-content {
+    margin-left: 200px; /* Same as the width of the sidebar */
+    transition: margin-left 0.3s; /* Smooth transition for any size adjustments */
+  }
+
+  @media screen and (max-width: 600px) {
+    .sidebar ul li a {
+      float: none;
+    }
+
+    .sidebar,
+    .main-content {
+      width: 100%;
+      margin-left: 0; /* Sidebar and main content take full width on smaller screens */
+    }
+  }
+  body {
+    max-width: 96%;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .banner {
+    position: absolute;
+    top: 3em;
+    right: -7em;
+    margin: 1em;
+    background: white;
+    width: 365px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    color: black;
+    text-align: center;
+    -webkit-transform: rotate(45deg);
+    -moz-transform: rotate(45deg);
+     transform: rotate(45deg);
+     filter: progid:DXImageTransform.Microsoft.Matrix(M11='0.7071067811865476', M12='-0.7071067811865475', M21='0.7071067811865475', M22='0.7071067811865476', sizingMethod='auto expand');
+  }

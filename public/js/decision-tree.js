@@ -335,7 +335,11 @@ function renderLeaderboard(data,prefix) {
   		}
   	} catch (err) {}
   	if (data[i].playerName) {
-  		var row = '<tr class="'+userClass+'"><td>#'+rank+'</td><td>'+data[i].attempt+'</td><td>'+data[i].playerName.substring(0,16)+'</td><td>'+data[i].score+'</td></tr>';
+		var displayName = data[i].playerName.substring(0,16);
+		if (isTutor) {
+			displayName = data[i].playerName;
+		}
+  		var row = '<tr class="'+userClass+'"><td>#'+rank+'</td><td>'+data[i].attempt+'</td><td>'+displayName+'</td><td>'+data[i].score+'</td></tr>';
   		$('#'+prefix+'-leaderboard-body').append(row);
   	} else {
   		var row = '<tr class="'+userClass+'"><td>#'+rank+'</td><td>'+data[i].attempt+'</td><td>'+data[i].id.substring(0,10)+'</td><td>'+data[i].score+'</td></tr>';

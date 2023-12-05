@@ -27,7 +27,7 @@
             </tr>
         </thead>
         <tbody id="table_body">
-        
+
         </tbody>
         </table>
     </div>
@@ -116,7 +116,7 @@
                 td.innerHTML = "";
                 row.append(td);
                 getResponses("<%= id %>",data[i]._id,);
-                addToRowLink(row,"/play/" + data[i]._id,"Copy");
+                addToRowLink(row,"/game/" + data[i]._id,"Copy");
                 addToRowLink(row,"/leaderboard/<%= id %>/" + data[i]._id,"Leaderboard");
                 addToRowLink(row,"/leaderboard/<%= id %>/" + data[i]._id + "/edit","Edit");
                 addDeleteLink(row,"/leaderboard/<%= id %>/" + data[i]._id,"<%= id %>",data[i]._id,"Delete");
@@ -133,7 +133,7 @@
                 ]
             });
         });
-        
+
     });
 </script>
 <%- include('../../partials/footer') %>

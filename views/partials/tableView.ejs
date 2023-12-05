@@ -51,7 +51,9 @@
                 csvLink.href = '/data/csvs/Group_' + group + '.csv';
                 pdfLink.href = '/data/Group_' + group + '.pdf';
                 document.getElementById('groupButtons').classList.remove('hidden');
-                $('#cardsTable').DataTable();
+                $('#cardsTable').DataTable({
+                    pageLength: 25
+                });
             }
         } catch (err) {
             $('#cardsTable').DataTable({
@@ -62,6 +64,7 @@
                         text: 'Download CSV' // Rename the CSV button
                     }
                 ],
+                pageLength: 25,
                 // Your DataTable configuration options
             });
         }

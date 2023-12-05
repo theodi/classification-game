@@ -336,7 +336,7 @@ function renderLeaderboard(data,prefix) {
   	} catch (err) {}
   	if (data[i].playerName) {
 		var displayName = data[i].playerName.substring(0,16);
-		if (isTutor) {
+		if (isTutor || prefix == "session") {
 			displayName = data[i].playerName;
 		}
   		var row = '<tr class="'+userClass+'"><td>#'+rank+'</td><td>'+data[i].attempt+'</td><td>'+displayName+'</td><td>'+data[i].score+'</td></tr>';

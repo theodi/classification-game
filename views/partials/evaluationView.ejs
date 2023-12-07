@@ -9,14 +9,16 @@
           <tr>
             <th>Player</th>
             <th>Confidence in model</th>
-            <th>Score / Result<br/>(run 1)</th>
-            <th>Score / Result<br/>(run 2)</th>
-            <th>Score / Result<br/>(run 3)</th>
-            <th>Score / Result<br/>(run 4)</th>
+            <th>&nbsp;</th>
+            <th>Score<br/>(run 1)</th>
+            <th>Score<br/>(run 2)</th>
+            <th>Score<br/>(run 3)</th>
+            <th>Score<br/>(run 4)</th>
           </tr>
           <tr>
             <td>You</td>
             <td id="confidence-user"></td>
+            <td style="text-align: right;">% correctly classified (a)<br>Difference from confidence (b)<br>Score (a - b)</td>
             <td id="result1-user"></td>
             <td id="result2-user"></td>
             <td id="result3-user"></td>
@@ -25,6 +27,7 @@
           <tr>
             <td>vs Machine</td>
             <td id="confidence-stoopid-ai"></td>
+            <td>&nbsp;</td>
             <td id="result1-stoopid-ai"></td>
             <td id="result2-stoopid-ai"></td>
             <td id="result3-stoopid-ai"></td>
@@ -33,6 +36,7 @@
           <tr>
             <td>vs Human+ML</td>
             <td id="confidence-hybrid"></td>
+            <td>&nbsp;</td>
             <td id="result1-hybrid"></td>
             <td id="result2-hybrid"></td>
             <td id="result3-hybrid"></td>
@@ -40,6 +44,7 @@
           </tr>
           <tr>
             <td>Total</td>
+            <td>&nbsp;</td>
             <td>&nbsp;</td>
             <td id="result1-score"></td>
             <td id="result2-score"></td>

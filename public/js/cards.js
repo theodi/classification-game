@@ -440,7 +440,8 @@ function getResult(cardset,number) {
 
     pscore = Math.round(pres) - results[number].playerDiff;
     results[number].score += pscore;
-    $("#result"+number+"-user").html(pscore + "<br/>" + "(= "+Math.round(pres)+" - " + results[number].playerDiff + ")");
+    $("#result"+number+"-user").html(Math.round(pres)+"<br/>"+ results[number].playerDiff + "<br/><b>" + pscore+ "</b>");
+    //$("#result"+number+"-user").html(pscore + "<br/>" + "(= "+Math.round(pres)+" - " + results[number].playerDiff + ")");
 
     /* Old scoring
 
@@ -483,14 +484,14 @@ function getAIResult_Hybrid(cardset,number) {
         results[number].beatHybrid = true;
         results[number].score += 25;
         results.vsHybrid.win += 0.25;
-        $("#result"+number+"-hybrid").html("+25<br/>(You win)");
+        $("#result"+number+"-hybrid").html("<b>+25</b><br/>(You win)");
     } else if (results[number].playerDiff == hybridDiff) {
         results[number].score += 10;
         results.vsHybrid.draw += 0.25;
-        $("#result"+number+"-hybrid").html("+10<br/>(Draw)");
+        $("#result"+number+"-hybrid").html("<b>+10</b><br/>(Draw)");
     } else {
         results.vsHybrid.lost += 0.25;
-        $("#result"+number+"-hybrid").html("+0<br/>(You lose)");
+        $("#result"+number+"-hybrid").html("<b>+0</b><br/>(You lose)");
     }
 
     //document.getElementById("result"+number+"-hybrid").innerHTML = Math.round(hres) + "%";
@@ -508,14 +509,14 @@ function processMachineResult(right,number) {
         results[number].beatMachine = true;
         results[number].score += 10;
         results.vsMachine.win += 0.25;
-        $("#result"+number+"-stoopid-ai").html("+10<br/>(You win)");
+        $("#result"+number+"-stoopid-ai").html("<b>+10</b><br/>(You win)");
     } else if (results[number].playerDiff == machineDiff) {
         results.vsMachine.draw += 0.25;
-        $("#result"+number+"-stoopid-ai").html("+0<br/>(Draw)");
+        $("#result"+number+"-stoopid-ai").html("<b>+0</b><br/>(Draw)");
     } else {
         results.vsMachine.lost += 0.25;
         results[number].score -= 20;
-        $("#result"+number+"-stoopid-ai").html("-20<br/>(You loose)");
+        $("#result"+number+"-stoopid-ai").html("<b>-20</b><br/>(You loose)");
     }
     //document.getElementById("result"+number+"-stoopid-ai").innerHTML = Math.round(mres) + "%";
 }
@@ -590,10 +591,10 @@ function autoEvaluate(number) {
     if (number == 4) {
         setTimeout(function() {
             $("#evaluationStatus").html("Caluculating scores");
-            $('#result1-score').html(results[1].score);
-            $('#result2-score').html(results[2].score);
-            $('#result3-score').html(results[3].score);
-            $('#result4-score').html(results[4].score);
+            $('#result1-score').html("<b>"+results[1].score+"</b>");
+            $('#result2-score').html("<b>"+results[2].score+"</b>");
+            $('#result3-score').html("<b>"+results[3].score+"</b>");
+            $('#result4-score').html("<b>"+results[4].score+"</b>");
             results.score = confidences.player + results[1].score + results[2].score + results[3].score + results[4].score;
             saveResult();
         }, 12000)

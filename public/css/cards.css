@@ -38,7 +38,18 @@ button a {
 	margin-right: -12px;
 	margin-left: -30px;
 }
-
+.results td {
+	text-align: center;
+}
+.results th {
+	text-align: center;
+}
+.results tr td:first-child {
+	text-align: left;
+}
+.results tr th:first-child {
+	text-align: left;
+}
 card {
 	width: 160px;
 	opacity: 0.9;

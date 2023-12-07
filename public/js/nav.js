@@ -16,11 +16,7 @@ $(document).ready( function () {
                     alert('You must run your model on the training set before you can proceed to test or evaluation.');
                     success = false;
                 }
-            }/*
-            if (targetId === "evaluation" && !player_name) {
-                changeName();
             }
-            */
             if (success) {
                 document.querySelectorAll('section').forEach(section => {
                     section.classList.add('hidden');

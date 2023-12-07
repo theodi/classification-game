@@ -139,6 +139,12 @@ function saveResult() {
 
 }
 
+function confirmReset() {
+	if (confirm("Are you sure you want to reset the tree? This blanks all decisions and boundaries.")) {
+		resetTree();
+	}
+}
+
 function resetTree() {
 	player_name = storage.playerName;
 	storage.factors = "";
@@ -147,7 +153,7 @@ function resetTree() {
 	storage.confidences = "";
 	window.localStorage.setItem("classification-game",JSON.stringify(storage));
 
-	alert("Tree reset, please refresh your browser!");
+	alert("Tree reset, please refresh your browser to complete the reset!");
 
 }
 
@@ -363,4 +369,15 @@ function loadLeaderboards() {
   $.getJSON('/leaderboard/all/results', function(data) {
 		renderLeaderboard(data,"public");
   });
+}
+
+function toggleContent(button) {
+    var content = button.nextElementSibling;
+    if (content.style.display === 'none' || content.style.display === '') {
+        content.style.display = 'block';
+        button.textContent = '-';
+    } else {
+        content.style.display = 'none';
+        button.textContent = '+';
+    }
 }

@@ -1,9 +1,9 @@
 <section id="training" class="hidden">
     <div id='training-set-container' class='invisbox-small dropzone snapzone'>
       <div id="buttons" style="width: 100%">
-        <button type="button" name="returnTrainingData" onClick="returnCards(cards.trainingSet,'training-set','b');">Reset cards</button>
-        <button type="button" name="returnTrainingData" onClick="resetTree();">Reset tree</button>
-        <button type="button" class="model-button" name="runTrainingData" onClick="sortCards(cards.trainingSet,'b');">Run model</button>
+        <button type="button" name="returnTrainingData" onClick="returnCards(cards.trainingSet,'training-set','b');" title="Move the cards from the tree back into the top panel.">Reset cards</button>
+        <button type="button" name="returnTrainingData" onClick="confirmReset();" title="Blanks the tree and all decisions.">Reset tree</button>
+        <button type="button" class="model-button" name="runTrainingData" onClick="sortCards(cards.trainingSet,'b');" title="Try your tree with the cards">Run model</button>
       </div>
       <div id="training-set" class="cardSet"></div>
     </div>

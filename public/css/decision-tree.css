@@ -282,3 +282,24 @@ condition input {
 .user {
   color: red;
 }
+
+/* Style for the expand/collapse button */
+.expand-button {
+  cursor: pointer;
+  float: right;
+  font-size: 50px;
+  margin-top: -60px;
+}
+
+/* Style for the box */
+.expandable-box {
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 10px;
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+
+/* Style for the hidden content (initially hidden) */
+.hidden-content {
+  display: none;
+}

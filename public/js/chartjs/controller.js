@@ -51,6 +51,9 @@ function detectColorScheme() {
       cardSets.forEach(function(cardSet) {
           cardSet.style.borderColor = gridColor;
       });
+
+      document.getElementsByClassName('expandable-box')[0].style.borderColor = gridColor;
+
   } else {
       mode = 'light';
       modeColor = 'black';

@@ -11,7 +11,11 @@ const fs = require('fs');
 const http = require('http');
 const https = require('https');
 const dbo = require("./db/conn");
+const cors = require('cors');
 var ObjectId = require('mongodb').ObjectID;
+
+app.use(cors());
+
 
 if (process.env.SSLKEY) {
   var privateKey  = fs.readFileSync(process.env.SSLKEY, 'utf8');
@@ -164,7 +168,6 @@ app.get('/game/:id', function(req,res) {
   dbConnect
     .collection('Sessions')
     .findOne({"_id": new ObjectId(req.params.id)},function(err,data) {
-      console.log(data);
       if (req.isAuthenticated()) {
         data.isTutor = true;
         renderGame(req,res,data);
@@ -191,6 +194,22 @@ app.get('/game/:id', function(req,res) {
         }
       }
     });
+});
+
+app.get('/game/:id/result', function(req,res) {
+  const playerName = req.query.userId;
+  if (!req.query.userId) {
+    res.locals.pageTitle ="400 Bad request";
+    return res.status(400).render("errors/400");
+  } else {
+    var dbConnect = dbo.getDb();
+    dbConnect
+      .collection('Results')
+      .findOne({"sessionId" : req.params.id, "attempt" : 1, "playerName" : playerName}, function(err,data) {
+        res.set('Content-Type', 'application/json');
+        res.send(JSON.stringify(data, null, 4));
+      });
+  }
 });
 
 app.get('/browse', function(req,res) {

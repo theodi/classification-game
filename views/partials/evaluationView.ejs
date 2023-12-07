@@ -53,5 +53,18 @@
           </tr>
         </table>
       </div>
+      <div class="expandable-box">
+        <h1><strong>How evaluation works?</strong></h1>
+        <span class="expand-button" onclick="toggleContent(this)">+</span>
+        <div class="hidden-content">
+            <p>When you click "Evaluate model," four sets of 20 cards, each containing unknown cities, will be selected and classified in four separate runs.</p>
+            <h4><strong>1. Accuracy Against Your Confidence</strong></h4>
+            <p>During training, you created a tree that was evaluated against the training data. All properties correctly classified in this set contribute to your confidence, which is displayed as a percentage of the evaluation set you expect to correctly classify. Your score here is calculated as the percentage of correctly classified items minus the difference from your confidence.</p>
+            <h4><strong>2. vs Machine: Comparing to an Overfitted Model</strong></h4>
+            <p>If your model can outperform an overfitted machine model (with a claimed accuracy of 100%), you gain points. However, if your model performs worse, you lose points.</p>
+            <h4><strong>3. vs Human+ML: Competing with a Human-Advised Machine</strong></h4>
+            <p>If your model outperforms a machine that has been guided by a human to avoid overfitting, you earn a substantial number of points. You lose fewer points if you don't surpass this machine's performance.</p>
+        </div>
+      </div>
     </div>
 </section>

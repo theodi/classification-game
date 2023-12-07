@@ -87,7 +87,7 @@ condition input {
   height: 300px;
   max-height: 300px;
   overflow-y: hidden;
-  border: 2px solid white;
+  border: 2px solid rgba(0, 0, 0, 0.1);
   width:100%;
   text-align: left;
 }

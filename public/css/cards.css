@@ -3,15 +3,13 @@ button {
   height: 4em;
   padding: 5px;
   border-radius: 0px;
-  color: white;
-  border: 1px solid white;
   margin: 3px;
   vertical-align: top;
   font-size: 15px;
 }
 button a {
   text-decoration: none;
-  color: white;
+  color: black;
 }
 #buttons {
   text-align: center;
@@ -27,53 +25,20 @@ button a {
   width: 12em;
   margin: 2em;
 }
-tab {
-  border-left: 1px solid white;
-  border-top: 1px solid white;
-  border-right: 1px solid white;
-  padding-left: 5px;
-  padding-right: 5px;
-  cursor: pointer;
-	font-size: 80%;
-	padding-inline: 10px;
-	box-shadow: 1px -1px 0.5px 0px #888
-}
-
-tab button:hover,
-tab button.active {
-	background-color: grey;
-	color: #fff;
-}
-.tabcontent {
-	display: none;
-	padding: 2rem;
-	background: #eee;
-	box-shadow: rgba(0, 0, 0, 0.25) 0px 25px 50px -12px;
-	animation: fadeEffect 1s;
-}
 @keyframes fadeEffect {
 	from {opacity: 0;}
 	to {opacity: 1;}
 }
 
-#training-set {
-    min-width: 1400px;
-    border: 3px solid white;
+.cardSet {
+	min-width: 1400px;
+    border: 3px solid rgba(0, 0, 0, 0.1);
     border-radius: 5px;
     padding: 4px;
 	margin-right: -12px;
 	margin-left: -30px;
 }
-#evaluation-set {
-  min-width: 1400px;
 
-  border: 1px solid white;
-}
-#test-set {
-  min-width: 1400px;
-
-  border: 1px solid white;
-}
 card {
 	width: 160px;
 	opacity: 0.9;

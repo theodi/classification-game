@@ -339,10 +339,10 @@ function renderLeaderboard(data,prefix) {
 		if (isTutor || prefix == "session") {
 			displayName = data[i].playerName;
 		}
-  		var row = '<tr class="'+userClass+'"><td>#'+rank+'</td><td>'+data[i].attempt+'</td><td>'+displayName+'</td><td>'+data[i].score+'</td></tr>';
+  		var row = '<tr class="'+userClass+'"><td>'+rank+'</td><td>'+data[i].attempt+'</td><td>'+displayName+'</td><td>'+data[i].score+'</td></tr>';
   		$('#'+prefix+'-leaderboard-body').append(row);
   	} else {
-  		var row = '<tr class="'+userClass+'"><td>#'+rank+'</td><td>'+data[i].attempt+'</td><td>'+data[i].id.substring(0,10)+'</td><td>'+data[i].score+'</td></tr>';
+  		var row = '<tr class="'+userClass+'"><td>'+rank+'</td><td>'+data[i].attempt+'</td><td>'+data[i].id.substring(0,10)+'</td><td>'+data[i].score+'</td></tr>';
   		$('#'+prefix+'-leaderboard-body').append(row);
   	}
   }

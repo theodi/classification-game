@@ -3,11 +3,13 @@ const chartOptions = {
   xAxis: "city",
   yAxis: "bath",
   pointColor: "city",
-  binCount: 3,
+  binCount: 5,
 };
 let colorCounter = 0;
 let chartData = {};
 let chartInstance = null;
+let mode = 'light';
+let modeColor = 'black';
 
 const selectOptions = ["Bath","Beds","Year Built","Elevation","Sqft","Price","Price per Sqft","City"];
 
@@ -15,7 +17,46 @@ $('document').ready(function(){
   populateOptions('xAxis', selectOptions);
   populateOptions('yAxis', selectOptions);
   populateOptions('pointColor', selectOptions);
+  detectColorScheme();
 });
+
+function detectColorScheme() {
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if (prefersDark) {
+      mode = 'dark';
+      modeColor = 'white';
+      gridColor = 'rgba(255,255,255,0.1)';
+      var buttons = document.querySelectorAll('button');
+
+      // Loop through the buttons to find and style links within them
+      buttons.forEach(function(button) {
+          // Select all <a> tags within the button
+          var links = button.querySelectorAll('a');
+
+          // Loop through the links within the button and set their color
+          links.forEach(function(link) {
+              link.style.color = modeColor;
+          });
+      });
+      var cardBoxes = document.querySelectorAll('.cardbox');
+
+      // Loop through the cardbox elements and set their border color
+      cardBoxes.forEach(function(cardBox) {
+          cardBox.style.borderColor = gridColor;
+      });
+
+      var cardSets = document.querySelectorAll('.cardSet');
+
+      // Loop through the cardbox elements and set their border color
+      cardSets.forEach(function(cardSet) {
+          cardSet.style.borderColor = gridColor;
+      });
+  } else {
+      mode = 'light';
+      modeColor = 'black';
+      gridColor = 'rgba(0,0,0,0.1)';
+  }
+}
 
 function populateOptions(elementName, selectOptions) {
   const selectElement = document.getElementById(elementName);
@@ -155,39 +196,39 @@ function renderChart() {
           title: {
             display: true,
             text: xAxis,
-            color: 'white',
+            color: modeColor,
             font: {
               size: 16,
             }
           },
           grid: {
-            color: 'rgba(255,255,255,0.1)'
+            color: gridColor
           },
           ticks: {
-            color: 'white'
+            color: modeColor
           }
         },
         y: {
           title: {
             display: true,
             text: yAxis,
-            color: 'white',
+            color: modeColor,
             font: {
               size: 16,
             }
           },
           grid: {
-            color: 'rgba(255,255,255,0.1)'
+            color: gridColor
           },
           ticks: {
-            color: 'white'
+            color: modeColor
           }
         }
       },
       plugins: {
         legend: {
           display: true,
-          color: 'white'
+          color: modeColor
         }
       }
     };
@@ -222,7 +263,7 @@ function renderChart() {
         backgroundColor: color,
         borderColor: color,
         outlierColor: color,
-        color: 'white',
+        color: modeColor,
         pointRadius: 8
       };
     });
@@ -235,32 +276,32 @@ function renderChart() {
           title: {
             display: true,
             text: yAxis,
-            color: 'white',
+            color: modeColor,
             font: {
               size: 16
             }
           },
           grid: {
-            color: 'rgba(255,255,255,0.1)'
+            color: gridColor
           },
           ticks: {
-            color: 'white'
+            color: modeColor
           }
         },
         x: {
           title: {
             display: true,
             text: xAxis,
-            color: 'white',
+            color: modeColor,
             font: {
               size: 16
             }
           },
           grid: {
-            color: 'rgba(255,255,255,0.1)'
+            color: gridColor
           },
           ticks: {
-            color: 'white'
+            color: modeColor
           }
         }
       }
@@ -321,39 +362,39 @@ function renderChart() {
           title: {
             display: true,
             text: xAxis,
-            color: 'white',
+            color: modeColor,
             font: {
               size: 16
             }
           },
           grid: {
-            color: 'rgba(255,255,255,0.1)'
+            color: gridColor
           },
           ticks: {
-            color: 'white'
+            color: modeColor
           }
         },
         y: {
           title: {
             display: true,
             text: 'Frequency',
-            color: 'white',
+            color: modeColor,
             font: {
               size: 16
             }
           },
           grid: {
-            color: 'rgba(255,255,255,0.1)'
+            color: gridColor
           },
           ticks: {
-            color: 'white'
+            color: modeColor
           }
         }
       },
       plugins: {
         legend: {
           display: true,
-          color: 'white'
+          color: modeColor
         }
       }
     };
@@ -450,27 +491,27 @@ function renderChart() {
           title: {
             display: true,
             text: 'Bins',
-            color: 'white'
+            color: modeColor
           },
           grid: {
-            color: 'rgba(255,255,255,0.1)'
+            color: gridColor
           },
           ticks: {
-            color: 'white'
+            color: modeColor
           }
         },
         y: {
           display: true,
           title: {
             display: true,
-            color: 'white',
+            color: modeColor,
             text: 'Frequency'
           },
           grid: {
-            color: 'rgba(255,255,255,0.1)'
+            color: gridColor
           },
           ticks: {
-            color: 'white'
+            color: modeColor
           }
         }
       },

@@ -490,7 +490,7 @@ function getAIResult_Hybrid(cardset,number) {
         $("#result"+number+"-hybrid").html("+10<br/>(Draw)");
     } else {
         results.vsHybrid.lost += 0.25;
-        $("#result"+number+"-hybrid").html("+0<br/>(You loose)");
+        $("#result"+number+"-hybrid").html("+0<br/>(You lose)");
     }
 
     //document.getElementById("result"+number+"-hybrid").innerHTML = Math.round(hres) + "%";

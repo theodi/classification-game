@@ -1,3 +1,7 @@
+:root {
+  --button-base: #0bf6;
+  --button-hover: #9b9b9b;
+}
 .sidebar {
     position: fixed;
     left: 0;

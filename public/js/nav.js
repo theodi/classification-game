@@ -41,8 +41,8 @@ $(document).ready( function () {
                     selectElements.forEach(function(selectElement) {
                         selectElement.disabled = true;
                     });
-                    var inputElements = form.querySelectorAll('input');
-                    inputElements.forEach(function(inputElement) {
+                    var userInputElements = document.querySelectorAll('.userInput');
+                    userInputElements.forEach(function(inputElement) {
                         inputElement.disabled = true;
                     });
 
@@ -64,10 +64,10 @@ $(document).ready( function () {
                     selectElements.forEach(function(selectElement) {
                         selectElement.disabled = false;
                     });
-                    var inputElements = form.querySelectorAll('input');
-                    inputElements.forEach(function(inputElement) {
+                    var userInputElements = document.querySelectorAll('.userInput');
+                    userInputElements.forEach(function(inputElement) {
                         inputElement.disabled = false;
-                    });
+                    })
                     var browseButtons = document.getElementsByClassName('browseButton');
                     for (var i = 0; i < browseButtons.length; i++) {
                         browseButtons[i].style.display = 'block';

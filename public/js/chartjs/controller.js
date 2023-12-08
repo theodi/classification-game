@@ -45,6 +45,13 @@ function detectColorScheme() {
           cardBox.style.borderColor = gridColor;
       });
 
+      var cardBoxesThin = document.querySelectorAll('.cardbox-thin');
+
+      // Loop through the cardbox elements and set their border color
+      cardBoxesThin.forEach(function(cardBox) {
+          cardBox.style.borderColor = gridColor;
+      });
+
       var cardSets = document.querySelectorAll('.cardSet');
 
       // Loop through the cardbox elements and set their border color

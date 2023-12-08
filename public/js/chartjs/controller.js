@@ -265,7 +265,9 @@ function renderChart() {
         data: [values],
         backgroundColor: color,
         borderColor: color,
-        outlierColor: color,
+        meanBackgroundColor: modeColor,
+        outlierBackgroundColor: modeColor,
+        meanColor: modeColor,
         color: modeColor,
         pointRadius: 8
       };

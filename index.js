@@ -603,6 +603,11 @@ app.get('/profile', function(req, res) {
   res.render('pages/profile')
 });
 
+app.get('/help', function(req, res) {
+  res.locals.pageTitle ="Video walkthrough";
+  res.render('pages/help')
+});
+
 //Keep this at the END!
 
 app.get('*', function(req, res){

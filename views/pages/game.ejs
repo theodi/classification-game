@@ -54,6 +54,7 @@
       <li class="arrow-icon"><a href="#leaderboards" class="toggle-link">Leaderboards</a></li>
       <li class="arrow-icon"><a href="#about" class="toggle-link">About</a></li>
     </ul>
+    <div id="pin" class="pinCode"></div>
   </div>
   <div class="main-content">
     <%- include('../partials/gameInstructions') %>
@@ -69,6 +70,7 @@
 </body>
 <script type="text/javascript">
   var group = <%= set %>;
+  var requireEvaluationPin = <%= requireEvaluationPin %>;
   var sessionId = "<%= session %>";
   var leaderboardId = "<%= leaderboardId %>";
   var resultId = "<%= resultId %>";
@@ -76,6 +78,8 @@
   var player_name = "";
   var attempt = 0;
   var storage = {};
+  const randomPin = Math.floor(10000 + Math.random() * 90000);
+  let requiredPasscode = 0;
   /*
   const queryString = window.location.search;
   const urlParams = new URLSearchParams(queryString);
@@ -93,6 +97,23 @@
       getRandomPurples(20);
       loadLeaderboardData();
     },500);
+
+    if (requireEvaluationPin) {
+      // Generate a random 5-digit numeric pin
+
+      document.getElementById('pin').textContent = randomPin;
+      document.getElementById('pin').style.display = 'block';
+
+      // Apply the transformation to the random 5-digit numeric to get a 4-digit pin
+      const transformedDigits = [];
+      for (let i = 0; i < 4; i++) {
+          const digit = parseInt(randomPin.toString()[i]);
+          const fifthDigit = parseInt(randomPin.toString()[4]);
+          const transformedDigit = (digit * 7 + fifthDigit) % 10;
+          transformedDigits.push(transformedDigit);
+      }
+      requiredPasscode = transformedDigits.join('');
+    }
 
     document.getElementById("groupcsv").href="/data/csvs/Group_" + group + ".csv";
     document.getElementById("grouppdf").href="/data/pdfs/Group_" + group + ".pdf";

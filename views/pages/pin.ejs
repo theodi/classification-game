@@ -1,0 +1,43 @@
+<!-- views/pin.ejs -->
+<%- include('../partials/header') %>
+<div class="container">
+  <div class="jumbotron">
+    <h1 class="text-primary text-center">Get evaluation pin</h1>
+    <div class="row">
+      <div class="col-sm-6">
+        <form id="pinForm">
+          <div class="form-group">
+            <label for="numericPin">Enter a 5-digit numeric pin:</label>
+            <input type="text" class="form-control" id="numericPin" name="numericPin" maxlength="5" required>
+          </div>
+        </form>
+      </div>
+      <div class="col-sm-6">
+        <div id="result">
+          <!-- The four-digit pin will be displayed here -->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('input', function (event) {
+    if (event.target.id === 'numericPin' && event.target.value.length === 5) {
+      const numericPin = event.target.value;
+      const lastDigit = parseInt(numericPin.charAt(4));
+      const transformedDigits = [];
+
+      for (let i = 0; i < 4; i++) {
+        const digit = parseInt(numericPin.charAt(i));
+        const transformedDigit = (digit * 7 + lastDigit) % 10;
+        transformedDigits.push(transformedDigit);
+      }
+
+      const fourDigitPin = transformedDigits.join('');
+      document.getElementById('result').innerHTML = `<p>Transformed 4-digit Pin: ${fourDigitPin}</p>`;
+    }
+  });
+</script>
+
+<%- include('../partials/footer') %>

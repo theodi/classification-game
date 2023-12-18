@@ -17,11 +17,27 @@ $(document).ready( function () {
                     success = false;
                 }
             }
+            if (targetId === "evaluation" && requireEvaluationPin && success) {
+                success = false;
+                console.log('in here');
+                // Prompt the user for a 4-digit pin containing the 5-digit numeric
+                const userInput = prompt(`Enter the evaluation pin. Your session ID is ${randomPin}.`);
+
+                // Check if the user's input is a valid 4-digit number
+                if (/^\d{4}$/.test(userInput)) {
+                    // Check if the user's input matches the generated 4-digit pin
+                    if (userInput === requiredPasscode) {
+                        success = true;
+                    }
+                }
+            }
             if (success) {
                 document.querySelectorAll('section').forEach(section => {
                     section.classList.add('hidden');
                 });
                 document.getElementById(targetId).classList.remove('hidden');
+            } else {
+                return;
             }
             if (targetId === "charts" && !chartRendered) {
                 renderChart();

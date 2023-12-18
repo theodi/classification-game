@@ -19,6 +19,7 @@
                 <th>Name</th>
                 <th>Start date</th>
                 <th>End data</th>
+                <th>Tutor mode</th>
                 <th>Results</th>
                 <th>Game link</th>
                 <th>Leaderboard</th>
@@ -110,6 +111,10 @@
                 addToRow(row,data[i].name);
                 addToRow(row,data[i].startTime);
                 addToRow(row,data[i].endTime);
+                if (!data[i].tutorMode) {
+                    data[i].tutorMode = "off";
+                }
+                addToRow(row,data[i].tutorMode);
                 //addToRow(row,data[i].timeLimit);
                 var td = document.createElement('td');
                 td.setAttribute('id','responses_'+data[i]._id);

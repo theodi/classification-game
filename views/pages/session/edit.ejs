@@ -15,13 +15,15 @@
     <form action="/leaderboard/<%= id %>" method="post" id="lform">
       <label class="para" for="name">Session mame:</label><br/><br/>
       <input type="text" id="name" name="name" placeholder="Name" required><br><br/>
+      <label class="para" for="name">Require code for evaluation (tutor mode):</label><br/><br/>
+      <input type="checkbox" id="tutorMode" name="tutorMode"/><br><br/>
       <label class="para" for="startTime" required>Start time:</label><br/><br/>
       <input type="datetime-local" id="startTime" name="startTime"><br/><br/>
       <label class="para" for="endTime">End time:</label><br/><br/>
       <input type="datetime-local" id="endTime" name="endTime"><br/><br/>
       <!--<label class="para" for="timeLimit">User time limit (minutes):</label><br/><br/>
       <input type="number" id="timeLimit" name="timeLimit"><br/><br/>-->
-      
+
       <input type="submit" value="Submit">
     </form>
 </div>

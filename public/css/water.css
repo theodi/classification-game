@@ -36,6 +36,17 @@
   ul {
     padding-inline: 18px;
   }
+  .sidebar .pinCode {
+    text-align: center;
+    color: darkgray;
+    font-size: 2em;
+    position: fixed;
+    bottom: 0px;
+    width: inherit;
+    background-color: inherit;
+    padding-bottom: 10px;
+    display: none;
+  }
 
   /* Adjust content margin to account for the sidebar */
   section {

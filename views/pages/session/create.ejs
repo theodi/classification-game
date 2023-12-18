@@ -15,6 +15,8 @@
     <form action="/leaderboard/<%= id %>/createSession" method="post" id="lform">
       <label class="para" for="name">Session name:</label><br/><br/>
       <input type="text" id="name" name="name" placeholder="Name" required><br><br/>
+      <label class="para" for="name">Require code for evaluation (tutor mode):</label><br/><br/>
+      <input type="checkbox" id="tutorMode" name="tutorMode"/><br><br/>
       <label class="para" for="startTime" required>Start time (UTC):</label><br/><br/>
       <input type="datetime-local" id="startTime" name="startTime"><br/><br/>
       <label class="para" for="endTime">End time (UTC):</label><br/><br/>

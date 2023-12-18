@@ -141,15 +141,11 @@ function renderGame(req,res,data) {
     .collection('Leaderboards')
     .findOne({"_id": new ObjectId(data.leaderboardId)},function(err,data2) {
       var chosenSet = data2.cardset[Math.floor(Math.random() * data2.cardset.length)];
-
-      /*
-      delete data["leaderboardId"];
-      data.leaderboard = data2;
-      res.set('Content-Type', 'application/json');
-      res.send(JSON.stringify(data, null, 4));
-      */
-
-      res.render('pages/game',{session: sessionId, leaderboardId: data.leaderboardId, set: chosenSet, resultId: null, isTutor: data.isTutor});
+      let tutorMode = false;
+      if (data.tutorMode == "on") {
+        tutorMode = true;
+      }
+      res.render('pages/game',{session: sessionId, leaderboardId: data.leaderboardId, set: chosenSet, resultId: null, isTutor: data.isTutor, requireEvaluationPin: tutorMode});
   });
 }
 
@@ -380,6 +376,17 @@ app.get('/result/:resultId/tree', function(req, res) {
       });
   }
 });
+
+app.get('/evaluationPin', function(req, res) {
+  if (!req.isAuthenticated()) {
+    res.locals.pageTitle ="401 Unauthorised";
+    return res.status(401).render("errors/401");
+  } else {
+    res.locals.pageTitle ="Evaluation pin";
+    res.render('pages/pin', {})
+  }
+});
+
 
 app.post('/result', function(req, res) {
   if (!req.body.score) {

@@ -34,7 +34,7 @@ function onchange() {
 
 function saveData() {
 	storage = {};
-	if (window.localStorage.getItem(sessionId) != "null") {
+	if (window.localStorage.getItem(sessionId)) {
 		storage = JSON.parse(window.localStorage.getItem(sessionId));
 	}
 
@@ -270,7 +270,7 @@ function loadLeaderboardData() {
 
 	if (userId) {
 		lockPlayerName = true;
-		if (window.localStorage.getItem(sessionId) != "null") {
+		if (window.localStorage.getItem(sessionId)) {
 			storage = JSON.parse(window.localStorage.getItem(sessionId));
 			if (storage.playerName == userId) {
 				//Do nothing
@@ -282,7 +282,7 @@ function loadLeaderboardData() {
 			}
 		}
  	}
-	if ((window.localStorage.getItem(sessionId) == "null" || window.localStorage.getItem(sessionId) == null) && resultId == "") {
+	if (!window.localStorage.getItem(sessionId) && resultId == "") {
 		changeName();
 		saveData();
 		loadLeaderboards();

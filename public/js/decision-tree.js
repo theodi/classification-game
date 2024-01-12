@@ -1,4 +1,5 @@
 /* Decision tree functions */
+var lockPlayerName = false;
 function onchange() {
 	    var condition_a = $('#condition_a');
 	    var condition_b = $('#condition_b');
@@ -33,8 +34,8 @@ function onchange() {
 
 function saveData() {
 	storage = {};
-	if (window.localStorage.getItem("classification-game") != "null") {
-		storage = JSON.parse(window.localStorage.getItem("classification-game"));
+	if (window.localStorage.getItem(sessionId) != "null") {
+		storage = JSON.parse(window.localStorage.getItem(sessionId));
 	}
 
 	var boundaries = {};
@@ -70,7 +71,7 @@ function saveData() {
 		console.log(err);
 	}
 
-	window.localStorage.setItem("classification-game",JSON.stringify(storage));
+	window.localStorage.setItem(sessionId,JSON.stringify(storage));
 }
 
 function sendResult(result) {
@@ -96,7 +97,7 @@ function saveResult() {
 		console.log("Not saving result, view only");
 		return;
 	}
-	storage = JSON.parse(window.localStorage.getItem("classification-game"));
+	storage = JSON.parse(window.localStorage.getItem(sessionId));
 	if (storage.results) {
 		console.log("Have results object")
 	} else {
@@ -135,7 +136,7 @@ function saveResult() {
 	for (var i=0;i<storage.results.length;i++) {
 		sendResult(storage.results[i]);
 	}
-	window.localStorage.setItem("classification-game",JSON.stringify(storage));
+	window.localStorage.setItem(sessionId,JSON.stringify(storage));
 
 }
 
@@ -151,19 +152,27 @@ function resetTree() {
 	storage.boundaries = "";
 	storage.predictions = "";
 	storage.confidences = "";
-	window.localStorage.setItem("classification-game",JSON.stringify(storage));
+	window.localStorage.setItem(sessionId,JSON.stringify(storage));
 
 	alert("Tree reset, please refresh your browser to complete the reset!");
 
 }
 
 function changeName() {
-	player_name = prompt("Welcome to the ODI machine learning game. Please enter your player name.",player_name);
-	$('#playerWelcome').html("Welcome " + player_name);
-  	$('#playerWelcome').css("display","inline");
-	saveData();
-	loadLeaderboards();
+	if (!lockPlayerName) {
+		player_name = prompt("Welcome to the ODI machine learning game. Please enter your player name.",player_name);
+		$('#playerWelcome').html("Welcome " + player_name);
+  		$('#playerWelcome').css("display","inline");
+		saveData();
+		loadLeaderboards();
+	}
 }
+
+
+function getQueryParam(param) {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(param);
+  }
 
 function processLoad(storage) {
 	if (resultId) {
@@ -176,6 +185,10 @@ function processLoad(storage) {
 		var boundaries = storage.boundaries;
 		predictions = storage.predictions;
 		player_name = storage.playerName;
+		lockPlayerName = storage.lockPlayerName;
+		if (lockPlayerName) {
+			document.getElementById('changeName').style.display = "none";
+		}
 		attempt = storage.attempt;
 		if (storage.playerName == ""){
 	      player_name = prompt("Welcome to the ODI machine learning game. Please enter your player name.","");
@@ -253,7 +266,23 @@ function processLoad(storage) {
 }
 
 function loadLeaderboardData() {
-	if ((window.localStorage.getItem("classification-game") == "null" || window.localStorage.getItem("classification-game") == null) && resultId == "") {
+	var userId = getQueryParam('userId');
+
+	if (userId) {
+		lockPlayerName = true;
+		if (window.localStorage.getItem(sessionId) != "null") {
+			storage = JSON.parse(window.localStorage.getItem(sessionId));
+			if (storage.playerName == userId) {
+				//Do nothing
+			} else {
+				storage = {};
+				storage.playerName = userId;
+				storage.lockPlayerName = true;
+				window.localStorage.setItem(sessionId,JSON.stringify(storage));
+			}
+		}
+ 	}
+	if ((window.localStorage.getItem(sessionId) == "null" || window.localStorage.getItem(sessionId) == null) && resultId == "") {
 		changeName();
 		saveData();
 		loadLeaderboards();
@@ -271,7 +300,7 @@ function loadLeaderboardData() {
 			storage.boundaries = data.tree.boundaries;
 			storage.predictions = data.tree.predictions;
 			confidences = data.confidences;
-			window.localStorage.setItem("classification-game",JSON.stringify(data));
+			window.localStorage.setItem(sessionId,JSON.stringify(data));
 			processLoad(storage);
 			loadLeaderboards();
   		});
@@ -280,11 +309,11 @@ function loadLeaderboardData() {
 		player_name = '<span style="color:red">Tutor</span>';
 		$('#playerWelcome').html("Welcome " + player_name);
   		$('#playerWelcome').css("display","inline");
-  		storage = JSON.parse(window.localStorage.getItem("classification-game"));
+  		storage = JSON.parse(window.localStorage.getItem(sessionId));
 		processLoad(storage);
 		loadLeaderboards();
 	} else {
-		storage = JSON.parse(window.localStorage.getItem("classification-game"));
+		storage = JSON.parse(window.localStorage.getItem(sessionId));
 		processLoad(storage);
 		loadLeaderboards();
 	}

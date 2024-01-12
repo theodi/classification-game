@@ -125,6 +125,7 @@ function saveResult() {
 	result.vsMachine = results.vsMachine;
 
 	attempt = attempt + 1;
+	storage.attempt = attempt;
 	result.attempt = attempt;
 
 	delete result.result.score;

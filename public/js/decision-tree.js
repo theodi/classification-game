@@ -277,12 +277,14 @@ function loadLeaderboardData() {
 			} else {
 				storage = {};
 				storage.playerName = userId;
+				storage.attempt = 0;
 				storage.lockPlayerName = true;
 				window.localStorage.setItem(sessionId,JSON.stringify(storage));
 			}
 		} else {
 			storage = {};
 			storage.playerName = userId;
+			storage.attempt = 0;
 			storage.lockPlayerName = true;
 			window.localStorage.setItem(sessionId,JSON.stringify(storage));
 		}

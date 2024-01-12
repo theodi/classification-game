@@ -280,6 +280,11 @@ function loadLeaderboardData() {
 				storage.lockPlayerName = true;
 				window.localStorage.setItem(sessionId,JSON.stringify(storage));
 			}
+		} else {
+			storage = {};
+			storage.playerName = userId;
+			storage.lockPlayerName = true;
+			window.localStorage.setItem(sessionId,JSON.stringify(storage));
 		}
  	}
 	if (!window.localStorage.getItem(sessionId) && resultId == "") {

@@ -10,10 +10,11 @@
 </style>
 <div class="container box">
     <div class="jumbotron text-center text-primary">
-        <h1><span class="fa fa-lock"></span>Create session</h1>
+        <h1><span class="fa fa-lock"></span>Edit session</h1>
+        <div id="res" style="margin: 1em;"></div>
     </div>
-    <form action="/leaderboard/<%= id %>" method="post" id="lform">
-      <label class="para" for="name">Session mame:</label><br/><br/>
+    <form action="/leaderboard/<%= id %>/<%= sessionId %>" method="post" id="lform">
+      <label class="para" for="name">Session name:</label><br/><br/>
       <input type="text" id="name" name="name" placeholder="Name" required><br><br/>
       <label class="para" for="name">Require code for evaluation (tutor mode):</label><br/><br/>
       <input type="checkbox" id="tutorMode" name="tutorMode"/><br><br/>
@@ -21,10 +22,71 @@
       <input type="datetime-local" id="startTime" name="startTime"><br/><br/>
       <label class="para" for="endTime">End time:</label><br/><br/>
       <input type="datetime-local" id="endTime" name="endTime"><br/><br/>
+      <label class="para" for="hidePublic">Hide from public leaderboard</label><br/><br/>
+      <input type="checkbox" id="hidePublic" name="hidePublic"/><br><br/>
       <!--<label class="para" for="timeLimit">User time limit (minutes):</label><br/><br/>
       <input type="number" id="timeLimit" name="timeLimit"><br/><br/>-->
 
       <input type="submit" value="Submit">
     </form>
 </div>
+<script>
+    $(document).ready( function () {
+        $.getJSON('/leaderboard/<%= id %>/<%= sessionId %>', function(data) {
+            $('#name').val(data.name);
+            $('#tutorMode').prop('checked', data.tutorMode == "on");
+            $('#startTime').val(data.startTime);
+            $('#endTime').val(data.endTime);
+            $('#hidePublic').prop('checked', data.hidePublic == "on");
+        });
+        document.getElementById('lform').addEventListener('submit', function (e) {
+            e.preventDefault(); // Prevent the default form submission
+
+            // Get form data
+            var formData = new FormData(document.getElementById('lform'));
+            var resDiv = document.getElementById('res');
+            // Check if 'tutorMode' checkbox is not checked and set it to 'off'
+            if (!formData.get('tutorMode')) {
+                formData.set('tutorMode', 'off');
+            }
+
+            // Check if 'hidePublic' checkbox is not checked and set it to 'off'
+            if (!formData.get('hidePublic')) {
+                formData.set('hidePublic', 'off');
+            }
+            console.log(JSON.stringify(Object.fromEntries(formData)));
+            // Make a PUT request
+            fetch('/leaderboard/<%= id %>/<%= sessionId %>', {
+                method: 'PUT',
+                body: JSON.stringify(Object.fromEntries(formData)),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(function (response) {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                resDiv.textContent = "Error updating session";
+                setTimeout(function () {
+                    resDiv.textContent = '';
+                }, 5000);
+            })
+            .then(function (data) {
+                // Handle the response if needed
+                resDiv.textContent = "Session updated";
+                setTimeout(function () {
+                    resDiv.textContent = '';
+                }, 5000);
+            })
+            .catch(function (error) {
+                // Handle errors if needed
+                resDiv.textContent = "Error updating session (" + error + ")";
+                setTimeout(function () {
+                    resDiv.textContent = '';
+                }, 5000);
+            });
+        });
+    });
+</script>
 <%- include('../../partials/footer') %>

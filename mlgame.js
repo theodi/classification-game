@@ -216,40 +216,72 @@ app.get('/browse', function(req,res) {
  * Methods to get leaderboard results
  */
 
-app.get('/leaderboard/all/results', function(req, res) {
+app.get('/leaderboard/all/results', async function(req, res) {
   type = req.headers.accept.split(',')[0];
+
   if (req.isAuthenticated()) {
-     if (type=="application/json") {
-      var dbConnect = dbo.getDb();
-      dbConnect
-        .collection("Results")
-        .find()
-        .sort( {"score": -1} )
-        .toArray(function(err,output) {
-          res.set('Content-Type', 'application/json');
-          res.send(JSON.stringify(output, null, 4));
-        });
-     } else {
+    if (type == "application/json") {
+      try {
+        const dbConnect = dbo.getDb();
+
+        // Fetch sessions with hidePublic set to false
+        const sessions = await dbConnect
+          .collection("Sessions")
+          .find({ hidePublic: "off" })
+          .toArray();
+
+        // Extract session IDs
+        const sessionIds = sessions.map(session => session._id);
+        const query = { sessionId: { $in: sessionIds.map(id => id.toString()) } };
+        const results = await dbConnect
+          .collection("Results")
+          .find(query)
+          .project({"id":1,"score":1,"_id":0,"confidences":1,"result":1,"vsHybrid":1,"vsMachine":1,"attempt":1})
+          .sort({"score": -1})
+          .toArray();
+
+        res.set('Content-Type', 'application/json');
+        res.send(JSON.stringify(results, null, 4));
+      } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Internal Server Error' });
+      }
+    } else {
       res.render('pages/leaderboard');
-     }
+    }
   } else {
-    if (type=="application/json") {
-      var dbConnect = dbo.getDb();
-      dbConnect
-        .collection("Results")
-        .find()
-        .project({"id":1,"score":1,"_id":0,"confidences":1,"result":1,"vsHybrid":1,"vsMachine":1,"attempt":1})
-        .sort( {"score": -1} )
-        .toArray(function(err,output) {
-          res.set('Content-Type', 'application/json');
-          res.send(JSON.stringify(output, null, 4));
-        });
+    if (type == "application/json") {
+      try {
+        const dbConnect = dbo.getDb();
+
+        // Fetch sessions with hidePublic set to false
+        const sessions = await dbConnect
+          .collection("Sessions")
+          .find({ hidePublic: "off" })
+          .toArray();
+
+        const sessionIds = sessions.map(session => session._id);
+        const query = { sessionId: { $in: sessionIds.map(id => id.toString()) } };
+        const results = await dbConnect
+          .collection("Results")
+          .find(query)
+          .project({"id":1,"score":1,"_id":0,"confidences":1,"result":1,"vsHybrid":1,"vsMachine":1,"attempt":1})
+          .sort({"score": -1})
+          .toArray();
+
+        res.set('Content-Type', 'application/json');
+        res.send(JSON.stringify(results, null, 4));
+      } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Internal Server Error' });
+      }
     } else {
       res.locals.pageTitle ="Leaderboard";
       res.render('pages/leaderboard');
     }
   }
 });
+
 
 app.get('/leaderboard/:id/results', function(req, res) {
   res.locals.pageTitle ="Leaderboard for " + req.params.id;
@@ -565,6 +597,34 @@ app.post('/leaderboard/:id/createSession', function(req, res) {
     });
 });
 
+app.put('/leaderboard/:id/:sessionId', function(req, res) {
+  var dbConnect = dbo.getDb();
+  var data = req.body;
+
+  // Extract the session ID from the URL parameters
+  var sessionId = req.params.sessionId;
+
+  // Update the session data
+  dbConnect
+    .collection('Sessions')
+    .updateOne(
+      { _id: ObjectId(sessionId) }, // Use ObjectId to convert sessionId to MongoDB ObjectId
+      { $set: data },
+      function(err, result) {
+        if (err) {
+          console.error('Error updating session:', err);
+          res.status(500).json({ error: 'Internal Server Error' }); // Return a 500 error code to the front end
+        } else {
+          if (result.matchedCount === 0) {
+            res.status(404).json({ error: 'Session not found' }); // Return a 404 error code if the session was not found
+          } else {
+            res.status(200).json({ message: 'Session updated' }); // Return a 200 success code to the front end
+          }
+        }
+      }
+    );
+});
+
 app.get('/leaderboard/:id/:sessionId', function(req, res) {
   res.locals.pageTitle ="Leaderboard for session " + req.params.sessionId;
   res.locals.id = req.params.id;
@@ -585,6 +645,17 @@ app.get('/leaderboard/:id/:sessionId', function(req, res) {
   } else {
     res.render('pages/session/view', {})
   }
+});
+
+app.get('/leaderboard/:id/:sessionId/edit', function(req, res) {
+  if (!req.isAuthenticated()) {
+    res.locals.pageTitle ="401 Unauthorised";
+    return res.status(401).render("errors/401");
+  }
+  res.locals.pageTitle ="Edit session";
+  res.locals.id = req.params.id;
+  res.locals.sessionId = req.params.sessionId;
+  res.render('pages/session/edit', {})
 });
 
 app.delete('/leaderboard/:id/:sessionId', function(req, res) {

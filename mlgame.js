@@ -403,7 +403,7 @@ app.get('/result/:resultId/tree', function(req, res) {
         dbConnect
           .collection('Sessions')
           .findOne({"_id": new ObjectId(data.sessionId)},function(err,lbdata) {
-            res.render('pages/game',{session: data.sessionId, leaderboardId: lbdata.leaderboardId, set: data.cardSet, resultId: req.params.resultId,  isTutor: true});
+            res.render('pages/game',{session: data.sessionId, leaderboardId: lbdata.leaderboardId, set: data.cardSet, resultId: req.params.resultId,  isTutor: true, requireEvaluationPin: false});
           });
       });
   }

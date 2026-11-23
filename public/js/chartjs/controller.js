@@ -1,7 +1,7 @@
 const chartOptions = {
   chartType: "boxplot",
   xAxis: "city",
-  yAxis: "bath",
+  yAxis: "price_per_sqft",
   pointColor: "city",
   binCount: 5,
 };
@@ -11,12 +11,25 @@ let chartInstance = null;
 let mode = 'light';
 let modeColor = 'black';
 
-const selectOptions = ["Bath","Beds","Year Built","Elevation","Sqft","Price","Price per Sqft","City"];
+const selectOptions = [];
+
+function initChartFeatures(features) {
+  selectOptions.length = 0;
+  features.forEach(function(feature) {
+    selectOptions.push({ value: feature.column, label: feature.label });
+  });
+  selectOptions.push({ value: 'city', label: 'City' });
+  chartOptions.yAxis = features[0].column;
+  chartOptions.xAxis = 'city';
+  chartOptions.pointColor = 'city';
+  if (document.getElementById('xAxis')) {
+    populateOptions('xAxis', selectOptions);
+    populateOptions('yAxis', selectOptions);
+    populateOptions('pointColor', selectOptions);
+  }
+}
 
 $('document').ready(function(){
-  populateOptions('xAxis', selectOptions);
-  populateOptions('yAxis', selectOptions);
-  populateOptions('pointColor', selectOptions);
   detectColorScheme();
 });
 
@@ -76,22 +89,23 @@ function populateOptions(elementName, selectOptions) {
 
   selectOptions.forEach(option => {
       const optionElement = document.createElement('option');
-      const optionValue = option.toLowerCase().replace(/ /g, '_'); // Convert value
+      const optionValue = option.value || option.toLowerCase().replace(/ /g, '_');
       optionElement.value = optionValue;
-      optionElement.text = option;
+      optionElement.text = option.label || option;
 
-      // Set the default selected option based on the corresponding variable
       if (optionValue === selectedValue) {
           optionElement.selected = true;
       }
 
       selectElement.appendChild(optionElement);
-
+  });
+  if (!selectElement.getAttribute('data-bound')) {
       selectElement.addEventListener('change', function () {
         chartOptions[elementName] = this.value;
         renderChart();
       });
-  });
+      selectElement.setAttribute('data-bound', 'yes');
+  }
 }
 
 // Function to add listeners for binCount and chartType

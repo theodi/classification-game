@@ -53,6 +53,7 @@
       <li class="arrow-icon"><a href="#evaluation" class="toggle-link">Evaluate your model</a></li>
       <li class="arrow-icon"><a href="#leaderboards" class="toggle-link">Leaderboards</a></li>
       <li class="arrow-icon"><a href="#about" class="toggle-link">About</a></li>
+      <li class="arrow-icon"><a href="#" class="sign-out">Sign out</a></li>
     </ul>
     <div id="pin" class="pinCode"></div>
   </div>
@@ -66,45 +67,59 @@
     <%- include('../partials/decisionTree') %>
     <%- include('../partials/gameLeaderboards') %>
     <%- include('../partials/about') %>
+    <footer id="footer">
+      <p>Housing data from R2D3, "A Visual Introduction to Machine Learning" by Stephanie Yee and Tony Chu (<a href="http://www.r2d3.us">http://www.r2d3.us</a>), licensed <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>. Selected, reduced to five features and arranged into card sets by the Open Data Institute.</p>
+    </footer>
   </div>
 </body>
 <script type="text/javascript">
-  var group = <%= set %>;
+  var group = 1;
   var requireEvaluationPin = <%= requireEvaluationPin %>;
   var sessionId = "<%= session %>";
   var leaderboardId = "<%= leaderboardId %>";
   var resultId = "<%= resultId %>";
-  var isTutor = "<%= isTutor %>";
-  var player_name = "";
+  var isTutor = <%= isTutor ? 'true' : 'false' %>;
+  var entryMode = <%= entryMode ? 'true' : 'false' %>;
+  var replayOnly = <%= replayOnly ? 'true' : 'false' %>;
+  var evalSetId = <%- JSON.stringify(evalSetId || '') %>;
+  var presetTeam = <%- JSON.stringify(teamName || '') %>;
+  var player_name = presetTeam || "";
   var attempt = 0;
   var storage = {};
   const randomPin = Math.floor(10000 + Math.random() * 90000);
   let requiredPasscode = 0;
-  /*
-  const queryString = window.location.search;
-  const urlParams = new URLSearchParams(queryString);
-  group = urlParams.get('group');
-  */
-  if (!group) {
-    group = 1;
-  }
-  getBlueCards(group,"blue");
+
   $('document').ready(function(){
-    setTimeout(function() {
+    loadGameData().then(function() {
       renderCardsTable(cards.trainingSet);
-      renderCards(cards.trainingSet,'training');
       chartData = cards.trainingSet;
+      if (typeof renderChart === 'function' && document.getElementById('myChart')) {
+        renderChart();
+      }
       getRandomPurples(20);
-      loadLeaderboardData();
-    },500);
+      if (leaderboardId && !entryMode) {
+        loadLeaderboardData();
+      } else if (presetTeam) {
+        player_name = presetTeam;
+        $('#playerWelcome').text('Welcome ' + player_name);
+        $('#playerWelcome').css('display', 'inline');
+      } else if (!entryMode) {
+        changeName();
+      }
+      if (entryMode && typeof renderRecordingSheet === 'function') {
+        renderRecordingSheet();
+      }
+      if (replayOnly) {
+        var rerun = document.getElementById('rerunEvaluation');
+        if (rerun) {
+          rerun.classList.remove('hidden');
+        }
+      }
+    });
 
     if (requireEvaluationPin) {
-      // Generate a random 5-digit numeric pin
-
       document.getElementById('pin').textContent = randomPin;
       document.getElementById('pin').style.display = 'block';
-
-      // Apply the transformation to the random 5-digit numeric to get a 4-digit pin
       const transformedDigits = [];
       for (let i = 0; i < 4; i++) {
           const digit = parseInt(randomPin.toString()[i]);
@@ -115,8 +130,17 @@
       requiredPasscode = transformedDigits.join('');
     }
 
-    document.getElementById("groupcsv").href="/data/csvs/Group_" + group + ".csv";
-    document.getElementById("grouppdf").href="/data/pdfs/Group_" + group + ".pdf";
+    document.getElementById("groupcsv").href = "/data/csvs/Group_1.csv";
+    document.getElementById("grouppdf").href = "/data/pdfs/Group_1.pdf";
+
+    document.querySelectorAll('.sign-out').forEach(function(link) {
+      link.addEventListener('click', function(event) {
+        event.preventDefault();
+        fetch('/sessions', { method: 'DELETE' }).then(function() {
+          window.location = '/login';
+        });
+      });
+    });
 
     $('#condition_a').on('change', onchange);
     $('#condition_la').on('change', onchange);

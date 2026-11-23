@@ -1,0 +1,52 @@
+<%- include('../../partials/header') %>
+<style>
+  body { background: #111; color: #fff; }
+  main { padding: 2rem; }
+  h1 { font-size: 4rem; margin: 0 0 1rem; }
+  table { width: 100%; border-collapse: collapse; font-size: 2.4rem; }
+  th, td { text-align: left; padding: 0.6rem 0.4rem; border-bottom: 1px solid #444; }
+  a { color: #fff; }
+</style>
+<main>
+  <h1>Class board</h1>
+  <p><a href="/leaderboard/<%= id %>/<%= sessionId %>">Back to the session</a></p>
+  <table>
+    <thead><tr><th>Team</th><th>Total</th><th>Training</th><th>Gap</th></tr></thead>
+    <tbody id="board"></tbody>
+  </table>
+</main>
+<script>
+  var resultsUrl = '/leaderboard/<%= id %>/<%= sessionId %>/results';
+  function gap(result) {
+    if (!result.result || !result.confidences) return '';
+    var scores = [1, 2, 3, 4].map(function(n) {
+      return result.result[n] ? Number(result.result[n].player) : null;
+    }).filter(function(value) { return value !== null; });
+    if (!scores.length) return '';
+    var average = scores.reduce(function(sum, value) { return sum + value; }, 0) / scores.length;
+    return Math.round((Number(result.confidences.player) - average) * 10) / 10;
+  }
+  function draw(rows) {
+    var body = document.getElementById('board');
+    body.innerHTML = '';
+    rows.filter(function(row) { return row.playerName; }).sort(function(a, b) {
+      return b.score - a.score;
+    }).forEach(function(row) {
+      var tr = document.createElement('tr');
+      [row.playerName, row.score, row.confidences ? row.confidences.player : '', gap(row)].forEach(function(value) {
+        var td = document.createElement('td');
+        td.textContent = value === undefined || value === null ? '' : String(value);
+        tr.appendChild(td);
+      });
+      body.appendChild(tr);
+    });
+  }
+  function load() {
+    fetch(resultsUrl, { headers: { 'Accept': 'application/json' } })
+      .then(function(response) { return response.json(); })
+      .then(draw);
+  }
+  load();
+  setInterval(load, 5000);
+</script>
+<%- include('../../partials/footer') %>

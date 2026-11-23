@@ -43,8 +43,8 @@
         // Fetch and display CSV data
         $(document).ready( function () {
             document.getElementById('charts').classList.remove('hidden');
-            fetchCSVData(function (csvData) {
-                const cards = filterCSVData(csvData, queryParamArray);
+            fetchPack(function (packCards) {
+                const cards = filterPack(packCards, queryParamArray);
                 chartData = cards;
                 renderCardsTable(cards);
                 renderChart();

@@ -31,6 +31,13 @@
     <div class="jumbotron text-center text-primary">
         <h1><span class="fa fa-lock"></span>Session dashboard</h1>
     </div>
+    <h2>Enter a team result</h2>
+    <form id="entryForm">
+      <label for="entryTeam">Team name</label>
+      <input id="entryTeam" type="text" maxlength="80" required placeholder="Team name or first names only">
+      <button type="submit">Open the recording sheet</button>
+    </form>
+    <p><a href="/leaderboard/<%= id %>/<%= sessionId %>/board">Open the class board</a></p>
     <ul class="statsBubble">
         <li><h2>Best score</h2><p id="bestScore"></p></li>
         <li><h2>Worst score</h2><p id="worstScore"></p></li>
@@ -43,14 +50,16 @@
     <table id="leaders" class="display responsive wrap" cellspacing="0" width="100%">
         <thead>
             <tr>
-                <th>Name</th>
-                <th>Date</th>
-                <th>Confidence</th>
-                <th>Score</th>
-                <th>Beat machine?</th>
-                <th>Beat human+machine?</th>
-                <th>View tree</th>
-                <th class="none">Raw Results</th>
+                <th>Team</th>
+                <th>Training score</th>
+                <th>Written confidence</th>
+                <th>Run 1</th>
+                <th>Run 2</th>
+                <th>Run 3</th>
+                <th>Run 4</th>
+                <th>Total</th>
+                <th>Gap</th>
+                <th>Tree</th>
             </tr>
         </thead>
         <tbody id="leaders_body">
@@ -61,14 +70,16 @@
     <table id="loosers" class="display responsive wrap" cellspacing="0" width="100%">
         <thead>
             <tr>
-                <th>Name</th>
-                <th>Date</th>
-                <th>Confidence</th>
-                <th>Score</th>
-                <th>Beat machine?</th>
-                <th>Beat human+machine?</th>
-                <th>View tree</th>
-                <th class="none">Raw Results</th>
+                <th>Team</th>
+                <th>Training score</th>
+                <th>Written confidence</th>
+                <th>Run 1</th>
+                <th>Run 2</th>
+                <th>Run 3</th>
+                <th>Run 4</th>
+                <th>Total</th>
+                <th>Gap</th>
+                <th>Tree</th>
             </tr>
         </thead>
         <tbody id="loosers_body">
@@ -79,14 +90,16 @@
     <table id="table" class="display responsive wrap" cellspacing="0" width="100%">
         <thead>
             <tr>
-                <th>Name</th>
-                <th>Date</th>
-                <th>Confidence</th>
-                <th>Score</th>
-                <th>Beat machine?</th>
-                <th>Beat human+machine?</th>
-                <th>View tree</th>
-                <th class="none">Raw Results</th>
+                <th>Team</th>
+                <th>Training score</th>
+                <th>Written confidence</th>
+                <th>Run 1</th>
+                <th>Run 2</th>
+                <th>Run 3</th>
+                <th>Run 4</th>
+                <th>Total</th>
+                <th>Gap</th>
+                <th>Tree</th>
             </tr>
         </thead>
         <tbody id="table_body">
@@ -100,7 +113,7 @@
 
     function addToRow(row,value) {
         var td = document.createElement('td');
-        td.innerHTML = value;
+        td.textContent = value === undefined || value === null ? '' : String(value);
         row.append(td);
     }
     function addToRowLink(row,link,value) {
@@ -130,23 +143,33 @@
     var resultsTotal = 0;
     var resultsProcessed = 0;
 
-    function addResultToTable(result,table) {
-        var row = document.createElement('tr');
-        addToRow(row,result.playerName);
-        addToRow(row,new Date(result.date).toISOString().split('.')[0].replace('T',' '));
-        addToRow(row,result.confidences.player);
-        addToRow(row,result.score);
-        addToRow(row,(result.vsMachine.win * 100)+"%");
-        addToRow(row,(result.vsHybrid.win * 100)+"%");
-        addToRowLink(row,"/result/"+result.id+"/tree","View");
-        var rawResultsTable = "<table><tr><th>Player</th><th>Claims</th><th>Run 1</th><th>Run 2</th><th>Run 3</th><th>Run 4</th></tr>";
-        rawResultsTable += "<tr><td>Player</td><td>" + result.confidences.player + "%</td><td>" + result.result[1].player + "%</td><td>" + result.result[2].player + "%</td><td>" + result.result[3].player + "%</td><td>" + result.result[4].player + "%</td><td></tr>";
-        rawResultsTable += "<tr><td>Machine</td><td>" + result.confidences.machine + "%</td><td>" + result.result[1].machine + "%</td><td>" + result.result[2].machine + "%</td><td>" + result.result[3].machine + "%</td><td>" + result.result[4].machine + "%</td><td></tr>";
-        rawResultsTable += "<tr><td>Hybrid</td><td>" + result.confidences.hybrid + "%</td><td>" + result.result[1].hybrid + "%</td><td>" + result.result[2].hybrid + "%</td><td>" + result.result[3].hybrid + "%</td><td>" + result.result[4].hybrid + "%</td></tr></table>";
-        addToRowHidden(row,rawResultsTable);
-        if (result.playerName) {
-            table.append(row);
+    function addResultToTable(result, table) {
+        if (!result.playerName) {
+            return;
         }
+        var row = document.createElement('tr');
+        var runs = [1, 2, 3, 4].map(function(number) {
+            return result.result && result.result[number] ? result.result[number].player : '';
+        });
+        var training = result.confidences ? result.confidences.player : '';
+        var written = result.writtenConfidence;
+        if (written === undefined || written === null) {
+            written = result.confidences && result.confidences.written !== undefined ? result.confidences.written : '';
+        }
+        var numericRuns = runs.filter(function(value) { return value !== ''; }).map(Number);
+        var gap = '';
+        if (numericRuns.length && training !== '') {
+            var average = numericRuns.reduce(function(sum, value) { return sum + value; }, 0) / numericRuns.length;
+            gap = Math.round((Number(training) - average) * 10) / 10;
+        }
+        addToRow(row, result.playerName);
+        addToRow(row, training);
+        addToRow(row, written === null || written === undefined ? '' : written);
+        runs.forEach(function(value) { addToRow(row, value); });
+        addToRow(row, result.score);
+        addToRow(row, gap);
+        addToRowLink(row, "/result/" + result.id + "/tree", "Re-run");
+        table.append(row);
     }
 
     function populateTable(results,table) {
@@ -160,15 +183,17 @@
         if (!result.playerName) {
             return;
         }
-        if (result.vsMachine.win) { beatMachine = beatMachine + (result.vsMachine.win * 4); }
-        if (result.vsHybrid.win) { beatHybrid = beatHybrid + (result.vsHybrid.win * 4); }
-        if (result.confidences.player > 99) { oneHundredClub = oneHundredClub + 1; }
+        if (result.vsMachine && result.vsMachine.win) { beatMachine = beatMachine + (result.vsMachine.win * 4); }
+        if (result.vsHybrid && result.vsHybrid.win) { beatHybrid = beatHybrid + (result.vsHybrid.win * 4); }
+        if (result.confidences && result.confidences.player > 99) { oneHundredClub = oneHundredClub + 1; }
         resultsTotal += result.score;
+        var confidence = result.confidences && result.confidences.player ? result.confidences.player : 0;
         if (!leader) {
             leader = result;
             leaders.push(result);
         } else {
-            if (result.confidences.player > leader.confidences.player && result.score > leader.score) {
+            var leaderConfidence = leader.confidences && leader.confidences.player ? leader.confidences.player : 0;
+            if (confidence > leaderConfidence && result.score > leader.score) {
                 leader = result;
                 leaders = [];
                 leaders.push(result);
@@ -242,7 +267,7 @@
                 dom: 'Bfrtip',
                 responsive: true,
                 pageLength: 25,
-                order: [[3, 'desc'],[2, 'desc'],[5, 'desc'],[4, 'desc']],
+                order: [[7, 'desc']],
                 buttons: [
                    'copy', 'excel', 'csv'
                 ]
@@ -251,6 +276,11 @@
         var interval = setInterval(function () {
             checkReady();
         }, 1000);
+        document.getElementById('entryForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            var team = document.getElementById('entryTeam').value;
+            window.location = '/game/<%= sessionId %>?entry=1&team=' + encodeURIComponent(team);
+        });
     });
 </script>
 <%- include('../../partials/footer') %>

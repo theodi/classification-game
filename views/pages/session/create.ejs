@@ -23,6 +23,13 @@
       <input type="datetime-local" id="endTime" name="endTime"><br/><br/>
       <label class="para" for="hidePublic">Hide from public leaderboard</label><br/><br/>
       <input type="checkbox" id="hidePublic" name="hidePublic"/><br><br/>
+      <label class="para" for="evalSetId">Evaluation set</label><br/><br/>
+      <select id="evalSetId" name="evalSetId">
+        <option value="">Next in rotation</option>
+        <% evalSetIds.forEach(function(setId) { %>
+          <option value="<%= setId %>"><%= setId %></option>
+        <% }) %>
+      </select><br/><br/>
       <!--<label class="para" for="timeLimit">User time limit (minutes):</label><br/><br/>
       <input type="number" id="timeLimit" name="timeLimit"><br/><br/>-->
 

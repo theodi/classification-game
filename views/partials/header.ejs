@@ -29,43 +29,55 @@
 </div>
 </div>
 <div class="mobilenav">
-  <li><a href="/">Home</a></li>
+	<li><a href="/">Home</a></li>
 	<% if(user) { %>
-		<li><a href="/leaderboards">Leaderboards</a></li>
-		<li><a href="/evaluationPin">Evaluation pin</a></li>
+		<li><a href="/play">Play</a></li>
+		<% if(user.type === 'teacher' || user.type === 'admin') { %>
+			<li><a href="/leaderboards">Leaderboards</a></li>
+		<% } %>
+		<% if(user.type === 'admin') { %>
+			<li><a href="/accounts">Accounts</a></li>
+		<% } %>
 		<li><a href="/profile">Profile</a></li>
-		<li><a href="/help">Video walkthrough</a></li>
-		<li>
-			<form style="display: inline-flex;" id="logout_form" action="/logout" method="post">
-				<a href="javascript:;" onclick="document.getElementById('logout_form').submit();">Logout</a>
-			</form>
-		</li>
+		<li><a href="/help">Help</a></li>
+		<li><a href="#" class="sign-out">Sign out</a></li>
 	<% } else { %>
-		<li><a href="/auth/google">Login</a></li>
+		<li><a href="/login">Sign in</a></li>
 	<% } %>
 </div>
 <div class='navbar navbar-static-top' id='mainnav'>
 	<div class='container'>
 		<div class='navbar-inner'>
 			<ul class='nav pull-right'>
-				<li><a href="/">Home</a></li>
-				<% if(user) { %>
-					<li><a href="/leaderboards">Leaderboards</a></li>
-					<li><a href="/evaluationPin">Evaluation pin</a></li>
-					<li><a href="/profile">Profile</a></li>
-					<li><a href="/help">Video walkthrough</a></li>
-					<li>
-						<form style="display: inline-flex;" id="logout_form" action="/logout" method="post">
-							<a href="javascript:;" onclick="document.getElementById('logout_form').submit();">Logout</a>
-						</form>
-					</li>
-				<% } else { %>
-					<li><a href="/auth/google">Login</a></li>
-				<% } %>
+	<li><a href="/">Home</a></li>
+	<% if(user) { %>
+		<li><a href="/play">Play</a></li>
+		<% if(user.type === 'teacher' || user.type === 'admin') { %>
+			<li><a href="/leaderboards">Leaderboards</a></li>
+		<% } %>
+		<% if(user.type === 'admin') { %>
+			<li><a href="/accounts">Accounts</a></li>
+		<% } %>
+		<li><a href="/profile">Profile</a></li>
+		<li><a href="/help">Help</a></li>
+		<li><a href="#" class="sign-out">Sign out</a></li>
+	<% } else { %>
+		<li><a href="/login">Sign in</a></li>
+	<% } %>
 			</ul>
 		</div>
 	</div>
 </div>
+<script>
+  document.querySelectorAll('.sign-out').forEach(function(link) {
+    link.addEventListener('click', function(event) {
+      event.preventDefault();
+      fetch('/sessions', { method: 'DELETE' }).then(function() {
+        window.location = '/login';
+      });
+    });
+  });
+</script>
 <div class='whiteout'>
 <header>
 	<div class='container'>

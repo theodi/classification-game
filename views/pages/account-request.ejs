@@ -1,0 +1,21 @@
+<%- include('../partials/header') %>
+<div class="container box">
+  <h1>Request an account</h1>
+  <p>An admin approves the request and sets the account type. You can sign in after that.</p>
+  <form id="request-form">
+    <label for="email">Email</label>
+    <input id="email" type="email" required>
+    <fieldset>
+      <legend>Account type</legend>
+      <label><input type="radio" name="requestedType" value="teacher" required> Teacher</label>
+      <label><input type="radio" name="requestedType" value="selfpaced"> Self-paced player</label>
+    </fieldset>
+    <label for="note">Note for the admin</label>
+    <textarea id="note" maxlength="500"></textarea>
+    <button type="submit">Send request</button>
+  </form>
+  <p id="request-message"></p>
+  <p><a href="/login">Back to sign in</a></p>
+</div>
+<script src="/js/account-request.js"></script>
+<%- include('../partials/footer') %>

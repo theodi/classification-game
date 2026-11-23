@@ -1,19 +1,14 @@
-<!-- views/profile.ejs -->
 <%- include('../partials/header') %>
-  <div class="container">
-    <div class="jumbotron">
-      <h1 class="text-primary  text-center"><span class="fa fa-user"></span> Profile Information</h1>
-        <div class="row">
-          <div class="col-sm-6">
-            <div class="well">
-              <p>
-                <strong>Id</strong>: <%= user.id %><br>
-                <strong>Email</strong>: <%= user.emails[0].value %><br>
-                <strong>Name</strong>: <%= user.displayName %>
-              </p>
-              </div>
-          </div>
-      </div>
-     </div>
-  </div>
+<div class="container box">
+  <h1>Profile</h1>
+  <p><strong>Email</strong>: <%= user.email %></p>
+  <p><strong>Account type</strong>: <%= user.type %></p>
+  <p><a href="/play">Play the game</a></p>
+  <% if (user.type === 'teacher' || user.type === 'admin') { %>
+    <p><a href="/leaderboards">Leaderboards</a></p>
+  <% } %>
+  <% if (user.type === 'admin') { %>
+    <p><a href="/accounts">Approve accounts</a></p>
+  <% } %>
+</div>
 <%- include('../partials/footer') %>

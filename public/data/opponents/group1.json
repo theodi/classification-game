@@ -1,0 +1,51 @@
+{
+  "overfitted": {
+    "confidence": 100,
+    "tree": {
+      "feature": "price_per_sqft",
+      "threshold": 875,
+      "left": {
+        "leaf": "San Francisco"
+      },
+      "right": {
+        "feature": "year_built",
+        "threshold": 2003.5,
+        "left": {
+          "leaf": "New York"
+        },
+        "right": {
+          "feature": "price",
+          "threshold": 1624000,
+          "left": {
+            "leaf": "New York"
+          },
+          "right": {
+            "leaf": "San Francisco"
+          }
+        }
+      }
+    },
+    "evaluationScore": 65
+  },
+  "humanGuided": {
+    "confidence": 90,
+    "tree": {
+      "feature": "price_per_sqft",
+      "threshold": 875,
+      "left": {
+        "leaf": "San Francisco"
+      },
+      "right": {
+        "feature": "elevation",
+        "threshold": 27.5,
+        "left": {
+          "leaf": "New York"
+        },
+        "right": {
+          "leaf": "San Francisco"
+        }
+      }
+    },
+    "evaluationScore": 80
+  }
+}

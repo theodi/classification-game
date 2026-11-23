@@ -1,0 +1,185 @@
+{
+  "packId": "group1",
+  "cards": [
+    {
+      "id": "6",
+      "city": "San Francisco",
+      "price_per_sqft": "379",
+      "elevation": "9",
+      "price": "378551",
+      "beds": "1",
+      "year_built": "2000"
+    },
+    {
+      "id": "17",
+      "city": "San Francisco",
+      "price_per_sqft": "706",
+      "elevation": "13",
+      "price": "480000",
+      "beds": "2",
+      "year_built": "1915"
+    },
+    {
+      "id": "26",
+      "city": "New York",
+      "price_per_sqft": "1386",
+      "elevation": "10",
+      "price": "2175000",
+      "beds": "2",
+      "year_built": "1999"
+    },
+    {
+      "id": "52",
+      "city": "New York",
+      "price_per_sqft": "2000",
+      "elevation": "23",
+      "price": "1200000",
+      "beds": "1",
+      "year_built": "1969"
+    },
+    {
+      "id": "66",
+      "city": "San Francisco",
+      "price_per_sqft": "610",
+      "elevation": "163",
+      "price": "1388000",
+      "beds": "4",
+      "year_built": "1968"
+    },
+    {
+      "id": "69",
+      "city": "San Francisco",
+      "price_per_sqft": "847",
+      "elevation": "23",
+      "price": "1995000",
+      "beds": "3",
+      "year_built": "2008"
+    },
+    {
+      "id": "86",
+      "city": "New York",
+      "price_per_sqft": "1711",
+      "elevation": "0",
+      "price": "3895000",
+      "beds": "4",
+      "year_built": "2001"
+    },
+    {
+      "id": "89",
+      "city": "San Francisco",
+      "price_per_sqft": "1643",
+      "elevation": "62",
+      "price": "9895000",
+      "beds": "4",
+      "year_built": "2008"
+    },
+    {
+      "id": "95",
+      "city": "New York",
+      "price_per_sqft": "1111",
+      "elevation": "11",
+      "price": "539000",
+      "beds": "0",
+      "year_built": "1957"
+    },
+    {
+      "id": "98",
+      "city": "San Francisco",
+      "price_per_sqft": "1465",
+      "elevation": "3",
+      "price": "1995000",
+      "beds": "3",
+      "year_built": "2006"
+    },
+    {
+      "id": "107",
+      "city": "San Francisco",
+      "price_per_sqft": "515",
+      "elevation": "54",
+      "price": "875000",
+      "beds": "2",
+      "year_built": "1909"
+    },
+    {
+      "id": "108",
+      "city": "New York",
+      "price_per_sqft": "903",
+      "elevation": "32",
+      "price": "650000",
+      "beds": "1",
+      "year_built": "1907"
+    },
+    {
+      "id": "117",
+      "city": "San Francisco",
+      "price_per_sqft": "490",
+      "elevation": "66",
+      "price": "648800",
+      "beds": "3",
+      "year_built": "1940"
+    },
+    {
+      "id": "126",
+      "city": "New York",
+      "price_per_sqft": "1093",
+      "elevation": "10",
+      "price": "1195000",
+      "beds": "1",
+      "year_built": "1900"
+    },
+    {
+      "id": "135",
+      "city": "San Francisco",
+      "price_per_sqft": "773",
+      "elevation": "41",
+      "price": "1399000",
+      "beds": "3",
+      "year_built": "1892"
+    },
+    {
+      "id": "143",
+      "city": "New York",
+      "price_per_sqft": "1736",
+      "elevation": "6",
+      "price": "1250000",
+      "beds": "1",
+      "year_built": "2007"
+    },
+    {
+      "id": "151",
+      "city": "New York",
+      "price_per_sqft": "950",
+      "elevation": "10",
+      "price": "475000",
+      "beds": "1",
+      "year_built": "1920"
+    },
+    {
+      "id": "195",
+      "city": "San Francisco",
+      "price_per_sqft": "610",
+      "elevation": "79",
+      "price": "1198000",
+      "beds": "6",
+      "year_built": "1937"
+    },
+    {
+      "id": "207",
+      "city": "New York",
+      "price_per_sqft": "4601",
+      "elevation": "10",
+      "price": "19500000",
+      "beds": "7",
+      "year_built": "1994"
+    },
+    {
+      "id": "227",
+      "city": "New York",
+      "price_per_sqft": "1321",
+      "elevation": "5",
+      "price": "1849000",
+      "beds": "1",
+      "year_built": "1920"
+    }
+  ]
+}

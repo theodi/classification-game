@@ -93,38 +93,43 @@ function sendResult(result) {
 }
 
 function saveResult() {
-	if (resultId || isTutor) {
+	if (resultId || (typeof replayOnly !== 'undefined' && replayOnly)) {
 		console.log("Not saving result, view only");
 		return;
 	}
-	storage = JSON.parse(window.localStorage.getItem(sessionId));
-	if (storage.results) {
-		console.log("Have results object")
-	} else {
-		console.log("No results object");
+	if (isTutor && (typeof entryMode === 'undefined' || !entryMode)) {
+		console.log("Not saving result, view only");
+		return;
+	}
+	storage = JSON.parse(window.localStorage.getItem(sessionId) || '{}');
+	if (!storage.results) {
 		storage.results = [];
 	}
 
 	var result = {};
-	result.playerName = storage.playerName;
+	result.playerName = storage.playerName || player_name;
 	result.date = new Date().getTime();
 	result.id = CryptoJS.MD5(result.playerName + result.date).toString();
-	result.cardSet = group;
+	result.cardSet = 'group1';
 	result.sessionId = sessionId;
+	result.evalSetId = (typeof evalSetId === 'undefined') ? null : evalSetId;
 
 	result.tree = {};
 	result.tree.factors = storage.factors;
 	result.tree.boundaries = storage.boundaries;
 	result.tree.predictions = storage.predictions;
 
-	result.confidences = confidences;
+	var written = document.getElementById('written-confidence');
+	result.writtenConfidence = written && written.value !== '' ? Number(written.value) : null;
+	result.confidences = Object.assign({}, confidences);
+	result.confidences.written = result.writtenConfidence;
 	result.result = results;
 
 	result.score = results.score;
 	result.vsHybrid = results.vsHybrid;
 	result.vsMachine = results.vsMachine;
 
-	attempt = attempt + 1;
+	attempt = (attempt || 0) + 1;
 	storage.attempt = attempt;
 	result.attempt = attempt;
 
@@ -133,12 +138,8 @@ function saveResult() {
 	delete result.result.vsHybrid;
 
 	storage.results.push(result);
-
-	for (var i=0;i<storage.results.length;i++) {
-		sendResult(storage.results[i]);
-	}
-	window.localStorage.setItem(sessionId,JSON.stringify(storage));
-
+	sendResult(result);
+	window.localStorage.setItem(sessionId, JSON.stringify(storage));
 }
 
 function confirmReset() {
@@ -161,7 +162,10 @@ function resetTree() {
 
 function changeName() {
 	if (!lockPlayerName) {
-		player_name = prompt("Welcome to the ODI machine learning game. Please enter your player name.",player_name);
+		player_name = prompt("Team name. Use a team name or first names only.", player_name || "");
+		if (!player_name) {
+			player_name = "Team";
+		}
 		$('#playerWelcome').html("Welcome " + player_name);
   		$('#playerWelcome').css("display","inline");
 		saveData();
@@ -192,7 +196,7 @@ function processLoad(storage) {
 		}
 		attempt = storage.attempt;
 		if (storage.playerName == ""){
-	      player_name = prompt("Welcome to the ODI machine learning game. Please enter your player name.","");
+	      player_name = prompt("Team name. Use a team name or first names only.", "");
 	      $('#playerWelcome').html("Welcome " + player_name);
 	      $('#playerWelcome').css("display","inline");
 	    } else {
@@ -308,6 +312,9 @@ function loadLeaderboardData() {
 			storage.boundaries = data.tree.boundaries;
 			storage.predictions = data.tree.predictions;
 			confidences = data.confidences;
+			if (data.evalSetId) {
+				evalSetId = data.evalSetId;
+			}
 			window.localStorage.setItem(sessionId,JSON.stringify(data));
 			processLoad(storage);
 			loadLeaderboards();
@@ -393,7 +400,9 @@ function renderLeaderboard(data,prefix) {
 }
 
 function loadLeaderboards() {
-	console.log("loading leaderboards");
+	if (!leaderboardId) {
+		return;
+	}
 	$('#session-leaderboard-body').html("");
 	$('#organisation-leaderboard-body').html("");
 	$('#public-leaderboard-body').html("");
@@ -417,4 +426,91 @@ function toggleContent(button) {
         content.style.display = 'none';
         button.textContent = '+';
     }
+}
+
+function sheetFeatureOptions() {
+    var html = '<option value="">Choose a feature</option>';
+    (window.GAME_FEATURES || []).forEach(function(feature) {
+        html += '<option value="' + feature.column + '">' + feature.label + '</option>';
+    });
+    return html;
+}
+
+function renderRecordingSheet() {
+    var sheet = document.getElementById('recording-sheet');
+    if (!sheet) {
+        return;
+    }
+    sheet.classList.remove('hidden');
+    var team = document.getElementById('sheet-team');
+    if (team && presetTeam) {
+        team.value = presetTeam;
+        player_name = presetTeam;
+    }
+    document.getElementById('sheet-rows').innerHTML = sheetRow('');
+}
+
+function sheetRow(position) {
+    var title = position === '' ? 'Top split' : 'Next split (' + position + ')';
+    var allowSplit = position.length < 2;
+    var split = allowSplit ? '<option value="split">Split again</option>' : '';
+    return '<fieldset class="sheet-row" data-pos="' + position + '"><legend>' + title + '</legend>' +
+        '<label>Split feature <select class="sheet-feature">' + sheetFeatureOptions() + '</select></label> ' +
+        '<label>Threshold <input class="sheet-threshold" type="number" step="any"></label> ' +
+        '<label>Left prediction <select class="sheet-left"><option value="">Choose</option><option>New York</option><option>San Francisco</option>' + split + '</select></label> ' +
+        '<label>Right prediction <select class="sheet-right"><option value="">Choose</option><option>New York</option><option>San Francisco</option>' + split + '</select></label>' +
+        '</fieldset>';
+}
+
+function ensureSheetRow(position) {
+    if (document.querySelector('.sheet-row[data-pos="' + position + '"]')) {
+        return;
+    }
+    document.getElementById('sheet-rows').insertAdjacentHTML('beforeend', sheetRow(position));
+}
+
+function applyRecordingSheet() {
+    var team = document.getElementById('sheet-team');
+    if (team && team.value.trim()) {
+        player_name = team.value.trim();
+        $('#playerWelcome').html('Welcome ' + player_name);
+        $('#playerWelcome').css('display', 'inline');
+    }
+    document.querySelectorAll('.sheet-row').forEach(function(row) {
+        var position = row.getAttribute('data-pos');
+        var feature = row.querySelector('.sheet-feature').value;
+        var threshold = row.querySelector('.sheet-threshold').value;
+        $('#factor_' + position).val(feature);
+        $('#condition_' + position + 'a').val(threshold);
+        $('#condition_' + position + 'b').val(threshold);
+        applySheetSide(position, 'l', row.querySelector('.sheet-left').value);
+        applySheetSide(position, 'r', row.querySelector('.sheet-right').value);
+    });
+    if (typeof onchange === 'function') {
+        onchange();
+    }
+    assignBoxes(cards.trainingSet);
+    getPredictions(cards.trainingSet, true);
+}
+
+function applySheetSide(position, side, value) {
+    var child = position + side;
+    if (value === 'split') {
+        addBranch('decision_' + child);
+        ensureSheetRow(child);
+        return;
+    }
+    var deeper = document.querySelector('.sheet-row[data-pos="' + child + '"]');
+    if (deeper) {
+        deeper.remove();
+    }
+    var factor = document.getElementById('factor_' + child);
+    if (factor) {
+        factor.value = '';
+    }
+    if (!predictions[child]) {
+        predictions[child] = { 'New York': 0, 'San Francisco': 0 };
+    }
+    predictions[child].prediction = value || '?';
+    setElementToOption('prediction_box_' + child, value || '?');
 }

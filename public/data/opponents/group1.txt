@@ -1,0 +1,41 @@
+A run is won by whoever is closer to their own claim, not by the higher percentage correct.
+
+Overfitted machine
+
+Training score, and the claim: 100%
+
+Evaluation pool score: 65%
+
+Off its claim: 35 percentage points
+
+Its extra splits use year built. That rule behaves as if one city stopped building, which is why it fails away from the 20 cards.
+
+if price_per_sqft <= 875:
+  predict San Francisco
+else:
+  if year_built <= 2003.5:
+    predict New York
+  else:
+    if price <= 1624000:
+      predict New York
+    else:
+      predict San Francisco
+
+Human-guided machine
+
+Training score, and the claim: 90%
+
+Evaluation pool score: 80%
+
+Off its claim: 10 percentage points
+
+Uses price per sq ft and elevation only.
+
+if price_per_sqft <= 875:
+  predict San Francisco
+else:
+  if elevation <= 27.5:
+    predict New York
+  else:
+    predict San Francisco
+

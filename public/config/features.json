@@ -1,0 +1,39 @@
+{
+  "features": [
+    {
+      "column": "price_per_sqft",
+      "label": "Price per sq ft",
+      "format": "number",
+      "prefix": "$",
+      "suffix": ""
+    },
+    {
+      "column": "elevation",
+      "label": "Elevation",
+      "format": "number",
+      "prefix": "",
+      "suffix": " ft"
+    },
+    {
+      "column": "price",
+      "label": "Price",
+      "format": "number",
+      "prefix": "$",
+      "suffix": ""
+    },
+    {
+      "column": "beds",
+      "label": "Bedrooms",
+      "format": "integer",
+      "prefix": "",
+      "suffix": ""
+    },
+    {
+      "column": "year_built",
+      "label": "Year built",
+      "format": "integer",
+      "prefix": "",
+      "suffix": ""
+    }
+  ]
+}

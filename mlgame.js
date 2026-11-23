@@ -27,129 +27,119 @@ app.set('view engine', 'ejs');
 
 app.use(session({
   resave: false,
-  saveUninitialized: true,
-  secret: 'SECRET'
+  saveUninitialized: false,
+  secret: process.env.SESSION_SECRET || 'development-only-secret',
+  cookie: {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production'
+  }
 }));
 
-app.use(express.urlencoded());
+app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
-//Put the user object in a global veriable so it can be accessed from templates
-app.use(function(req, res, next) {
-  try {
-    res.locals.user = req.session.passport.user;
-    next();
-  } catch (error) {
-    res.locals.user = req.session.user;
-    next();
-  }
-});
+const accounts = require('./lib/accounts');
+const access = require('./routes/access');
 
-/* Setup public directory
- * Everything in her does not require authentication */
+function currentAccount(req) {
+  return req.session && req.session.account;
+}
+
+function isTeacher(req) {
+  const account = currentAccount(req);
+  return account && (account.type === 'teacher' || account.type === 'admin');
+}
+
+function wantsJson(req) {
+  const accept = (req.headers.accept || '').split(',')[0];
+  return accept === 'application/json';
+}
+
+app.use(function(req, res, next) {
+  res.locals.user = currentAccount(req) || null;
+  next();
+});
 
 app.use(express.static(__dirname + '/public'));
 
-app.get('/', function(req, res) {
-  if (req.session.passport) {
-    res.redirect("/profile");
-  } else {
-    res.locals.pageTitle ="ODI Template (NodeJS + Express + OAuth)";
-    res.render('pages/auth');
-  }
-});
-
-/*  PASSPORT SETUP  */
-
-const passport = require('passport');
-
-app.use(passport.initialize());
-app.use(passport.session());
-
-app.set('view engine', 'ejs');
-
-app.post('/logout', function(req, res, next){
-  req.logout(function(err) {
-    if (err) { return next(err); }
-    res.redirect('/');
-  });
-});
-
-app.get('/error', (req, res) => res.send("error logging in"));
-
-passport.serializeUser(function(user, cb) {
-  cb(null, user);
-});
-
-passport.deserializeUser(function(obj, cb) {
-  cb(null, obj);
-});
-
-/*  Google AUTH  */
-
-const GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
-const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
-const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
-const GOOGLE_CALLBACK_URL = "http://" + process.env.HOST + "/auth/google/callback";
-
-passport.use(new GoogleStrategy({
-    clientID: GOOGLE_CLIENT_ID,
-    clientSecret: GOOGLE_CLIENT_SECRET,
-    callbackURL: GOOGLE_CALLBACK_URL
-  },
-  function(accessToken, refreshToken, profile, done) {
-        return done(null, profile);
-  }
-));
-
-app.get('/auth/google',
-  passport.authenticate('google', { scope : ['profile', 'email'] }));
-
-app.get('/auth/google/callback',
-  passport.authenticate('google', { failureRedirect: '/error' }),
-  function(req, res) {
-    //console.log(req.user);
-    // Successful authentication, redirect success.
-    // Redirects to the profile page, CHANGE THIS to redirect to another page, e.g. a tool that is protected
-    res.redirect('/profile');
-  });
-
-
-/* Setup function to handle authentications */
-
 function ensureAuthenticated(req, res, next) {
-  if (req.isAuthenticated())
+  if (currentAccount(req)) {
     return next();
-  else
-    unauthorised(res);
+  }
+  return unauthorised(res);
+}
+
+function requireTeacher(req, res, next) {
+  if (isTeacher(req)) {
+    return next();
+  }
+  if (wantsJson(req)) {
+    return res.status(401).json({ error: 'Sign in as a teacher required' });
+  }
+  if (!currentAccount(req)) {
+    return res.redirect('/login');
+  }
+  return unauthorised(res);
 }
 
 function unauthorised(res) {
-  res.locals.pageTitle ="401 Unauthorised";
+  res.locals.pageTitle = "401 Unauthorised";
   return res.status(401).render("errors/401");
 }
 
-function badRequest(res,start,end) {
-  res.locals.pageTitle ="400 Bad Request";
-  return res.status(400).render("errors/400",{start: start, end: end});
+function badRequest(res, start, end) {
+  res.locals.pageTitle = "400 Bad Request";
+  return res.status(400).render("errors/400", { start: start, end: end });
 }
 
-function renderGame(req,res,data) {
-  var sessionId = data._id;
-  var dbConnect = dbo.getDb();
-  dbConnect
-    .collection('Leaderboards')
-    .findOne({"_id": new ObjectId(data.leaderboardId)},function(err,data2) {
-      var chosenSet = data2.cardset[Math.floor(Math.random() * data2.cardset.length)];
-      let tutorMode = false;
-      if (data.tutorMode == "on") {
-        tutorMode = true;
-      }
-      res.render('pages/game',{session: sessionId, leaderboardId: data.leaderboardId, set: chosenSet, resultId: null, isTutor: data.isTutor, requireEvaluationPin: tutorMode});
-  });
+const EVAL_SET_IDS = Array.from({ length: 20 }, function(_, index) {
+  return 'E' + String(index + 1).padStart(2, '0');
+});
+
+function gameView(options) {
+  return {
+    session: options.sessionId,
+    leaderboardId: options.leaderboardId || '',
+    set: 1,
+    evalSetId: options.evalSetId || '',
+    resultId: options.resultId || '',
+    isTutor: !!options.isTutor,
+    requireEvaluationPin: !!options.requireEvaluationPin,
+    entryMode: !!options.entryMode,
+    replayOnly: !!options.replayOnly,
+    teamName: options.teamName || ''
+  };
 }
 
-/* Setup private directory, everything in here requires authentication */
+function renderGame(req, res, data) {
+  const entryMode = req.query.entry === '1';
+  res.render('pages/game', gameView({
+    sessionId: data._id,
+    leaderboardId: data.leaderboardId,
+    evalSetId: data.evalSetId || '',
+    isTutor: true,
+    requireEvaluationPin: false,
+    entryMode: entryMode,
+    teamName: req.query.team || ''
+  }));
+}
+
+app.get('/', function(req, res) {
+  const account = currentAccount(req);
+  if (!account) {
+    return res.redirect('/login');
+  }
+  if (account.type === 'admin') {
+    return res.redirect('/accounts');
+  }
+  if (account.type === 'teacher') {
+    return res.redirect('/leaderboards');
+  }
+  return res.redirect('/play');
+});
+
+access.register(app, { dbo: dbo, ObjectId: ObjectId, currentAccount: currentAccount, wantsJson: wantsJson });
 
 app.use('/private', ensureAuthenticated);
 app.use('/private', express.static(__dirname + '/private'));
@@ -159,40 +149,40 @@ app.use('/private', express.static(__dirname + '/private'));
  *
  */
 
-app.get('/game/:id', function(req,res) {
+app.get('/play', function(req, res) {
+  const account = currentAccount(req);
+  if (!account) {
+    return res.redirect('/login');
+  }
+  res.render('pages/game', gameView({
+    sessionId: 'selfpaced',
+    leaderboardId: '',
+    evalSetId: '',
+    isTutor: false,
+    entryMode: false,
+    replayOnly: false
+  }));
+});
+
+app.get('/game/:id', function(req, res) {
+  if (!isTeacher(req)) {
+    return res.redirect('/login');
+  }
   var dbConnect = dbo.getDb();
   dbConnect
     .collection('Sessions')
-    .findOne({"_id": new ObjectId(req.params.id)},function(err,data) {
-      if (req.isAuthenticated()) {
-        data.isTutor = true;
-        renderGame(req,res,data);
-      } else {
-        if (data.startTime) {
-          var now = new Date().getTime();
-          var start = new Date(data.startTime).getTime();
-          if (now >= start) {
-            if (data.endTime) {
-              var end = new Date(data.endTime).getTime();
-              if (now <= end) {
-                renderGame(req,res,data);
-              } else {
-                badRequest(res,data.startTime,data.endTime);
-              }
-            } else {
-              renderGame(req,res,data);
-            }
-          } else {
-            badRequest(res,data.startTime,data.endTime);
-          }
-        } else {
-          renderGame(req,res,data);
-        }
+    .findOne({"_id": new ObjectId(req.params.id)}, function(err, data) {
+      if (!data) {
+        return res.status(404).render('errors/404');
       }
+      renderGame(req, res, data);
     });
 });
 
 app.get('/game/:id/result', function(req,res) {
+  if (!isTeacher(req)) {
+    return res.status(401).json({ error: 'Sign in as a teacher required' });
+  }
   const playerName = req.query.userId;
   if (!req.query.userId) {
     res.locals.pageTitle ="400 Bad request";
@@ -219,7 +209,7 @@ app.get('/browse', function(req,res) {
 app.get('/leaderboard/all/results', async function(req, res) {
   type = req.headers.accept.split(',')[0];
 
-  if (req.isAuthenticated()) {
+  if (isTeacher(req)) {
     if (type == "application/json") {
       try {
         const dbConnect = dbo.getDb();
@@ -249,36 +239,10 @@ app.get('/leaderboard/all/results', async function(req, res) {
     } else {
       res.render('pages/leaderboard');
     }
+  } else if (type == "application/json") {
+    return res.status(401).json({ error: 'Sign in as a teacher required' });
   } else {
-    if (type == "application/json") {
-      try {
-        const dbConnect = dbo.getDb();
-
-        // Fetch sessions with hidePublic set to false
-        const sessions = await dbConnect
-          .collection("Sessions")
-          .find({ hidePublic: "off" })
-          .toArray();
-
-        const sessionIds = sessions.map(session => session._id);
-        const query = { sessionId: { $in: sessionIds.map(id => id.toString()) } };
-        const results = await dbConnect
-          .collection("Results")
-          .find(query)
-          .project({"id":1,"score":1,"_id":0,"confidences":1,"result":1,"vsHybrid":1,"vsMachine":1,"attempt":1})
-          .sort({"score": -1})
-          .toArray();
-
-        res.set('Content-Type', 'application/json');
-        res.send(JSON.stringify(results, null, 4));
-      } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Internal Server Error' });
-      }
-    } else {
-      res.locals.pageTitle ="Leaderboard";
-      res.render('pages/leaderboard');
-    }
+    return res.redirect('/login');
   }
 });
 
@@ -287,7 +251,7 @@ app.get('/leaderboard/:id/results', function(req, res) {
   res.locals.pageTitle ="Leaderboard for " + req.params.id;
   res.locals.id = req.params.id;
   type = req.headers.accept.split(',')[0];
-  if (req.isAuthenticated()) {
+  if (isTeacher(req)) {
      if (type=="application/json") {
       var dbConnect = dbo.getDb();
       dbConnect
@@ -310,74 +274,41 @@ app.get('/leaderboard/:id/results', function(req, res) {
      } else {
       res.render('pages/leaderboard/view', {})
      }
+  } else if (type=="application/json") {
+    return res.status(401).json({ error: 'Sign in as a teacher required' });
   } else {
-    if (type=="application/json") {
-      var dbConnect = dbo.getDb();
-      dbConnect
-        .collection('Sessions')
-        .find({"leaderboardId" : req.params.id})
-        .toArray(function(err,data) {
-          var sessions = [];
-          for(i=0;i<data.length;i++) {
-            sessions.push(data[i]._id.toString());
-          }
-          dbConnect
-            .collection("Results")
-            .find({ sessionId: { $in: sessions} } )
-            .project({"id":1,"score":1,"attempt":1,"_id":0})
-            .sort( {"score": -1} )
-            .toArray(function(err,output) {
-              res.set('Content-Type', 'application/json');
-              res.send(JSON.stringify(output, null, 4));
-            });
-        });
-    } else {
-      res.locals.pageTitle ="401 Unauthorised";
-      return res.status(401).render("errors/401");
-    }
+    return res.redirect('/login');
   }
 });
 
 app.get('/leaderboard/:id/:sessionId/results', function(req, res) {
-  type = req.headers.accept.split(',')[0];
-   if (!req.isAuthenticated()) {
-    if (type=="application/json") {
-      var dbConnect = dbo.getDb();
-      dbConnect
-        .collection('Results')
-        .find({"sessionId" : req.params.sessionId})
-        .project({"id":1,"playerName": 1,"attempt":1,"score":1,"_id":0})
-        .sort( {"score": -1} )
-        .toArray(function(err,data) {
-          res.set('Content-Type', 'application/json');
-          res.send(JSON.stringify(data, null, 4));
-        });
-    } else {
-      res.locals.pageTitle ="401 Unauthorised";
-      return res.status(401).render("errors/401");
+  if (!isTeacher(req)) {
+    if (wantsJson(req)) {
+      return res.status(401).json({ error: 'Sign in as a teacher required' });
     }
+    res.locals.pageTitle = "401 Unauthorised";
+    return res.status(401).render("errors/401");
+  }
+  if (wantsJson(req)) {
+    var dbConnect = dbo.getDb();
+    dbConnect
+      .collection('Results')
+      .find({"sessionId" : req.params.sessionId})
+      .sort( {"score": -1} )
+      .toArray(function(err, data) {
+        res.set('Content-Type', 'application/json');
+        res.send(JSON.stringify(data, null, 4));
+      });
   } else {
-    if (type=="application/json") {
-      var dbConnect = dbo.getDb();
-      dbConnect
-        .collection('Results')
-        .find({"sessionId" : req.params.sessionId})
-        .sort( {"score": -1} )
-        .toArray(function(err,data) {
-          res.set('Content-Type', 'application/json');
-          res.send(JSON.stringify(data, null, 4));
-        });
-    } else {
-      res.locals.pageTitle ="View single session leaderboard";
-      res.locals.id = req.params.id;
-      res.locals.sessionId = req.params.sessionId;
-      res.render('pages/session/view', {})
-    }
+    res.locals.pageTitle = "View single session leaderboard";
+    res.locals.id = req.params.id;
+    res.locals.sessionId = req.params.sessionId;
+    res.render('pages/session/view', {});
   }
 });
 
 app.get('/result/:resultId', function(req, res) {
-  if (!req.isAuthenticated()) {
+  if (!isTeacher(req)) {
     res.locals.pageTitle ="401 Unauthorised";
     return res.status(401).render("errors/401");
   } else {
@@ -392,7 +323,7 @@ app.get('/result/:resultId', function(req, res) {
 });
 
 app.get('/result/:resultId/tree', function(req, res) {
-  if (!req.isAuthenticated()) {
+  if (!isTeacher(req)) {
     res.locals.pageTitle ="401 Unauthorised";
     return res.status(401).render("errors/401");
   } else {
@@ -400,17 +331,37 @@ app.get('/result/:resultId/tree', function(req, res) {
     dbConnect
       .collection('Results')
       .findOne({"id" : req.params.resultId}, function(err,data) {
+        if (!data) {
+          res.locals.pageTitle = "404 Not Found";
+          return res.status(404).render("errors/404");
+        }
+        function renderReplay(lbdata) {
+          res.render('pages/game', gameView({
+            sessionId: data.sessionId,
+            leaderboardId: lbdata ? lbdata.leaderboardId : '',
+            evalSetId: data.evalSetId || (lbdata && lbdata.evalSetId) || '',
+            resultId: req.params.resultId,
+            isTutor: true,
+            requireEvaluationPin: false,
+            entryMode: false,
+            replayOnly: true,
+            teamName: data.playerName || ''
+          }));
+        }
+        if (!data.sessionId || !ObjectId.isValid(data.sessionId)) {
+          return renderReplay(null);
+        }
         dbConnect
           .collection('Sessions')
-          .findOne({"_id": new ObjectId(data.sessionId)},function(err,lbdata) {
-            res.render('pages/game',{session: data.sessionId, leaderboardId: lbdata.leaderboardId, set: data.cardSet, resultId: req.params.resultId,  isTutor: true, requireEvaluationPin: false});
+          .findOne({"_id": new ObjectId(data.sessionId)}, function(err, lbdata) {
+            renderReplay(lbdata);
           });
       });
   }
 });
 
 app.get('/evaluationPin', function(req, res) {
-  if (!req.isAuthenticated()) {
+  if (!isTeacher(req)) {
     res.locals.pageTitle ="401 Unauthorised";
     return res.status(401).render("errors/401");
   } else {
@@ -420,19 +371,60 @@ app.get('/evaluationPin', function(req, res) {
 });
 
 
-app.post('/result', function(req, res) {
-  if (!req.body.score) {
+app.post('/result', async function(req, res) {
+  const account = currentAccount(req);
+  if (!account) {
+    return res.status(401).send("Sign in required");
+  }
+  const body = req.body || {};
+  if (typeof body.score !== 'number' || !body.playerName || !body.tree) {
+    return res.status(400).send("Result not accepted");
+  }
+  const selfPaced = body.sessionId === 'selfpaced';
+  if (!selfPaced && !isTeacher(req)) {
+    return res.status(403).send("Result not accepted");
+  }
+  if (!selfPaced) {
+    if (!ObjectId.isValid(String(body.sessionId || ''))) {
+      return res.status(403).send("Result not accepted");
+    }
+    const sessionDoc = await dbo.getDb().collection('Sessions').findOne({ _id: new ObjectId(body.sessionId) });
+    if (!sessionDoc) {
+      return res.status(403).send("Result not accepted");
+    }
+    if (sessionDoc.createdBy && sessionDoc.createdBy !== String(account.id) && account.type !== 'admin') {
+      return res.status(403).send("Result not accepted");
+    }
+  }
+  const result = {
+    id: String(body.id || ''),
+    playerName: String(body.playerName).slice(0, 80),
+    date: Date.now(),
+    cardSet: 'group1',
+    sessionId: selfPaced ? 'selfpaced' : String(body.sessionId || ''),
+    evalSetId: body.evalSetId || null,
+    tree: body.tree,
+    confidences: body.confidences || {},
+    result: body.result || {},
+    score: body.score,
+    vsHybrid: body.vsHybrid || {},
+    vsMachine: body.vsMachine || {},
+    attempt: Number(body.attempt) || 1,
+    writtenConfidence: body.writtenConfidence === null || body.writtenConfidence === undefined ? null : Number(body.writtenConfidence),
+    accountId: String(account.id)
+  };
+  if (!result.id || result.id.length > 80) {
     return res.status(400).send("Result not accepted");
   }
   var dbConnect = dbo.getDb();
   dbConnect
     .collection('Results')
-    .updateOne({"id":req.body.id},{ $set: req.body},{upsert:true},
-    function(err,result) {
+    .updateOne({"id": result.id}, { $set: result }, { upsert: true },
+    function(err) {
       if (err) {
         return res.status(500).send("Result not accepted");
       }
-      return res.status(201).send("Result accepted");
+      return res.status(201).json({ ok: true });
     });
 });
 
@@ -442,7 +434,7 @@ app.post('/result', function(req, res) {
  */
 
 app.get('/leaderboard/create', function(req, res) {
-  if (!req.isAuthenticated()) {
+  if (!isTeacher(req)) {
     res.locals.pageTitle ="401 Unauthorised";
     return res.status(401).render("errors/401");
   }
@@ -451,7 +443,7 @@ app.get('/leaderboard/create', function(req, res) {
 });
 
 app.get('/leaderboard/:id/edit', function(req, res) {
-  if (!req.isAuthenticated()) {
+  if (!isTeacher(req)) {
     res.locals.pageTitle ="401 Unauthorised";
     return res.status(401).render("errors/401");
   }
@@ -461,7 +453,7 @@ app.get('/leaderboard/:id/edit', function(req, res) {
 });
 
 app.get('/leaderboards', function(req, res) {
-  if (!req.isAuthenticated()) {
+  if (!isTeacher(req)) {
     res.locals.pageTitle ="401 Unauthorised";
     return res.status(401).render("errors/401");
   }
@@ -484,7 +476,7 @@ app.get('/leaderboards', function(req, res) {
 app.get('/leaderboard/:id', function(req, res) {
   res.locals.pageTitle ="Leaderboard for " + req.params.id;
   res.locals.id = req.params.id;
-  if (req.isAuthenticated()) {
+  if (isTeacher(req)) {
      type = req.headers.accept.split(',')[0];
      if (type=="application/json") {
       var dbConnect = dbo.getDb();
@@ -498,26 +490,35 @@ app.get('/leaderboard/:id', function(req, res) {
       res.render('pages/leaderboard/view', {})
      }
   } else {
-    res.render('pages/leaderboard/view', {})
+    return res.redirect('/login');
   }
 });
 
 app.post('/leaderboard', function(req, res) {
+  if (!isTeacher(req)) {
+    return res.redirect('/login');
+  }
   var dbConnect = dbo.getDb();
+  var data = {
+    name: req.body.name,
+    type: req.body.type,
+    cardset: ['1'],
+    createdBy: currentAccount(req).id
+  };
   dbConnect
     .collection('Leaderboards')
-    .insertOne(req.body,
-    function(err,result) {
-      var msg = "Leaderboard inserted";
-      if (err) {
-        var msg = "Error inserting leaderboard";
-      }
+    .insertOne(data,
+    function(err, result) {
+      var msg = err ? "Error inserting leaderboard" : "Leaderboard inserted";
       res.locals.pageTitle = "Dashboards";
       res.render('pages/leaderboard/list', { msg: msg });
     });
 });
 
 app.post('/leaderboard/:id', function(req, res) {
+  if (!isTeacher(req)) {
+    return res.redirect('/login');
+  }
   var dbConnect = dbo.getDb();
   dbConnect
     .collection('Leaderboards')
@@ -532,6 +533,9 @@ app.post('/leaderboard/:id', function(req, res) {
 });
 
 app.delete('/leaderboard/:id', function(req, res) {
+  if (!isTeacher(req)) {
+    return res.redirect('/login');
+  }
   res.locals.id = req.params.id;
   var dbConnect = dbo.getDb();
   dbConnect
@@ -553,7 +557,7 @@ app.delete('/leaderboard/:id', function(req, res) {
  */
 
 app.get('/leaderboard/:id/sessions', function(req, res) {
-  if (!req.isAuthenticated()) {
+  if (!isTeacher(req)) {
     res.locals.pageTitle ="401 Unauthorised";
     return res.status(401).render("errors/401");
   }
@@ -575,29 +579,44 @@ app.get('/leaderboard/:id/sessions', function(req, res) {
 });
 
 app.get('/leaderboard/:id/session/create', function(req, res) {
-  res.locals.pageTitle ="Create session for leaderboard";
+  if (!isTeacher(req)) {
+    return res.redirect('/login');
+  }
+  res.locals.pageTitle = "Create session for leaderboard";
   res.locals.id = req.params.id;
+  res.locals.evalSetIds = EVAL_SET_IDS;
   res.render('pages/session/create', {})
 });
 
-app.post('/leaderboard/:id/createSession', function(req, res) {
+app.post('/leaderboard/:id/createSession', async function(req, res) {
+  if (!isTeacher(req)) {
+    return res.redirect('/login');
+  }
   var dbConnect = dbo.getDb();
-  var data = req.body;
-  data.leaderboardId = req.params.id;
-  res.locals.id = req.params.id;
+  var requested = req.body.evalSetId;
+  var evalSetId = EVAL_SET_IDS.indexOf(requested) >= 0 ? requested : await accounts.nextEvalSetId(dbo, EVAL_SET_IDS);
+  var data = {
+    name: req.body.name,
+    leaderboardId: req.params.id,
+    tutorMode: req.body.tutorMode || 'off',
+    startTime: req.body.startTime || '',
+    endTime: req.body.endTime || '',
+    hidePublic: req.body.hidePublic || 'off',
+    evalSetId: evalSetId,
+    packId: 'group1',
+    createdBy: currentAccount(req).id
+  };
   dbConnect
     .collection('Sessions')
-    .insertOne(data,
-    function(err,result) {
-      var msg = "Session created";
-      if (err) {
-        var msg = "Error creating session";
-      }
-      res.redirect("/leaderboard/"+ req.params.id + "/sessions");
+    .insertOne(data, function(err) {
+      res.redirect("/leaderboard/" + req.params.id + "/sessions");
     });
 });
 
 app.put('/leaderboard/:id/:sessionId', function(req, res) {
+  if (!isTeacher(req)) {
+    return res.status(401).json({ error: 'Sign in as a teacher required' });
+  }
   var dbConnect = dbo.getDb();
   var data = req.body;
 
@@ -629,7 +648,7 @@ app.get('/leaderboard/:id/:sessionId', function(req, res) {
   res.locals.pageTitle ="Leaderboard for session " + req.params.sessionId;
   res.locals.id = req.params.id;
   res.locals.sessionId = req.params.sessionId;
-  if (req.isAuthenticated()) {
+  if (isTeacher(req)) {
      type = req.headers.accept.split(',')[0];
      if (type=="application/json") {
       var dbConnect = dbo.getDb();
@@ -643,12 +662,12 @@ app.get('/leaderboard/:id/:sessionId', function(req, res) {
       res.render('pages/session/view', {})
      }
   } else {
-    res.render('pages/session/view', {})
+    return res.redirect('/login');
   }
 });
 
 app.get('/leaderboard/:id/:sessionId/edit', function(req, res) {
-  if (!req.isAuthenticated()) {
+  if (!isTeacher(req)) {
     res.locals.pageTitle ="401 Unauthorised";
     return res.status(401).render("errors/401");
   }
@@ -659,6 +678,9 @@ app.get('/leaderboard/:id/:sessionId/edit', function(req, res) {
 });
 
 app.delete('/leaderboard/:id/:sessionId', function(req, res) {
+  if (!isTeacher(req)) {
+    return res.redirect('/login');
+  }
   res.locals.id = req.params.id;
   var dbConnect = dbo.getDb();
   dbConnect
@@ -676,9 +698,25 @@ app.delete('/leaderboard/:id/:sessionId', function(req, res) {
 
 /* Other methods */
 
+app.get('/leaderboard/:id/:sessionId/board', function(req, res) {
+  if (!isTeacher(req)) {
+    return res.redirect('/login');
+  }
+  if (wantsJson(req)) {
+    return res.redirect(307, '/leaderboard/' + req.params.id + '/' + req.params.sessionId + '/results');
+  }
+  res.locals.pageTitle = "Class board";
+  res.locals.id = req.params.id;
+  res.locals.sessionId = req.params.sessionId;
+  res.render('pages/session/board', {});
+});
+
 app.get('/profile', function(req, res) {
-  res.locals.pageTitle ="Profile page";
-  res.render('pages/profile')
+  if (!currentAccount(req)) {
+    return res.redirect('/login');
+  }
+  res.locals.pageTitle = "Profile page";
+  res.render('pages/profile');
 });
 
 app.get('/help', function(req, res) {
@@ -699,6 +737,13 @@ dbo.connectToServer(function (err) {
     console.error(err);
     process.exit();
   }
+
+  accounts.ensureAdmin(dbo).catch(function(error) {
+    console.error(error);
+  });
+  accounts.expireOldResults(dbo).catch(function(error) {
+    console.error(error);
+  });
 
   const port = process.env.PORT || 80;
   // start the Express server

@@ -1,0 +1,5 @@
+node_modules/
+.venv/
+config.env
+__pycache__/
+*.pyc

@@ -1,0 +1,1984 @@
+{
+  "cards": [
+    {
+      "id": "1",
+      "target": 0,
+      "price_per_sqft": "1939",
+      "elevation": "0",
+      "price": "2750000",
+      "beds": "2",
+      "year_built": "2006"
+    },
+    {
+      "id": "8",
+      "target": 0,
+      "price_per_sqft": "1083",
+      "elevation": "12",
+      "price": "975000",
+      "beds": "1",
+      "year_built": "1930"
+    },
+    {
+      "id": "10",
+      "target": 0,
+      "price_per_sqft": "952",
+      "elevation": "4",
+      "price": "2095000",
+      "beds": "3",
+      "year_built": "1926"
+    },
+    {
+      "id": "14",
+      "target": 0,
+      "price_per_sqft": "1590",
+      "elevation": "5",
+      "price": "1110000",
+      "beds": "0",
+      "year_built": "2008"
+    },
+    {
+      "id": "17",
+      "target": 0,
+      "price_per_sqft": "1284",
+      "elevation": "3",
+      "price": "715000",
+      "beds": "1",
+      "year_built": "1903"
+    },
+    {
+      "id": "19",
+      "target": 0,
+      "price_per_sqft": "1060",
+      "elevation": "5",
+      "price": "2650000",
+      "beds": "2",
+      "year_built": "1915"
+    },
+    {
+      "id": "20",
+      "target": 0,
+      "price_per_sqft": "1865",
+      "elevation": "9",
+      "price": "3450000",
+      "beds": "2",
+      "year_built": "1900"
+    },
+    {
+      "id": "23",
+      "target": 0,
+      "price_per_sqft": "1185",
+      "elevation": "4",
+      "price": "1185000",
+      "beds": "2",
+      "year_built": "1900"
+    },
+    {
+      "id": "29",
+      "target": 0,
+      "price_per_sqft": "781",
+      "elevation": "8",
+      "price": "625000",
+      "beds": "0",
+      "year_built": "1964"
+    },
+    {
+      "id": "35",
+      "target": 0,
+      "price_per_sqft": "3233",
+      "elevation": "11",
+      "price": "6525000",
+      "beds": "2",
+      "year_built": "2016"
+    },
+    {
+      "id": "38",
+      "target": 0,
+      "price_per_sqft": "1250",
+      "elevation": "5",
+      "price": "999000",
+      "beds": "2",
+      "year_built": "1985"
+    },
+    {
+      "id": "39",
+      "target": 0,
+      "price_per_sqft": "1550",
+      "elevation": "6",
+      "price": "1550000",
+      "beds": "1",
+      "year_built": "1926"
+    },
+    {
+      "id": "43",
+      "target": 0,
+      "price_per_sqft": "2234",
+      "elevation": "10",
+      "price": "1595000",
+      "beds": "1",
+      "year_built": "2015"
+    },
+    {
+      "id": "45",
+      "target": 0,
+      "price_per_sqft": "2468",
+      "elevation": "8",
+      "price": "4995000",
+      "beds": "2",
+      "year_built": "1900"
+    },
+    {
+      "id": "49",
+      "target": 0,
+      "price_per_sqft": "1814",
+      "elevation": "3",
+      "price": "5985000",
+      "beds": "3",
+      "year_built": "1909"
+    },
+    {
+      "id": "50",
+      "target": 0,
+      "price_per_sqft": "3356",
+      "elevation": "4",
+      "price": "9900000",
+      "beds": "3",
+      "year_built": "2015"
+    },
+    {
+      "id": "52",
+      "target": 0,
+      "price_per_sqft": "1750",
+      "elevation": "5",
+      "price": "3500000",
+      "beds": "2",
+      "year_built": "1915"
+    },
+    {
+      "id": "55",
+      "target": 0,
+      "price_per_sqft": "1096",
+      "elevation": "7",
+      "price": "899000",
+      "beds": "2",
+      "year_built": "1990"
+    },
+    {
+      "id": "59",
+      "target": 0,
+      "price_per_sqft": "709",
+      "elevation": "6",
+      "price": "390000",
+      "beds": "0",
+      "year_built": "1955"
+    },
+    {
+      "id": "62",
+      "target": 0,
+      "price_per_sqft": "1000",
+      "elevation": "10",
+      "price": "1200000",
+      "beds": "2",
+      "year_built": "1964"
+    },
+    {
+      "id": "63",
+      "target": 0,
+      "price_per_sqft": "638",
+      "elevation": "10",
+      "price": "319000",
+      "beds": "0",
+      "year_built": "1941"
+    },
+    {
+      "id": "64",
+      "target": 0,
+      "price_per_sqft": "1400",
+      "elevation": "10",
+      "price": "699999",
+      "beds": "0",
+      "year_built": "1988"
+    },
+    {
+      "id": "65",
+      "target": 0,
+      "price_per_sqft": "1419",
+      "elevation": "10",
+      "price": "775000",
+      "beds": "0",
+      "year_built": "2009"
+    },
+    {
+      "id": "69",
+      "target": 0,
+      "price_per_sqft": "2025",
+      "elevation": "12",
+      "price": "1590000",
+      "beds": "1",
+      "year_built": "2008"
+    },
+    {
+      "id": "70",
+      "target": 0,
+      "price_per_sqft": "1783",
+      "elevation": "18",
+      "price": "1150000",
+      "beds": "1",
+      "year_built": "2014"
+    },
+    {
+      "id": "73",
+      "target": 0,
+      "price_per_sqft": "1048",
+      "elevation": "8",
+      "price": "569000",
+      "beds": "0",
+      "year_built": "1962"
+    },
+    {
+      "id": "74",
+      "target": 0,
+      "price_per_sqft": "732",
+      "elevation": "10",
+      "price": "549000",
+      "beds": "1",
+      "year_built": "1924"
+    },
+    {
+      "id": "76",
+      "target": 0,
+      "price_per_sqft": "1099",
+      "elevation": "22",
+      "price": "879000",
+      "beds": "2",
+      "year_built": "1928"
+    },
+    {
+      "id": "77",
+      "target": 0,
+      "price_per_sqft": "937",
+      "elevation": "10",
+      "price": "2999000",
+      "beds": "2",
+      "year_built": "1925"
+    },
+    {
+      "id": "81",
+      "target": 0,
+      "price_per_sqft": "840",
+      "elevation": "10",
+      "price": "399000",
+      "beds": "1",
+      "year_built": "1910"
+    },
+    {
+      "id": "82",
+      "target": 0,
+      "price_per_sqft": "1587",
+      "elevation": "10",
+      "price": "1135000",
+      "beds": "1",
+      "year_built": "2005"
+    },
+    {
+      "id": "83",
+      "target": 0,
+      "price_per_sqft": "1636",
+      "elevation": "10",
+      "price": "1145000",
+      "beds": "1",
+      "year_built": "2005"
+    },
+    {
+      "id": "85",
+      "target": 0,
+      "price_per_sqft": "1767",
+      "elevation": "10",
+      "price": "1725000",
+      "beds": "2",
+      "year_built": "2005"
+    },
+    {
+      "id": "86",
+      "target": 0,
+      "price_per_sqft": "1987",
+      "elevation": "10",
+      "price": "2750000",
+      "beds": "2",
+      "year_built": "2007"
+    },
+    {
+      "id": "92",
+      "target": 0,
+      "price_per_sqft": "833",
+      "elevation": "18",
+      "price": "1249000",
+      "beds": "3",
+      "year_built": "1962"
+    },
+    {
+      "id": "93",
+      "target": 0,
+      "price_per_sqft": "938",
+      "elevation": "18",
+      "price": "1500000",
+      "beds": "3",
+      "year_built": "1962"
+    },
+    {
+      "id": "95",
+      "target": 0,
+      "price_per_sqft": "1636",
+      "elevation": "19",
+      "price": "1145000",
+      "beds": "1",
+      "year_built": "2005"
+    },
+    {
+      "id": "96",
+      "target": 0,
+      "price_per_sqft": "1767",
+      "elevation": "19",
+      "price": "1725000",
+      "beds": "2",
+      "year_built": "2005"
+    },
+    {
+      "id": "97",
+      "target": 0,
+      "price_per_sqft": "2258",
+      "elevation": "20",
+      "price": "3500000",
+      "beds": "2",
+      "year_built": "1925"
+    },
+    {
+      "id": "98",
+      "target": 0,
+      "price_per_sqft": "1000",
+      "elevation": "21",
+      "price": "525000",
+      "beds": "0",
+      "year_built": "1940"
+    },
+    {
+      "id": "99",
+      "target": 0,
+      "price_per_sqft": "1413",
+      "elevation": "21",
+      "price": "2025000",
+      "beds": "2",
+      "year_built": "1940"
+    },
+    {
+      "id": "101",
+      "target": 0,
+      "price_per_sqft": "1581",
+      "elevation": "24",
+      "price": "925000",
+      "beds": "0",
+      "year_built": "1978"
+    },
+    {
+      "id": "102",
+      "target": 0,
+      "price_per_sqft": "1688",
+      "elevation": "25",
+      "price": "1700000",
+      "beds": "2",
+      "year_built": "1982"
+    },
+    {
+      "id": "104",
+      "target": 0,
+      "price_per_sqft": "816",
+      "elevation": "10",
+      "price": "449000",
+      "beds": "0",
+      "year_built": "1962"
+    },
+    {
+      "id": "105",
+      "target": 0,
+      "price_per_sqft": "748",
+      "elevation": "12",
+      "price": "299000",
+      "beds": "0",
+      "year_built": "1930"
+    },
+    {
+      "id": "109",
+      "target": 0,
+      "price_per_sqft": "3667",
+      "elevation": "21",
+      "price": "27500000",
+      "beds": "5",
+      "year_built": "1930"
+    },
+    {
+      "id": "110",
+      "target": 0,
+      "price_per_sqft": "1111",
+      "elevation": "10",
+      "price": "539000",
+      "beds": "0",
+      "year_built": "1957"
+    },
+    {
+      "id": "111",
+      "target": 0,
+      "price_per_sqft": "1521",
+      "elevation": "10",
+      "price": "779000",
+      "beds": "0",
+      "year_built": "1975"
+    },
+    {
+      "id": "112",
+      "target": 0,
+      "price_per_sqft": "1242",
+      "elevation": "10",
+      "price": "925000",
+      "beds": "1",
+      "year_built": "1985"
+    },
+    {
+      "id": "115",
+      "target": 0,
+      "price_per_sqft": "2453",
+      "elevation": "10",
+      "price": "4285000",
+      "beds": "2",
+      "year_built": "2016"
+    },
+    {
+      "id": "119",
+      "target": 0,
+      "price_per_sqft": "4023",
+      "elevation": "10",
+      "price": "13400000",
+      "beds": "4",
+      "year_built": "2016"
+    },
+    {
+      "id": "120",
+      "target": 0,
+      "price_per_sqft": "3821",
+      "elevation": "10",
+      "price": "19000000",
+      "beds": "5",
+      "year_built": "2016"
+    },
+    {
+      "id": "123",
+      "target": 0,
+      "price_per_sqft": "1249",
+      "elevation": "12",
+      "price": "7995000",
+      "beds": "10",
+      "year_built": "1910"
+    },
+    {
+      "id": "125",
+      "target": 0,
+      "price_per_sqft": "980",
+      "elevation": "14",
+      "price": "588000",
+      "beds": "1",
+      "year_built": "1970"
+    },
+    {
+      "id": "127",
+      "target": 0,
+      "price_per_sqft": "2397",
+      "elevation": "15",
+      "price": "4195000",
+      "beds": "2",
+      "year_built": "2016"
+    },
+    {
+      "id": "128",
+      "target": 0,
+      "price_per_sqft": "2408",
+      "elevation": "15",
+      "price": "4195000",
+      "beds": "2",
+      "year_built": "2016"
+    },
+    {
+      "id": "130",
+      "target": 0,
+      "price_per_sqft": "2453",
+      "elevation": "15",
+      "price": "4285000",
+      "beds": "2",
+      "year_built": "2016"
+    },
+    {
+      "id": "133",
+      "target": 0,
+      "price_per_sqft": "3062",
+      "elevation": "15",
+      "price": "9350000",
+      "beds": "3",
+      "year_built": "2016"
+    },
+    {
+      "id": "134",
+      "target": 0,
+      "price_per_sqft": "3400",
+      "elevation": "15",
+      "price": "10225000",
+      "beds": "3",
+      "year_built": "2016"
+    },
+    {
+      "id": "135",
+      "target": 0,
+      "price_per_sqft": "3939",
+      "elevation": "15",
+      "price": "13150000",
+      "beds": "4",
+      "year_built": "2016"
+    },
+    {
+      "id": "136",
+      "target": 0,
+      "price_per_sqft": "4023",
+      "elevation": "15",
+      "price": "13400000",
+      "beds": "4",
+      "year_built": "2016"
+    },
+    {
+      "id": "140",
+      "target": 0,
+      "price_per_sqft": "1634",
+      "elevation": "18",
+      "price": "1000000",
+      "beds": "1",
+      "year_built": "1912"
+    },
+    {
+      "id": "145",
+      "target": 0,
+      "price_per_sqft": "2687",
+      "elevation": "24",
+      "price": "3600000",
+      "beds": "2",
+      "year_built": "1960"
+    },
+    {
+      "id": "147",
+      "target": 0,
+      "price_per_sqft": "750",
+      "elevation": "24",
+      "price": "525000",
+      "beds": "1",
+      "year_built": "1924"
+    },
+    {
+      "id": "155",
+      "target": 0,
+      "price_per_sqft": "1113",
+      "elevation": "10",
+      "price": "779000",
+      "beds": "1",
+      "year_built": "1902"
+    },
+    {
+      "id": "156",
+      "target": 0,
+      "price_per_sqft": "1519",
+      "elevation": "10",
+      "price": "1475000",
+      "beds": "2",
+      "year_built": "1973"
+    },
+    {
+      "id": "157",
+      "target": 0,
+      "price_per_sqft": "1440",
+      "elevation": "10",
+      "price": "1385000",
+      "beds": "2",
+      "year_built": "1971"
+    },
+    {
+      "id": "158",
+      "target": 0,
+      "price_per_sqft": "1113",
+      "elevation": "13",
+      "price": "779000",
+      "beds": "1",
+      "year_built": "1902"
+    },
+    {
+      "id": "160",
+      "target": 0,
+      "price_per_sqft": "1208",
+      "elevation": "26",
+      "price": "725000",
+      "beds": "0",
+      "year_built": "1960"
+    },
+    {
+      "id": "161",
+      "target": 0,
+      "price_per_sqft": "1171",
+      "elevation": "27",
+      "price": "925000",
+      "beds": "2",
+      "year_built": "1941"
+    },
+    {
+      "id": "162",
+      "target": 0,
+      "price_per_sqft": "1226",
+      "elevation": "27",
+      "price": "965000",
+      "beds": "1",
+      "year_built": "1961"
+    },
+    {
+      "id": "163",
+      "target": 0,
+      "price_per_sqft": "1092",
+      "elevation": "30",
+      "price": "1250000",
+      "beds": "2",
+      "year_built": "1922"
+    },
+    {
+      "id": "165",
+      "target": 0,
+      "price_per_sqft": "470",
+      "elevation": "8",
+      "price": "385000",
+      "beds": "2",
+      "year_built": "1999"
+    },
+    {
+      "id": "166",
+      "target": 0,
+      "price_per_sqft": "1613",
+      "elevation": "16",
+      "price": "1695000",
+      "beds": "2",
+      "year_built": "2012"
+    },
+    {
+      "id": "167",
+      "target": 0,
+      "price_per_sqft": "566",
+      "elevation": "8",
+      "price": "600000",
+      "beds": "1",
+      "year_built": "1899"
+    },
+    {
+      "id": "168",
+      "target": 0,
+      "price_per_sqft": "858",
+      "elevation": "8",
+      "price": "910000",
+      "beds": "2",
+      "year_built": "1899"
+    },
+    {
+      "id": "170",
+      "target": 0,
+      "price_per_sqft": "566",
+      "elevation": "10",
+      "price": "600000",
+      "beds": "1",
+      "year_built": "1899"
+    },
+    {
+      "id": "171",
+      "target": 0,
+      "price_per_sqft": "858",
+      "elevation": "10",
+      "price": "910000",
+      "beds": "2",
+      "year_built": "1899"
+    },
+    {
+      "id": "177",
+      "target": 0,
+      "price_per_sqft": "919",
+      "elevation": "22",
+      "price": "735000",
+      "beds": "1",
+      "year_built": "1928"
+    },
+    {
+      "id": "178",
+      "target": 0,
+      "price_per_sqft": "2729",
+      "elevation": "29",
+      "price": "4625000",
+      "beds": "2",
+      "year_built": "1987"
+    },
+    {
+      "id": "179",
+      "target": 0,
+      "price_per_sqft": "983",
+      "elevation": "10",
+      "price": "749000",
+      "beds": "1",
+      "year_built": "2011"
+    },
+    {
+      "id": "181",
+      "target": 0,
+      "price_per_sqft": "983",
+      "elevation": "35",
+      "price": "749000",
+      "beds": "1",
+      "year_built": "2011"
+    },
+    {
+      "id": "184",
+      "target": 0,
+      "price_per_sqft": "467",
+      "elevation": "51",
+      "price": "559900",
+      "beds": "2",
+      "year_built": "1925"
+    },
+    {
+      "id": "189",
+      "target": 0,
+      "price_per_sqft": "1538",
+      "elevation": "8",
+      "price": "820000",
+      "beds": "0",
+      "year_built": "2013"
+    },
+    {
+      "id": "193",
+      "target": 0,
+      "price_per_sqft": "1952",
+      "elevation": "10",
+      "price": "1550000",
+      "beds": "1",
+      "year_built": "2004"
+    },
+    {
+      "id": "196",
+      "target": 0,
+      "price_per_sqft": "1802",
+      "elevation": "14",
+      "price": "1780000",
+      "beds": "1",
+      "year_built": "2007"
+    },
+    {
+      "id": "197",
+      "target": 0,
+      "price_per_sqft": "2141",
+      "elevation": "14",
+      "price": "2800000",
+      "beds": "2",
+      "year_built": "2007"
+    },
+    {
+      "id": "198",
+      "target": 0,
+      "price_per_sqft": "702",
+      "elevation": "6",
+      "price": "411500",
+      "beds": "1",
+      "year_built": "1921"
+    },
+    {
+      "id": "200",
+      "target": 0,
+      "price_per_sqft": "1911",
+      "elevation": "10",
+      "price": "1995000",
+      "beds": "2",
+      "year_built": "1996"
+    },
+    {
+      "id": "201",
+      "target": 0,
+      "price_per_sqft": "1444",
+      "elevation": "14",
+      "price": "2235000",
+      "beds": "2",
+      "year_built": "1999"
+    },
+    {
+      "id": "202",
+      "target": 0,
+      "price_per_sqft": "2602",
+      "elevation": "15",
+      "price": "8800000",
+      "beds": "4",
+      "year_built": "1941"
+    },
+    {
+      "id": "203",
+      "target": 0,
+      "price_per_sqft": "1772",
+      "elevation": "17",
+      "price": "1850000",
+      "beds": "2",
+      "year_built": "1996"
+    },
+    {
+      "id": "205",
+      "target": 0,
+      "price_per_sqft": "2493",
+      "elevation": "17",
+      "price": "1695000",
+      "beds": "1",
+      "year_built": "1927"
+    },
+    {
+      "id": "206",
+      "target": 0,
+      "price_per_sqft": "1329",
+      "elevation": "19",
+      "price": "1495000",
+      "beds": "1",
+      "year_built": "1962"
+    },
+    {
+      "id": "207",
+      "target": 0,
+      "price_per_sqft": "2107",
+      "elevation": "2",
+      "price": "2200000",
+      "beds": "2",
+      "year_built": "2000"
+    },
+    {
+      "id": "210",
+      "target": 0,
+      "price_per_sqft": "1219",
+      "elevation": "10",
+      "price": "1950000",
+      "beds": "3",
+      "year_built": "1956"
+    },
+    {
+      "id": "212",
+      "target": 0,
+      "price_per_sqft": "1095",
+      "elevation": "18",
+      "price": "1735000",
+      "beds": "2",
+      "year_built": "1980"
+    },
+    {
+      "id": "214",
+      "target": 0,
+      "price_per_sqft": "1367",
+      "elevation": "10",
+      "price": "1850000",
+      "beds": "3",
+      "year_built": "2005"
+    },
+    {
+      "id": "215",
+      "target": 0,
+      "price_per_sqft": "1419",
+      "elevation": "14",
+      "price": "1995000",
+      "beds": "2",
+      "year_built": "1986"
+    },
+    {
+      "id": "217",
+      "target": 0,
+      "price_per_sqft": "1507",
+      "elevation": "24",
+      "price": "2499000",
+      "beds": "2",
+      "year_built": "2004"
+    },
+    {
+      "id": "218",
+      "target": 0,
+      "price_per_sqft": "1190",
+      "elevation": "33",
+      "price": "1575000",
+      "beds": "2",
+      "year_built": "1930"
+    },
+    {
+      "id": "219",
+      "target": 0,
+      "price_per_sqft": "1099",
+      "elevation": "0",
+      "price": "1495000",
+      "beds": "3",
+      "year_built": "1990"
+    },
+    {
+      "id": "220",
+      "target": 0,
+      "price_per_sqft": "814",
+      "elevation": "0",
+      "price": "529000",
+      "beds": "1",
+      "year_built": "1986"
+    },
+    {
+      "id": "224",
+      "target": 1,
+      "price_per_sqft": "760",
+      "elevation": "24",
+      "price": "550000",
+      "beds": "1",
+      "year_built": "1982"
+    },
+    {
+      "id": "229",
+      "target": 1,
+      "price_per_sqft": "1120",
+      "elevation": "5",
+      "price": "598000",
+      "beds": "1",
+      "year_built": "2005"
+    },
+    {
+      "id": "236",
+      "target": 1,
+      "price_per_sqft": "320",
+      "elevation": "12",
+      "price": "334905",
+      "beds": "2",
+      "year_built": "2000"
+    },
+    {
+      "id": "238",
+      "target": 1,
+      "price_per_sqft": "849",
+      "elevation": "13",
+      "price": "1365000",
+      "beds": "1",
+      "year_built": "1996"
+    },
+    {
+      "id": "243",
+      "target": 1,
+      "price_per_sqft": "1348",
+      "elevation": "0",
+      "price": "1980000",
+      "beds": "2",
+      "year_built": "2009"
+    },
+    {
+      "id": "244",
+      "target": 1,
+      "price_per_sqft": "2179",
+      "elevation": "0",
+      "price": "3600000",
+      "beds": "2",
+      "year_built": "2009"
+    },
+    {
+      "id": "245",
+      "target": 1,
+      "price_per_sqft": "2240",
+      "elevation": "0",
+      "price": "4995000",
+      "beds": "2",
+      "year_built": "2009"
+    },
+    {
+      "id": "247",
+      "target": 1,
+      "price_per_sqft": "1632",
+      "elevation": "0",
+      "price": "2149000",
+      "beds": "2",
+      "year_built": "2008"
+    },
+    {
+      "id": "251",
+      "target": 1,
+      "price_per_sqft": "280",
+      "elevation": "12",
+      "price": "187518",
+      "beds": "1",
+      "year_built": "2000"
+    },
+    {
+      "id": "254",
+      "target": 1,
+      "price_per_sqft": "2108",
+      "elevation": "35",
+      "price": "2799000",
+      "beds": "2",
+      "year_built": "2008"
+    },
+    {
+      "id": "255",
+      "target": 1,
+      "price_per_sqft": "640",
+      "elevation": "2",
+      "price": "1050000",
+      "beds": "2",
+      "year_built": "2000"
+    },
+    {
+      "id": "257",
+      "target": 1,
+      "price_per_sqft": "1144",
+      "elevation": "3",
+      "price": "998000",
+      "beds": "1",
+      "year_built": "2006"
+    },
+    {
+      "id": "258",
+      "target": 1,
+      "price_per_sqft": "1424",
+      "elevation": "4",
+      "price": "1659000",
+      "beds": "2",
+      "year_built": "2000"
+    },
+    {
+      "id": "260",
+      "target": 1,
+      "price_per_sqft": "1046",
+      "elevation": "4",
+      "price": "1395000",
+      "beds": "2",
+      "year_built": "2001"
+    },
+    {
+      "id": "266",
+      "target": 1,
+      "price_per_sqft": "849",
+      "elevation": "13",
+      "price": "1275000",
+      "beds": "3",
+      "year_built": "2001"
+    },
+    {
+      "id": "267",
+      "target": 1,
+      "price_per_sqft": "928",
+      "elevation": "14",
+      "price": "775000",
+      "beds": "1",
+      "year_built": "2009"
+    },
+    {
+      "id": "270",
+      "target": 1,
+      "price_per_sqft": "750",
+      "elevation": "59",
+      "price": "699000",
+      "beds": "1",
+      "year_built": "1907"
+    },
+    {
+      "id": "271",
+      "target": 1,
+      "price_per_sqft": "1114",
+      "elevation": "11",
+      "price": "985000",
+      "beds": "1",
+      "year_built": "1978"
+    },
+    {
+      "id": "272",
+      "target": 1,
+      "price_per_sqft": "682",
+      "elevation": "60",
+      "price": "725000",
+      "beds": "1",
+      "year_built": "1978"
+    },
+    {
+      "id": "273",
+      "target": 1,
+      "price_per_sqft": "772",
+      "elevation": "66",
+      "price": "849000",
+      "beds": "2",
+      "year_built": "1911"
+    },
+    {
+      "id": "274",
+      "target": 1,
+      "price_per_sqft": "877",
+      "elevation": "72",
+      "price": "618000",
+      "beds": "1",
+      "year_built": "1973"
+    },
+    {
+      "id": "275",
+      "target": 1,
+      "price_per_sqft": "1608",
+      "elevation": "83",
+      "price": "5950000",
+      "beds": "2",
+      "year_built": "1989"
+    },
+    {
+      "id": "276",
+      "target": 1,
+      "price_per_sqft": "727",
+      "elevation": "10",
+      "price": "1800000",
+      "beds": "4",
+      "year_built": "1948"
+    },
+    {
+      "id": "277",
+      "target": 1,
+      "price_per_sqft": "1788",
+      "elevation": "19",
+      "price": "2350000",
+      "beds": "2",
+      "year_built": "2008"
+    },
+    {
+      "id": "279",
+      "target": 1,
+      "price_per_sqft": "896",
+      "elevation": "51",
+      "price": "699000",
+      "beds": "1",
+      "year_built": "1982"
+    },
+    {
+      "id": "285",
+      "target": 1,
+      "price_per_sqft": "794",
+      "elevation": "73",
+      "price": "699000",
+      "beds": "1",
+      "year_built": "1984"
+    },
+    {
+      "id": "294",
+      "target": 1,
+      "price_per_sqft": "1271",
+      "elevation": "20",
+      "price": "1199000",
+      "beds": "2",
+      "year_built": "2014"
+    },
+    {
+      "id": "295",
+      "target": 1,
+      "price_per_sqft": "965",
+      "elevation": "30",
+      "price": "1095000",
+      "beds": "2",
+      "year_built": "2010"
+    },
+    {
+      "id": "296",
+      "target": 1,
+      "price_per_sqft": "1291",
+      "elevation": "31",
+      "price": "795000",
+      "beds": "1",
+      "year_built": "2014"
+    },
+    {
+      "id": "297",
+      "target": 1,
+      "price_per_sqft": "680",
+      "elevation": "33",
+      "price": "979000",
+      "beds": "3",
+      "year_built": "1900"
+    },
+    {
+      "id": "301",
+      "target": 1,
+      "price_per_sqft": "867",
+      "elevation": "69",
+      "price": "1099000",
+      "beds": "4",
+      "year_built": "1962"
+    },
+    {
+      "id": "304",
+      "target": 1,
+      "price_per_sqft": "682",
+      "elevation": "84",
+      "price": "998000",
+      "beds": "3",
+      "year_built": "1907"
+    },
+    {
+      "id": "305",
+      "target": 1,
+      "price_per_sqft": "792",
+      "elevation": "4",
+      "price": "1300000",
+      "beds": "3",
+      "year_built": "1975"
+    },
+    {
+      "id": "306",
+      "target": 1,
+      "price_per_sqft": "760",
+      "elevation": "5",
+      "price": "539000",
+      "beds": "1",
+      "year_built": "2000"
+    },
+    {
+      "id": "307",
+      "target": 1,
+      "price_per_sqft": "944",
+      "elevation": "12",
+      "price": "735000",
+      "beds": "1",
+      "year_built": "1983"
+    },
+    {
+      "id": "309",
+      "target": 1,
+      "price_per_sqft": "781",
+      "elevation": "44",
+      "price": "859000",
+      "beds": "2",
+      "year_built": "1890"
+    },
+    {
+      "id": "311",
+      "target": 1,
+      "price_per_sqft": "765",
+      "elevation": "48",
+      "price": "750000",
+      "beds": "2",
+      "year_built": "1924"
+    },
+    {
+      "id": "312",
+      "target": 1,
+      "price_per_sqft": "278",
+      "elevation": "51",
+      "price": "549000",
+      "beds": "3",
+      "year_built": "1915"
+    },
+    {
+      "id": "315",
+      "target": 1,
+      "price_per_sqft": "481",
+      "elevation": "54",
+      "price": "900000",
+      "beds": "4",
+      "year_built": "2003"
+    },
+    {
+      "id": "316",
+      "target": 1,
+      "price_per_sqft": "491",
+      "elevation": "54",
+      "price": "748000",
+      "beds": "3",
+      "year_built": "1930"
+    },
+    {
+      "id": "321",
+      "target": 1,
+      "price_per_sqft": "779",
+      "elevation": "74",
+      "price": "798888",
+      "beds": "2",
+      "year_built": "1929"
+    },
+    {
+      "id": "322",
+      "target": 1,
+      "price_per_sqft": "463",
+      "elevation": "81",
+      "price": "899000",
+      "beds": "5",
+      "year_built": "1972"
+    },
+    {
+      "id": "323",
+      "target": 1,
+      "price_per_sqft": "430",
+      "elevation": "94",
+      "price": "699000",
+      "beds": "3",
+      "year_built": "1910"
+    },
+    {
+      "id": "324",
+      "target": 1,
+      "price_per_sqft": "495",
+      "elevation": "95",
+      "price": "749000",
+      "beds": "3",
+      "year_built": "1907"
+    },
+    {
+      "id": "328",
+      "target": 1,
+      "price_per_sqft": "429",
+      "elevation": "136",
+      "price": "500000",
+      "beds": "2",
+      "year_built": "1958"
+    },
+    {
+      "id": "331",
+      "target": 1,
+      "price_per_sqft": "399",
+      "elevation": "140",
+      "price": "699900",
+      "beds": "4",
+      "year_built": "1982"
+    },
+    {
+      "id": "332",
+      "target": 1,
+      "price_per_sqft": "601",
+      "elevation": "143",
+      "price": "688000",
+      "beds": "2",
+      "year_built": "1950"
+    },
+    {
+      "id": "335",
+      "target": 1,
+      "price_per_sqft": "1004",
+      "elevation": "50",
+      "price": "697000",
+      "beds": "1",
+      "year_built": "1922"
+    },
+    {
+      "id": "340",
+      "target": 1,
+      "price_per_sqft": "1375",
+      "elevation": "74",
+      "price": "825000",
+      "beds": "1",
+      "year_built": "1955"
+    },
+    {
+      "id": "341",
+      "target": 1,
+      "price_per_sqft": "764",
+      "elevation": "89",
+      "price": "699000",
+      "beds": "2",
+      "year_built": "1907"
+    },
+    {
+      "id": "342",
+      "target": 1,
+      "price_per_sqft": "984",
+      "elevation": "105",
+      "price": "1495000",
+      "beds": "3",
+      "year_built": "1927"
+    },
+    {
+      "id": "343",
+      "target": 1,
+      "price_per_sqft": "1080",
+      "elevation": "238",
+      "price": "5200000",
+      "beds": "4",
+      "year_built": "1952"
+    },
+    {
+      "id": "350",
+      "target": 1,
+      "price_per_sqft": "1053",
+      "elevation": "91",
+      "price": "1199000",
+      "beds": "1",
+      "year_built": "1906"
+    },
+    {
+      "id": "352",
+      "target": 1,
+      "price_per_sqft": "589",
+      "elevation": "36",
+      "price": "795000",
+      "beds": "3",
+      "year_built": "1954"
+    },
+    {
+      "id": "359",
+      "target": 1,
+      "price_per_sqft": "384",
+      "elevation": "97",
+      "price": "949000",
+      "beds": "6",
+      "year_built": "1918"
+    },
+    {
+      "id": "364",
+      "target": 1,
+      "price_per_sqft": "731",
+      "elevation": "65",
+      "price": "1295000",
+      "beds": "3",
+      "year_built": "1890"
+    },
+    {
+      "id": "365",
+      "target": 1,
+      "price_per_sqft": "884",
+      "elevation": "67",
+      "price": "6895000",
+      "beds": "6",
+      "year_built": "1902"
+    },
+    {
+      "id": "366",
+      "target": 1,
+      "price_per_sqft": "1219",
+      "elevation": "86",
+      "price": "1725000",
+      "beds": "2",
+      "year_built": "1922"
+    },
+    {
+      "id": "367",
+      "target": 1,
+      "price_per_sqft": "1042",
+      "elevation": "88",
+      "price": "1995000",
+      "beds": "3",
+      "year_built": "1922"
+    },
+    {
+      "id": "368",
+      "target": 1,
+      "price_per_sqft": "978",
+      "elevation": "91",
+      "price": "499000",
+      "beds": "0",
+      "year_built": "1900"
+    },
+    {
+      "id": "372",
+      "target": 1,
+      "price_per_sqft": "935",
+      "elevation": "121",
+      "price": "1200000",
+      "beds": "3",
+      "year_built": "1929"
+    },
+    {
+      "id": "374",
+      "target": 1,
+      "price_per_sqft": "906",
+      "elevation": "58",
+      "price": "1785000",
+      "beds": "3",
+      "year_built": "1925"
+    },
+    {
+      "id": "379",
+      "target": 1,
+      "price_per_sqft": "714",
+      "elevation": "75",
+      "price": "995000",
+      "beds": "3",
+      "year_built": "2000"
+    },
+    {
+      "id": "380",
+      "target": 1,
+      "price_per_sqft": "1409",
+      "elevation": "89",
+      "price": "6495000",
+      "beds": "5",
+      "year_built": "1906"
+    },
+    {
+      "id": "382",
+      "target": 1,
+      "price_per_sqft": "1757",
+      "elevation": "26",
+      "price": "6298000",
+      "beds": "5",
+      "year_built": "1914"
+    },
+    {
+      "id": "383",
+      "target": 1,
+      "price_per_sqft": "743",
+      "elevation": "44",
+      "price": "1139000",
+      "beds": "3",
+      "year_built": "2008"
+    },
+    {
+      "id": "385",
+      "target": 1,
+      "price_per_sqft": "594",
+      "elevation": "55",
+      "price": "1050000",
+      "beds": "4",
+      "year_built": "1932"
+    },
+    {
+      "id": "387",
+      "target": 1,
+      "price_per_sqft": "580",
+      "elevation": "81",
+      "price": "1595000",
+      "beds": "4",
+      "year_built": "1925"
+    },
+    {
+      "id": "391",
+      "target": 1,
+      "price_per_sqft": "724",
+      "elevation": "71",
+      "price": "829000",
+      "beds": "2",
+      "year_built": "1925"
+    },
+    {
+      "id": "394",
+      "target": 1,
+      "price_per_sqft": "517",
+      "elevation": "110",
+      "price": "749000",
+      "beds": "2",
+      "year_built": "1936"
+    },
+    {
+      "id": "397",
+      "target": 1,
+      "price_per_sqft": "1192",
+      "elevation": "9",
+      "price": "3595000",
+      "beds": "4",
+      "year_built": "1931"
+    },
+    {
+      "id": "398",
+      "target": 1,
+      "price_per_sqft": "1048",
+      "elevation": "14",
+      "price": "1425000",
+      "beds": "2",
+      "year_built": "1925"
+    },
+    {
+      "id": "399",
+      "target": 1,
+      "price_per_sqft": "901",
+      "elevation": "17",
+      "price": "865000",
+      "beds": "1",
+      "year_built": "1993"
+    },
+    {
+      "id": "403",
+      "target": 1,
+      "price_per_sqft": "270",
+      "elevation": "5",
+      "price": "358000",
+      "beds": "3",
+      "year_built": "1989"
+    },
+    {
+      "id": "406",
+      "target": 1,
+      "price_per_sqft": "344",
+      "elevation": "8",
+      "price": "850000",
+      "beds": "4",
+      "year_built": "1928"
+    },
+    {
+      "id": "407",
+      "target": 1,
+      "price_per_sqft": "576",
+      "elevation": "11",
+      "price": "648000",
+      "beds": "2",
+      "year_built": "1921"
+    },
+    {
+      "id": "410",
+      "target": 1,
+      "price_per_sqft": "468",
+      "elevation": "21",
+      "price": "689000",
+      "beds": "4",
+      "year_built": "1951"
+    },
+    {
+      "id": "411",
+      "target": 1,
+      "price_per_sqft": "508",
+      "elevation": "23",
+      "price": "669000",
+      "beds": "2",
+      "year_built": "1986"
+    },
+    {
+      "id": "412",
+      "target": 1,
+      "price_per_sqft": "720",
+      "elevation": "27",
+      "price": "729000",
+      "beds": "2",
+      "year_built": "1942"
+    },
+    {
+      "id": "415",
+      "target": 1,
+      "price_per_sqft": "1658",
+      "elevation": "36",
+      "price": "995000",
+      "beds": "2",
+      "year_built": "1908"
+    },
+    {
+      "id": "416",
+      "target": 1,
+      "price_per_sqft": "647",
+      "elevation": "43",
+      "price": "759900",
+      "beds": "2",
+      "year_built": "1941"
+    },
+    {
+      "id": "417",
+      "target": 1,
+      "price_per_sqft": "323",
+      "elevation": "55",
+      "price": "995000",
+      "beds": "6",
+      "year_built": "2001"
+    },
+    {
+      "id": "418",
+      "target": 1,
+      "price_per_sqft": "697",
+      "elevation": "60",
+      "price": "725000",
+      "beds": "2",
+      "year_built": "1945"
+    },
+    {
+      "id": "419",
+      "target": 1,
+      "price_per_sqft": "669",
+      "elevation": "98",
+      "price": "3420000",
+      "beds": "4",
+      "year_built": "1926"
+    },
+    {
+      "id": "420",
+      "target": 1,
+      "price_per_sqft": "815",
+      "elevation": "106",
+      "price": "1650000",
+      "beds": "3",
+      "year_built": "1922"
+    },
+    {
+      "id": "424",
+      "target": 1,
+      "price_per_sqft": "645",
+      "elevation": "179",
+      "price": "1049000",
+      "beds": "3",
+      "year_built": "1947"
+    },
+    {
+      "id": "425",
+      "target": 1,
+      "price_per_sqft": "695",
+      "elevation": "181",
+      "price": "599000",
+      "beds": "2",
+      "year_built": "1990"
+    },
+    {
+      "id": "426",
+      "target": 1,
+      "price_per_sqft": "770",
+      "elevation": "181",
+      "price": "2995000",
+      "beds": "5",
+      "year_built": "1947"
+    },
+    {
+      "id": "428",
+      "target": 1,
+      "price_per_sqft": "583",
+      "elevation": "43",
+      "price": "350000",
+      "beds": "1",
+      "year_built": "1908"
+    },
+    {
+      "id": "429",
+      "target": 1,
+      "price_per_sqft": "688",
+      "elevation": "43",
+      "price": "550000",
+      "beds": "2",
+      "year_built": "1908"
+    },
+    {
+      "id": "430",
+      "target": 1,
+      "price_per_sqft": "1219",
+      "elevation": "49",
+      "price": "3760000",
+      "beds": "4",
+      "year_built": "1900"
+    },
+    {
+      "id": "431",
+      "target": 1,
+      "price_per_sqft": "829",
+      "elevation": "52",
+      "price": "1050000",
+      "beds": "3",
+      "year_built": "1922"
+    },
+    {
+      "id": "436",
+      "target": 1,
+      "price_per_sqft": "444",
+      "elevation": "92",
+      "price": "600000",
+      "beds": "2",
+      "year_built": "1908"
+    },
+    {
+      "id": "438",
+      "target": 1,
+      "price_per_sqft": "1053",
+      "elevation": "103",
+      "price": "1595000",
+      "beds": "3",
+      "year_built": "1961"
+    },
+    {
+      "id": "439",
+      "target": 1,
+      "price_per_sqft": "523",
+      "elevation": "106",
+      "price": "849000",
+      "beds": "3",
+      "year_built": "1947"
+    },
+    {
+      "id": "440",
+      "target": 1,
+      "price_per_sqft": "602",
+      "elevation": "108",
+      "price": "1995000",
+      "beds": "4",
+      "year_built": "1992"
+    },
+    {
+      "id": "442",
+      "target": 1,
+      "price_per_sqft": "1012",
+      "elevation": "125",
+      "price": "2195000",
+      "beds": "3",
+      "year_built": "1922"
+    },
+    {
+      "id": "445",
+      "target": 1,
+      "price_per_sqft": "670",
+      "elevation": "143",
+      "price": "1159000",
+      "beds": "3",
+      "year_built": "1977"
+    },
+    {
+      "id": "448",
+      "target": 1,
+      "price_per_sqft": "603",
+      "elevation": "174",
+      "price": "2250000",
+      "beds": "5",
+      "year_built": "1962"
+    },
+    {
+      "id": "450",
+      "target": 1,
+      "price_per_sqft": "586",
+      "elevation": "187",
+      "price": "1095000",
+      "beds": "3",
+      "year_built": "1968"
+    },
+    {
+      "id": "451",
+      "target": 1,
+      "price_per_sqft": "605",
+      "elevation": "189",
+      "price": "599000",
+      "beds": "2",
+      "year_built": "1972"
+    },
+    {
+      "id": "455",
+      "target": 1,
+      "price_per_sqft": "794",
+      "elevation": "43",
+      "price": "1588000",
+      "beds": "3",
+      "year_built": "2015"
+    },
+    {
+      "id": "458",
+      "target": 1,
+      "price_per_sqft": "515",
+      "elevation": "69",
+      "price": "848000",
+      "beds": "4",
+      "year_built": "1949"
+    },
+    {
+      "id": "460",
+      "target": 1,
+      "price_per_sqft": "649",
+      "elevation": "118",
+      "price": "849900",
+      "beds": "3",
+      "year_built": "1958"
+    },
+    {
+      "id": "462",
+      "target": 1,
+      "price_per_sqft": "761",
+      "elevation": "136",
+      "price": "1539514",
+      "beds": "3",
+      "year_built": "2014"
+    },
+    {
+      "id": "463",
+      "target": 1,
+      "price_per_sqft": "628",
+      "elevation": "143",
+      "price": "1339000",
+      "beds": "3",
+      "year_built": "2015"
+    },
+    {
+      "id": "465",
+      "target": 1,
+      "price_per_sqft": "805",
+      "elevation": "153",
+      "price": "1611000",
+      "beds": "3",
+      "year_built": "2015"
+    },
+    {
+      "id": "467",
+      "target": 1,
+      "price_per_sqft": "932",
+      "elevation": "36",
+      "price": "699000",
+      "beds": "1",
+      "year_built": "1908"
+    },
+    {
+      "id": "472",
+      "target": 1,
+      "price_per_sqft": "949",
+      "elevation": "84",
+      "price": "599000",
+      "beds": "1",
+      "year_built": "1945"
+    },
+    {
+      "id": "476",
+      "target": 1,
+      "price_per_sqft": "958",
+      "elevation": "2",
+      "price": "849000",
+      "beds": "1",
+      "year_built": "2012"
+    },
+    {
+      "id": "477",
+      "target": 1,
+      "price_per_sqft": "1072",
+      "elevation": "2",
+      "price": "1675000",
+      "beds": "2",
+      "year_built": "2012"
+    },
+    {
+      "id": "478",
+      "target": 1,
+      "price_per_sqft": "1053",
+      "elevation": "2",
+      "price": "1695000",
+      "beds": "2",
+      "year_built": "2007"
+    },
+    {
+      "id": "479",
+      "target": 1,
+      "price_per_sqft": "1155",
+      "elevation": "13",
+      "price": "2219000",
+      "beds": "3",
+      "year_built": "2012"
+    },
+    {
+      "id": "481",
+      "target": 1,
+      "price_per_sqft": "1010",
+      "elevation": "4",
+      "price": "1950000",
+      "beds": "2",
+      "year_built": "1995"
+    },
+    {
+      "id": "482",
+      "target": 1,
+      "price_per_sqft": "760",
+      "elevation": "5",
+      "price": "539000",
+      "beds": "0",
+      "year_built": "2000"
+    },
+    {
+      "id": "485",
+      "target": 1,
+      "price_per_sqft": "1219",
+      "elevation": "49",
+      "price": "3760000",
+      "beds": "4",
+      "year_built": "1894"
+    },
+    {
+      "id": "487",
+      "target": 1,
+      "price_per_sqft": "586",
+      "elevation": "76",
+      "price": "1800000",
+      "beds": "5",
+      "year_built": "1890"
+    }
+  ]
+}

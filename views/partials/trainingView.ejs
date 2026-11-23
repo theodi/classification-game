@@ -5,6 +5,14 @@
         <button type="button" name="returnTrainingData" onClick="confirmReset();" title="Blanks the tree and all decisions.">Reset tree</button>
         <button type="button" class="model-button" name="runTrainingData" onClick="sortCards(cards.trainingSet,'b');" title="Try your tree with the cards">Run model</button>
       </div>
+      <div id="recording-sheet" class="hidden">
+        <h2>Recording sheet</h2>
+        <p>Enter the tree in the same order as the paper sheet, from the top downward: split feature, threshold, left prediction, then right prediction. Use a team name or first names only.</p>
+        <p><label>Team name <input id="sheet-team" type="text" maxlength="80"></label></p>
+        <p><label>Written confidence (%) <input id="written-confidence" type="number" min="0" max="100" step="1"></label></p>
+        <div id="sheet-rows"></div>
+        <button type="button" id="sheet-apply" onclick="applyRecordingSheet();">Apply tree and show the training score</button>
+      </div>
       <div id="training-set" class="cardSet"></div>
     </div>
 </section>

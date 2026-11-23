@@ -3,21 +3,11 @@
     <p>You can sort the table using the up/down arrows. You can multi-sort by holding shift and clicking.</p>
     <div id="groupButtons" class="hidden">
         <button type="button" name="getTrainingDataCSV"><a id="groupcsv" href="/data/csvs/Group_1.csv">Download cards (csv)</a></button>
-        <button type="button" name="getTrainingDataPDF"><a id="grouppdf" href="/data/Group_1.pdf">Download cards (pdf)</a></button>
+        <button type="button" name="getTrainingDataPDF"><a id="grouppdf" href="/data/pdfs/Group_1.pdf">Download cards (pdf)</a></button>
     </div>
     <table id="cardsTable" class="display">
         <thead>
-            <tr>
-                <th>Index</th>
-                <th>Bath</th>
-                <th>Beds</th>
-                <th>Year Built</th>
-                <th>Elevation</th>
-                <th>Sqft</th>
-                <th>Price</th>
-                <th>Price per Sqft</th>
-                <th>City</th>
-            </tr>
+            <tr id="cardsTableHead"></tr>
         </thead>
         <tbody id="cardsTableBody">
         </tbody>
@@ -25,48 +15,38 @@
 </section>
 <script>
     function renderCardsTable(cards) {
+        const features = window.GAME_FEATURES || [];
+        const head = document.getElementById('cardsTableHead');
+        head.innerHTML = '<th>Card</th>' + features.map(function(feature) {
+            return '<th>' + feature.label + '</th>';
+        }).join('') + '<th>City</th>';
         const cardsTableBody = document.getElementById('cardsTableBody');
+        cardsTableBody.innerHTML = '';
         cards.forEach(function(card) {
             const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${card.index}</td>
-                <td>${card.bath}</td>
-                <td>${card.beds}</td>
-                <td>${card.year_built}</td>
-                <td>${card.elevation}</td>
-                <td>${card.sqft}</td>
-                <td>${card.price}</td>
-                <td>${card.price_per_sqft}</td>
-                <td>${card.city}</td>
-            `;
+            const cells = ['<td>' + card.index + '</td>'].concat(features.map(function(feature) {
+                return '<td>' + (card[feature.column] === undefined ? '' : card[feature.column]) + '</td>';
+            }));
+            cells.push('<td>' + (card.city || '') + '</td>');
+            row.innerHTML = cells.join('');
             cardsTableBody.appendChild(row);
         });
 
         try {
-            if (group) {
-                console.log("Group = " + group);
-                var csvLink = document.querySelector('#groupcsv');
-                var pdfLink = document.querySelector('#grouppdf');
-                // Update download links
-                csvLink.href = '/data/csvs/Group_' + group + '.csv';
-                pdfLink.href = '/data/Group_' + group + '.pdf';
-                document.getElementById('groupButtons').classList.remove('hidden');
+            document.getElementById('groupcsv').href = '/data/csvs/Group_1.csv';
+            document.getElementById('grouppdf').href = '/data/pdfs/Group_1.pdf';
+            document.getElementById('groupButtons').classList.remove('hidden');
+            if (!$.fn.DataTable.isDataTable('#cardsTable')) {
+                $('#cardsTable').DataTable({ pageLength: 25 });
+            }
+        } catch (err) {
+            if (!$.fn.DataTable.isDataTable('#cardsTable')) {
                 $('#cardsTable').DataTable({
+                    dom: 'Bfrtip',
+                    buttons: [{ extend: 'csv', text: 'Download CSV' }],
                     pageLength: 25
                 });
             }
-        } catch (err) {
-            $('#cardsTable').DataTable({
-                dom: 'Bfrtip', // Specify the buttons to be displayed
-                buttons: [
-                    {
-                        extend: 'csv',
-                        text: 'Download CSV' // Rename the CSV button
-                    }
-                ],
-                pageLength: 25,
-                // Your DataTable configuration options
-            });
         }
     }
 </script>

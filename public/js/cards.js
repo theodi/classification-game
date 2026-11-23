@@ -20,6 +20,16 @@ results.vsHybrid.win = 0;
 results.vsHybrid.draw = 0;
 results.vsHybrid.lost = 0;
 confidences.player = false;
+var redDeck = [];
+var trainingSignatures = {};
+var preparedRuns = [];
+var replayRuns = null;
+
+function homeSignature(card) {
+    return ['bath', 'beds', 'price', 'year_built', 'sqft', 'price_per_sqft', 'elevation'].map(function(name) {
+        return String(card[name] === undefined || card[name] === null ? '' : card[name]).trim();
+    }).join('|');
+}
 
 /* Page functions */
 
@@ -90,6 +100,7 @@ function getBlueCards(group,card) {
     var index = 1;
     d3.csv('/data/houses.csv', function(data) {
         data.index = index;
+        trainingSignatures[homeSignature(data)] = true;
         if (data.group == group) {
             cards.trainingSet.push(data);
             renderCard(data,index,'blue');
@@ -136,19 +147,39 @@ function getPurpleCard(card) {
     });
 }
 
-function getRandomReds(count) {
-    var i = rCount;
-    var min = 1;
-    var max = 242;
-    var random = [];
-    while (i<count) {
-        var card = Math.floor((Math.random() * max) + min);
-        if (!random[card]) {
-            random[card] = true;
-            getRedCard(card);
-            i++;
+function loadRedDeck() {
+    var position = 1;
+    d3.csv('/data/red_cards.csv', function(data) {
+        data.index = position;
+        redDeck.push(data);
+        position += 1;
+    });
+}
+loadRedDeck();
+
+function pickRunIndexes() {
+    var eligible = [];
+    redDeck.forEach(function(card, offset) {
+        if (!trainingSignatures[homeSignature(card)]) {
+            eligible.push(offset + 1);
         }
+    });
+    for (var i = eligible.length - 1; i > 0; i--) {
+        var swap = Math.floor(Math.random() * (i + 1));
+        var held = eligible[i];
+        eligible[i] = eligible[swap];
+        eligible[swap] = held;
     }
+    return eligible.slice(0, 20);
+}
+
+function cardsForIndexes(indexes) {
+    return indexes.map(function(position) {
+        var card = Object.assign({}, redDeck[position - 1]);
+        card.city = '?';
+        card.index = position;
+        return card;
+    });
 }
 
 function getRandomPurples(count) {
@@ -283,7 +314,7 @@ function returnCardsInstant(cardset,boxid,color) {
 
 /* Card sorter */
 
-function sortCards(cardset,color,number) {
+function sortCards(cardset,color,number,skipScore) {
     var currentPosition = "";
     var interval = 0;
     cardset.forEach(function(card,value,index) {
@@ -298,7 +329,7 @@ function sortCards(cardset,color,number) {
             getPredictions(cardset);
         },5000);
     }
-    if (color=="r") {
+    if (color=="r" && !skipScore) {
         setTimeout(function() {
             getResult(cardset,number);
         },5000);
@@ -383,28 +414,29 @@ function getPredictions(cardset) {
     $('.prediction').show();
     document.getElementById("confidence-user").innerHTML = confidences.player + "%";
     $('.evaluation-button').show();
-    if (group == 1 || group == 5) {
+    if (group == 1 || group == 2) {
         confidences.machine = 100;
-        confidences.hybrid = 90;
         document.getElementById("confidence-stoopid-ai").innerHTML = "100%";
+    } else {
+        confidences.machine = null;
+        var machineCell = document.getElementById("confidence-stoopid-ai");
+        machineCell.innerHTML = "";
+        machineCell.parentElement.parentElement.style.display = "none";
+    }
+    if (group == 1 || group == 5) {
+        confidences.hybrid = 90;
         document.getElementById("confidence-hybrid").innerHTML = "90%";
     }
     if (group == 2) {
-        confidences.machine = 100;
         confidences.hybrid = 70;
-        document.getElementById("confidence-stoopid-ai").innerHTML = "100%";
         document.getElementById("confidence-hybrid").innerHTML = "70%";
     }
     if (group == 4 || group == 3) {
-        confidences.machine = 100;
         confidences.hybrid = 85;
-        document.getElementById("confidence-stoopid-ai").innerHTML = "100%";
         document.getElementById("confidence-hybrid").innerHTML = "85%";
     }
     if (group == 6) {
-        confidences.machine = 100;
         confidences.hybrid = 80;
-        document.getElementById("confidence-stoopid-ai").innerHTML = "100%";
         document.getElementById("confidence-hybrid").innerHTML = "80%";
     }
     console.log("Group = " + group);
@@ -569,24 +601,59 @@ function getAIResult_Stoopid_2(cardset,number) {
     processMachineResult(right,number);
 }
 
+function showScoredRun(cardset, number) {
+    cards.evaluationSet = cardset;
+    rCount = 0;
+    rDone = [];
+    cardset.forEach(function(card) {
+        renderRedCard(card, card.index, 'red');
+        rCount += 1;
+        rDone[card.index] = true;
+    });
+    $('#fill-reds').hide();
+    $('#remove-reds').show();
+    sortCards(cardset, 'r', number, true);
+}
+
+function prepareEvaluation() {
+    results.vsMachine = { win: 0, draw: 0, lost: 0 };
+    results.vsHybrid = { win: 0, draw: 0, lost: 0 };
+    preparedRuns = [];
+    var stored = (typeof replayRuns !== 'undefined' && replayRuns && resultId) ? replayRuns : null;
+    for (var n = 1; n <= 4; n++) {
+        var indexes = stored && stored[n - 1] ? stored[n - 1] : pickRunIndexes();
+        var cardset = cardsForIndexes(indexes);
+        preparedRuns.push(cardset);
+        cardset.forEach(function(card) {
+            sortCard(card, "");
+        });
+        results[n] = { score: 0 };
+        getResult(cardset, n);
+    }
+    results.evaluationCardIds = preparedRuns.map(function(cardset) {
+        return cardset.map(function(card) { return card.index; });
+    });
+}
+
 function autoEvaluate(number) {
-    results[number] = {};
-    results[number].score = 0;
+    number = number || 1;
+    if (number === 1) {
+        if (!redDeck.length) {
+            $("#evaluationStatus").html("The evaluation cards are still loading. Try again in a moment.");
+            return;
+        }
+        prepareEvaluation();
+    }
     $("#evaluationButton").hide();
-    $("#evaluationStatus").html("Selecting random cards for run " + number);
-    setTimeout(function() {
-        getRandomReds(20);
-    },1000);
-    setTimeout(function() {
-        $("#evaluationStatus").html("Running models");
-        sortCards(cards.evaluationSet,'r',number)
-    },5000);
+    $("#evaluationStatus").html("Showing run " + number);
+    if (cards.evaluationSet.length) {
+        removeCards(cards.evaluationSet, 'r');
+    }
+    showScoredRun(preparedRuns[number - 1], number);
     if (number < 4) {
         setTimeout(function() {
-            removeCards(cards.evaluationSet,'r');
-            number = number + 1;
-            autoEvaluate(number);
-        },12000);
+            autoEvaluate(number + 1);
+        }, 12000);
     }
     if (number == 4) {
         setTimeout(function() {
@@ -597,12 +664,14 @@ function autoEvaluate(number) {
             $('#result4-score').html("<b>"+results[4].score+"</b>");
             results.score = confidences.player + results[1].score + results[2].score + results[3].score + results[4].score;
             saveResult();
-        }, 12000)
+        }, 12000);
         setTimeout(function() {
-            loadLeaderboards();
+            if (typeof loadLeaderboards === 'function' && leaderboardId) {
+                loadLeaderboards();
+            }
             var score = confidences.player + results[1].score + results[2].score + results[3].score + results[4].score;
             var guide = '<table class="results" style="font-size: 0.8em; max-width: 66%; margin-left: auto; margin-right: auto;"><tr><td>500+</td><td>Incredible!</td></tr><tr><td>450 - 500</td><td>Expert</td></tr><tr><td>400 - 450</td><td>Solid effort</td></tr><tr><td>300 - 400</td><td>Average</td></tr><tr><td>0 - 300</td><td>Points for trying (did you overfit?)</td></tr></table>';
             $("#evaluationStatus").html("Your score: " + score + "<br/><br/>" + guide);
-        }, 14000)
+        }, 14000);
     }
 }

@@ -127,6 +127,7 @@ function saveResult() {
 	attempt = attempt + 1;
 	storage.attempt = attempt;
 	result.attempt = attempt;
+	result.evaluationCardIds = results.evaluationCardIds || null;
 
 	delete result.result.score;
 	delete result.result.vsMachine;
@@ -308,6 +309,9 @@ function loadLeaderboardData() {
 			storage.boundaries = data.tree.boundaries;
 			storage.predictions = data.tree.predictions;
 			confidences = data.confidences;
+			if (data.evaluationCardIds) {
+				replayRuns = data.evaluationCardIds;
+			}
 			window.localStorage.setItem(sessionId,JSON.stringify(data));
 			processLoad(storage);
 			loadLeaderboards();

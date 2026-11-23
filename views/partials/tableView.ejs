@@ -3,7 +3,7 @@
     <p>You can sort the table using the up/down arrows. You can multi-sort by holding shift and clicking.</p>
     <div id="groupButtons" class="hidden">
         <button type="button" name="getTrainingDataCSV"><a id="groupcsv" href="/data/csvs/Group_1.csv">Download cards (csv)</a></button>
-        <button type="button" name="getTrainingDataPDF"><a id="grouppdf" href="/data/Group_1.pdf">Download cards (pdf)</a></button>
+        <button type="button" name="getTrainingDataPDF"><a id="grouppdf" href="/data/pdfs/Group_1.pdf">Download cards (pdf)</a></button>
     </div>
     <table id="cardsTable" class="display">
         <thead>
@@ -49,7 +49,7 @@
                 var pdfLink = document.querySelector('#grouppdf');
                 // Update download links
                 csvLink.href = '/data/csvs/Group_' + group + '.csv';
-                pdfLink.href = '/data/Group_' + group + '.pdf';
+                pdfLink.href = '/data/pdfs/Group_' + group + '.pdf';
                 document.getElementById('groupButtons').classList.remove('hidden');
                 $('#cardsTable').DataTable({
                     pageLength: 25

@@ -28,7 +28,7 @@ app.set('view engine', 'ejs');
 app.use(session({
   resave: false,
   saveUninitialized: true,
-  secret: 'SECRET'
+  secret: process.env.SESSION_SECRET || 'SECRET'
 }));
 
 app.use(express.urlencoded());
@@ -140,7 +140,11 @@ function renderGame(req,res,data) {
   dbConnect
     .collection('Leaderboards')
     .findOne({"_id": new ObjectId(data.leaderboardId)},function(err,data2) {
-      var chosenSet = data2.cardset[Math.floor(Math.random() * data2.cardset.length)];
+      var chosenSet = data.chosenSet;
+      if (!chosenSet) {
+        chosenSet = data2.cardset[Math.floor(Math.random() * data2.cardset.length)];
+        dbConnect.collection('Sessions').updateOne({_id: data._id}, {$set: {chosenSet: chosenSet}});
+      }
       let tutorMode = false;
       if (data.tutorMode == "on") {
         tutorMode = true;
@@ -421,13 +425,29 @@ app.get('/evaluationPin', function(req, res) {
 
 
 app.post('/result', function(req, res) {
-  if (!req.body.score) {
+  const body = req.body || {};
+  if (body.score === undefined || body.score === null || body.score === '' || !body.id || !body.playerName || !body.tree) {
     return res.status(400).send("Result not accepted");
   }
+  const result = {
+    id: String(body.id),
+    playerName: String(body.playerName).slice(0, 80),
+    date: body.date || Date.now(),
+    cardSet: body.cardSet,
+    sessionId: body.sessionId ? String(body.sessionId) : '',
+    tree: body.tree,
+    confidences: body.confidences || {},
+    result: body.result || {},
+    score: body.score,
+    vsHybrid: body.vsHybrid || {},
+    vsMachine: body.vsMachine || {},
+    attempt: body.attempt,
+    evaluationCardIds: Array.isArray(body.evaluationCardIds) ? body.evaluationCardIds : null
+  };
   var dbConnect = dbo.getDb();
   dbConnect
     .collection('Results')
-    .updateOne({"id":req.body.id},{ $set: req.body},{upsert:true},
+    .updateOne({"id": result.id},{ $set: result},{upsert:true},
     function(err,result) {
       if (err) {
         return res.status(500).send("Result not accepted");

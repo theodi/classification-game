@@ -74,7 +74,7 @@
   var sessionId = "<%= session %>";
   var leaderboardId = "<%= leaderboardId %>";
   var resultId = "<%= resultId %>";
-  var isTutor = "<%= isTutor %>";
+  var isTutor = <%= isTutor ? 'true' : 'false' %>;
   var player_name = "";
   var attempt = 0;
   var storage = {};

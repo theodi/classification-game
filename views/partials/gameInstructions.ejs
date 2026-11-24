@@ -1,21 +1,22 @@
-<section id="instructions">
-    <h1>Instructions</h1>
-    <h2 id="playerWelcome" style="display: none;"></h2><span id="changeName" style="font-size: 0.8em;">  (<a href="#" onClick="changeName()">Change name</a>)</span>
-    <h3>Can you beat the machine learning system? or other players?</h3>
-    <p>If the video does not load, follow the written steps on this page. The game works without it.</p>
-    <div style="width: 50%; margin-left: auto; margin-right: auto; padding-top: 30%; position:relative;"><iframe src="https://player.vimeo.com/video/888716313?h=839683ea20&amp;badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" style="position:absolute;top:0;left:0;width:100%;height:100%;" title="Machine Learning Game Video One"></iframe></div>
-    <p>Your challenge is to create a decision tree that you think can successfully classify properties as either being in New York or San Francisco. Your decision must be based upon a limited number of characteristics.</p>
-    <h4>Building your decision tree</h4>
-    <p>You can build your tree via the <a href="#training" class="toggle-link" style="text-decoration: underline;">build your model</a> page.</p>
-    <p>In order to help build your decision tree, you have been provided a data set (the training set) containing 10 properties in San Francisco and 10 in New York.</p>
-    <p>You can drag the cards around the screen to help you build the tree or use the <b>Run model</b> button to apply your tree to the cards.</p>
-    <h4>Exploring the data</h4>
-    <p>There are a couple of different ways you can explore the data so you can discover which factors and boundaries be best applied in the decision tree.</p>
-    <p><ul>
-        <li><b>Table view</b>: Available via the <a href="#table" class="toggle-link">Download training data</a> navigation option. As well as being able to download the data in CSV format, you also browse and sort the data in a tabular view.</li>
-        <li><b>Chart view</b>: Available via the <a href="#charts" class="toggle-link">Explore training data</a> navigation option. Here you can visually explore the data using boxplots, histograms and scatter plots.
-    </ul></p>
-    <h3>Evaluating your decision tree</h3>
-    <p>Use the <a href="#evaluation" class="toggle-link" style="text-decoration: underline;">evaluation set</a> to see if your tree works. A class uses the set stored for that session. A self-paced game draws 20 cards at random.</p>
-    <p>Good luck!</p>
-</section>
+<dialog id="instructions-modal" class="admin-modal admin-modal-wide" aria-label="Instructions">
+  <div class="admin-modal-card game-instructions-card">
+    <div class="cluster-browse-toolbar">
+      <h2>Instructions</h2>
+      <button type="button" class="btn-secondary" data-instructions-close>Close</button>
+    </div>
+    <div class="game-instructions-body">
+      <h2 id="playerWelcome" style="display: none;"></h2>
+      <span id="changeName" style="font-size: 0.8em;">(<a href="#" onClick="changeName(); return false;">Change name</a>)</span>
+      <h3>Can you beat the machine learning system? or other players?</h3>
+      <p>If the video does not load, follow the written steps on this page. The game works without it.</p>
+      <div class="game-instructions-video"><iframe src="https://player.vimeo.com/video/888716313?h=839683ea20&amp;badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" title="Machine Learning Game Video One"></iframe></div>
+      <p>Your challenge is to create a decision tree that you think can successfully classify properties as either being in New York or San Francisco. Your decision must be based upon a limited number of characteristics.</p>
+      <h4>Training your decision tree</h4>
+      <p>On the <a href="#play" class="play-mode-link" data-play-mode="training">Play</a> screen, build your tree with the training cards. Hover the stack to browse cards, drag them into leaf boxes, or use <b>Run model</b> to sort them.</p>
+      <p>On each leaf, hover for <b>End branch</b> / <b>Add branch</b>, or <b>Browse cluster</b> once cards are in that box.</p>
+      <h4>Testing and evaluating</h4>
+      <p>After a training run, the card box shows how many cards matched each leaf prediction. Use <b>Run a test?</b> for a purple holdout set, or <b>Evaluate</b> for your final scored runs. A class uses the session evaluation set; a self-paced game draws cards at random.</p>
+      <p>Good luck!</p>
+    </div>
+  </div>
+</dialog>

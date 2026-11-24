@@ -1,18 +1,89 @@
-<section id="training" class="hidden">
-    <div id='training-set-container' class='invisbox-small dropzone snapzone'>
-      <div id="buttons" style="width: 100%">
-        <button type="button" name="returnTrainingData" onClick="returnCards(cards.trainingSet,'training-set','b');" title="Move the cards from the tree back into the top panel.">Reset cards</button>
-        <button type="button" name="returnTrainingData" onClick="confirmReset();" title="Blanks the tree and all decisions.">Reset tree</button>
-        <button type="button" class="model-button" name="runTrainingData" onClick="sortCards(cards.trainingSet,'b');" title="Try your tree with the cards">Run model</button>
+<section id="play">
+  <div id="recording-sheet" class="hidden">
+    <h2>Recording sheet</h2>
+    <p>Enter the tree in the same order as the paper sheet, from the top downward: split feature, threshold, left prediction, then right prediction. Use a team name or first names only.</p>
+    <p><label>Team name <input id="sheet-team" type="text" maxlength="80"></label></p>
+    <p><label>Written confidence (%) <input id="written-confidence" type="number" min="0" max="100" step="1"></label></p>
+    <div id="sheet-rows"></div>
+    <button type="button" id="sheet-apply" onclick="applyRecordingSheet();">Apply tree and show the training score</button>
+  </div>
+  <div id="game-eval-band" class="game-eval-band">
+    <div class="game-eval-results results">
+      <table>
+        <tr>
+          <th>Player</th>
+          <th>Confidence in model</th>
+          <th style="width:240px;">&nbsp;</th>
+          <th>Score<br/>(run 1)</th>
+          <th>Score<br/>(run 2)</th>
+          <th>Score<br/>(run 3)</th>
+          <th>Score<br/>(run 4)</th>
+        </tr>
+        <tr>
+          <td>You</td>
+          <td id="confidence-user"></td>
+          <td style="text-align: right;">% correctly classified (a)<br>Difference from confidence (b)<br>Score (a - b)</td>
+          <td id="result1-user"></td>
+          <td id="result2-user"></td>
+          <td id="result3-user"></td>
+          <td id="result4-user"></td>
+        </tr>
+        <tr>
+          <td>vs Machine</td>
+          <td id="confidence-stoopid-ai"></td>
+          <td>&nbsp;</td>
+          <td id="result1-stoopid-ai"></td>
+          <td id="result2-stoopid-ai"></td>
+          <td id="result3-stoopid-ai"></td>
+          <td id="result4-stoopid-ai"></td>
+        </tr>
+        <tr>
+          <td>vs Human+ML</td>
+          <td id="confidence-hybrid"></td>
+          <td>&nbsp;</td>
+          <td id="result1-hybrid"></td>
+          <td id="result2-hybrid"></td>
+          <td id="result3-hybrid"></td>
+          <td id="result4-hybrid"></td>
+        </tr>
+        <tr>
+          <td>Total</td>
+          <td>&nbsp;</td>
+          <td>&nbsp;</td>
+          <td id="result1-score"></td>
+          <td id="result2-score"></td>
+          <td id="result3-score"></td>
+          <td id="result4-score"></td>
+        </tr>
+      </table>
+      <div class="expandable-box">
+        <h1><strong>How evaluation works?</strong></h1>
+        <span class="expand-button" onclick="toggleContent(this)">+</span>
+        <div class="hidden-content">
+          <p>Four sets of 20 cards are classified in four runs. In a class session those sets are fixed, so a re-run shows the same cards and the same scores. It does not add a new leaderboard row.</p>
+          <p>When you click "Evaluate model," four sets of 20 cards, each containing unknown cities, will be selected and classified in four separate runs.</p>
+          <h4><strong>1. Accuracy Against Your Confidence</strong></h4>
+          <p>Your score is the percentage of correctly classified items minus the difference from your confidence.</p>
+          <h4><strong>2. vs Machine</strong></h4>
+          <p>The machine claims 100% because it memorised the 20 training cards. You win when your result is closer to your claim than the machine's is to 100%.</p>
+          <h4><strong>3. vs Human+ML</strong></h4>
+          <p>This opponent uses price per square foot and elevation. You win when you are closer to your claim than it is to its claim.</p>
+        </div>
       </div>
-      <div id="recording-sheet" class="hidden">
-        <h2>Recording sheet</h2>
-        <p>Enter the tree in the same order as the paper sheet, from the top downward: split feature, threshold, left prediction, then right prediction. Use a team name or first names only.</p>
-        <p><label>Team name <input id="sheet-team" type="text" maxlength="80"></label></p>
-        <p><label>Written confidence (%) <input id="written-confidence" type="number" min="0" max="100" step="1"></label></p>
-        <div id="sheet-rows"></div>
-        <button type="button" id="sheet-apply" onclick="applyRecordingSheet();">Apply tree and show the training score</button>
-      </div>
-      <div id="training-set" class="cardSet"></div>
     </div>
+    <aside class="game-eval-session-lb" aria-label="Session leaderboard">
+      <h3>Session leaderboard</h3>
+      <table id="session-leaderboard" class="display responsive wrap game-session-lb-table" cellspacing="0" width="100%">
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Attempt</th>
+            <th>Name</th>
+            <th>Score</th>
+          </tr>
+        </thead>
+        <tbody id="session-leaderboard-body"></tbody>
+      </table>
+    </aside>
+  </div>
 </section>

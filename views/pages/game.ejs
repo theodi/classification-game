@@ -1,21 +1,17 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <title>Build a decision tree</title>
-
-  <!--<link rel="stylesheet" href="/css/page.css"/>-->
-
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Classification game</title>
+  <link rel="shortcut icon" href="/images/odifavicon32.ico">
   <link href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.css" rel="stylesheet">
   <link href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css">
   <link rel="stylesheet" type="text/css" href="/css/chartjsInteractive.css">
-  <link rel="stylesheet" type="text/css" href="/css/water.css">
-
-  <link rel="stylesheet" href="/css/cards.css"/>
-  <link rel="stylesheet" href="/css/decision-tree.css"/>
-  <link rel="stylesheet" href="/css/switch.css"/>
+  <link rel="stylesheet" href="/css/admin.css">
+  <link rel="stylesheet" href="/css/game-shell.css">
+  <link rel="stylesheet" href="/css/cards.css">
+  <link rel="stylesheet" href="/css/switch.css">
 
   <script src="/js/d3.v5.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
@@ -36,34 +32,34 @@
 
   <script src="/js/dragdrop.js"></script>
   <script src="/js/switch.js"></script>
+  <script src="/js/tree-score.js"></script>
+  <script src="/js/session-tree.js"></script>
+  <script src="/js/game-tree.js"></script>
   <script src="/js/cards.js"></script>
   <script src="/js/decision-tree.js"></script>
 </head>
-
-<body>
-
-  <div class="sidebar">
-    <img class="odi-logo" src="/assets/odi-logo.png">
-    <ul>
-      <li class="arrow-icon"><a href="#instructions" class="toggle-link">Instructions</a></li>
-      <li class="arrow-icon"><a href="#table" class="toggle-link">Download training data</a></li>
-      <li class="arrow-icon"><a href="#charts" class="toggle-link">Explore training data</a></li>
-      <li class="arrow-icon"><a href="#training" class="toggle-link">Build your model</a></li>
-      <li class="arrow-icon"><a href="#test" class="toggle-link">Test your model</a></li>
-      <li class="arrow-icon"><a href="#evaluation" class="toggle-link">Evaluate your model</a></li>
-      <li class="arrow-icon"><a href="#leaderboards" class="toggle-link">Leaderboards</a></li>
-      <li class="arrow-icon"><a href="#about" class="toggle-link">About</a></li>
-      <li class="arrow-icon"><a href="#" class="sign-out">Sign out</a></li>
-    </ul>
-    <div id="pin" class="pinCode"></div>
-  </div>
-  <div class="main-content">
+<body class="game-page stage-training">
+  <header class="header game-header">
+    <div class="container">
+      <div class="header-top">
+        <a href="#play" class="logo toggle-link" aria-label="Open Data Institute"></a>
+        <nav class="main-nav" aria-label="Game">
+          <ul>
+            <li><a href="#instructions" class="toggle-link" data-instructions-open>Instructions</a></li>
+            <li><a href="#play" class="toggle-link selected">Play</a></li>
+            <li><a href="#about" class="toggle-link">About</a></li>
+            <li><a href="#" class="sign-out">Sign out</a></li>
+          </ul>
+        </nav>
+        <div id="pin" class="pinCode game-header-pin"></div>
+      </div>
+    </div>
+  </header>
+  <div class="game-main main-content">
     <%- include('../partials/gameInstructions') %>
     <%- include('../partials/tableView') %>
     <%- include('../partials/chartView') %>
     <%- include('../partials/trainingView') %>
-    <%- include('../partials/testView') %>
-    <%- include('../partials/evaluationView') %>
     <%- include('../partials/decisionTree') %>
     <%- include('../partials/gameLeaderboards') %>
     <%- include('../partials/about') %>
@@ -71,26 +67,28 @@
       <p>Housing data from R2D3, "A Visual Introduction to Machine Learning" by Stephanie Yee and Tony Chu (<a href="http://www.r2d3.us">http://www.r2d3.us</a>), licensed <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>. Selected, reduced to five features and arranged into card sets by the Open Data Institute.</p>
     </footer>
   </div>
-</body>
 <script type="text/javascript">
   var group = 1;
   var requireEvaluationPin = <%= requireEvaluationPin %>;
-  var sessionId = "<%= session %>";
-  var leaderboardId = "<%= leaderboardId %>";
-  var resultId = "<%= resultId %>";
+  var sessionId = '<%= session %>';
+  var leaderboardId = '<%= leaderboardId %>';
+  var resultId = '<%= resultId %>';
   var isTutor = <%= isTutor ? 'true' : 'false' %>;
   var entryMode = <%= entryMode ? 'true' : 'false' %>;
   var replayOnly = <%= replayOnly ? 'true' : 'false' %>;
   var evalSetId = <%- JSON.stringify(evalSetId || '') %>;
   var presetTeam = <%- JSON.stringify(teamName || '') %>;
-  var player_name = presetTeam || "";
+  var player_name = presetTeam || '';
   var attempt = 0;
   var storage = {};
+  var predictions = {};
   const randomPin = Math.floor(10000 + Math.random() * 90000);
   let requiredPasscode = 0;
 
-  $('document').ready(function(){
+  $('document').ready(function() {
     loadGameData().then(function() {
+      initGameTree(window.GAME_FEATURES || []);
+      loadStoredTree();
       renderCardsTable(cards.trainingSet);
       chartData = cards.trainingSet;
       if (typeof renderChart === 'function' && document.getElementById('myChart')) {
@@ -109,10 +107,15 @@
       if (entryMode && typeof renderRecordingSheet === 'function') {
         renderRecordingSheet();
       }
-      if (replayOnly) {
+      if (replayOnly && typeof setPlayMode === 'function') {
+        setPlayMode('evaluation', { force: true });
         var rerun = document.getElementById('rerunEvaluation');
+        var primary = document.getElementById('play-primary-action');
         if (rerun) {
           rerun.classList.remove('hidden');
+        }
+        if (primary) {
+          primary.classList.add('hidden');
         }
       }
     });
@@ -122,16 +125,18 @@
       document.getElementById('pin').style.display = 'block';
       const transformedDigits = [];
       for (let i = 0; i < 4; i++) {
-          const digit = parseInt(randomPin.toString()[i]);
-          const fifthDigit = parseInt(randomPin.toString()[4]);
-          const transformedDigit = (digit * 7 + fifthDigit) % 10;
-          transformedDigits.push(transformedDigit);
+        const digit = parseInt(randomPin.toString()[i]);
+        const fifthDigit = parseInt(randomPin.toString()[4]);
+        const transformedDigit = (digit * 7 + fifthDigit) % 10;
+        transformedDigits.push(transformedDigit);
       }
       requiredPasscode = transformedDigits.join('');
     }
 
-    document.getElementById("groupcsv").href = "/data/csvs/Group_1.csv";
-    document.getElementById("grouppdf").href = "/data/pdfs/Group_1.pdf";
+    var groupCsv = document.getElementById('groupcsv');
+    var groupPdf = document.getElementById('grouppdf');
+    if (groupCsv) groupCsv.href = '/data/csvs/Group_1.csv';
+    if (groupPdf) groupPdf.href = '/data/pdfs/Group_1.pdf';
 
     document.querySelectorAll('.sign-out').forEach(function(link) {
       link.addEventListener('click', function(event) {
@@ -141,29 +146,7 @@
         });
       });
     });
-
-    $('#condition_a').on('change', onchange);
-    $('#condition_la').on('change', onchange);
-    $('#condition_ra').on('change', onchange);
-    $('#condition_rla').on('change', onchange);
-    $('#condition_rra').on('change', onchange);
-    $('#condition_lra').on('change', onchange);
-    $('#condition_lla').on('change', onchange);
-
-    $('#prediction_box_l').on('change', updatePredictions);
-    $('#prediction_box_r').on('change', updatePredictions);
-    $('#prediction_box_ll').on('change', updatePredictions);
-    $('#prediction_box_lr').on('change', updatePredictions);
-    $('#prediction_box_rl').on('change', updatePredictions);
-    $('#prediction_box_rr').on('change', updatePredictions);
-    $('#prediction_box_lll').on('change', updatePredictions);
-    $('#prediction_box_llr').on('change', updatePredictions);
-    $('#prediction_box_lrl').on('change', updatePredictions);
-    $('#prediction_box_lrr').on('change', updatePredictions);
-    $('#prediction_box_rll').on('change', updatePredictions);
-    $('#prediction_box_rlr').on('change', updatePredictions);
-    $('#prediction_box_rrl').on('change', updatePredictions);
-    $('#prediction_box_rrr').on('change', updatePredictions);
   });
 </script>
+</body>
 </html>

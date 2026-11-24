@@ -1,8 +1,7 @@
 <!DOCTYPE html>
-<html class="dark" data-bs-theme="dark">
+<html lang="en" class="<%= embed ? 'browse-embed' : 'dark' %>" data-bs-theme="<%= embed ? 'light' : 'dark' %>">
 <head>
     <title>Browse Cards</title>
-    <!-- Include DataTables.js CSS and JS files -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.js"></script>
     <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.js"></script>
@@ -10,17 +9,277 @@
     <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.js"></script>
     <script src="https://unpkg.com/chart.js@3"></script>
     <script src="https://unpkg.com/@sgratzl/chartjs-chart-boxplot@3"></script>
+    <script src="/js/libraries/Sortable.js"></script>
     <script src="/js/dataLoader.js"></script>
     <script src="/js/chartjs/controller.js"></script>
+    <% if (!embed) { %>
     <script src="/js/nav.js"></script>
+    <% } %>
 
     <link href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.css" rel="stylesheet">
     <link href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css">
     <link rel="stylesheet" type="text/css" href="/css/chartjsInteractive.css">
     <link rel="stylesheet" type="text/css" href="/css/water.css">
+    <link rel="stylesheet" href="/css/cards.css">
+    <% if (embed) { %>
+    <link rel="stylesheet" href="/css/admin.css">
+    <style>
+      html.browse-embed, html.browse-embed body {
+        margin: 0;
+        padding: 0;
+        max-width: none;
+        height: 100%;
+        background: #fff;
+        color: #222;
+        overflow: hidden;
+      }
+      html.browse-embed .sidebar { display: none !important; }
+      html.browse-embed .main-content {
+        margin: 0;
+        padding: 0.4rem 0.6rem 0.5rem;
+        max-width: none;
+        height: 100%;
+        box-sizing: border-box;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+      html.browse-embed button {
+        background: var(--color-dark-blue, #072589);
+        color: #fff;
+        border: 2px solid var(--color-dark-blue, #072589);
+      }
+      html.browse-embed button:hover {
+        background: #fff;
+        color: var(--color-dark-blue, #072589);
+      }
+      html.browse-embed a {
+        color: var(--color-dark-blue, #072589);
+      }
+      html.browse-embed select,
+      html.browse-embed input[type="number"] {
+        border: 1px solid #aeb9d4;
+        background: #fff;
+        color: #222;
+        margin: 0;
+        padding: 0.2rem 0.35rem;
+        font-size: 0.85rem;
+        width: auto;
+        max-width: 11rem;
+      }
+      #browse-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 0.75rem;
+        align-content: start;
+        flex: 1 1 auto;
+        min-height: 0;
+        height: auto;
+        padding: 0.5rem;
+        border: 1px dashed #aeb9d4;
+        background: #f7f9fc;
+        overflow: auto;
+        white-space: normal;
+      }
+      #browse-cards card {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        max-width: none;
+        white-space: normal;
+        position: relative;
+        left: auto !important;
+        top: auto !important;
+        transform: none !important;
+        margin: 0;
+      }
+
+      /* Shared fill-height sections */
+      html.browse-embed #table,
+      html.browse-embed #charts {
+        display: none;
+        flex-direction: column;
+        flex: 1 1 auto;
+        min-height: 0;
+        height: 100%;
+        width: 100%;
+        max-width: 960px;
+        margin: 0 auto;
+        overflow: hidden;
+        box-sizing: border-box;
+      }
+      html.browse-embed #table:not(.hidden),
+      html.browse-embed #charts:not(.hidden),
+      html.browse-embed #browse-cards:not(.hidden) {
+        display: flex;
+      }
+      html.browse-embed #browse-cards:not(.hidden) {
+        display: grid;
+        max-width: none;
+        margin: 0;
+      }
+      html.browse-embed #table > p,
+      html.browse-embed #charts > p,
+      html.browse-embed #groupButtons {
+        display: none !important; /* downloads live in the parent browse toolbar */
+      }
+      html.browse-embed #table > h1,
+      html.browse-embed #charts > h1 {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+
+      /* Table: shrink-to-fit, scroll only below min font */
+      html.browse-embed .table-stage {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow: hidden;
+      }
+      html.browse-embed #table.is-scrollable .table-stage {
+        overflow: auto;
+      }
+      html.browse-embed .dataTables_wrapper {
+        margin: 0;
+      }
+      html.browse-embed #cardsTable,
+      html.browse-embed table.dataTable {
+        width: 100% !important;
+        border-collapse: collapse;
+        background: #fff;
+        color: #222;
+        font-size: 14px;
+      }
+      html.browse-embed #cardsTable thead th,
+      html.browse-embed table.dataTable thead th {
+        background: var(--color-dark-blue, #072589);
+        color: #fff;
+        border-bottom: 2px solid #04175a;
+        font-weight: 600;
+        padding: var(--embed-table-pad-y, 0.45em) var(--embed-table-pad-x, 0.55em);
+        white-space: nowrap;
+      }
+      html.browse-embed #cardsTable tbody td,
+      html.browse-embed table.dataTable tbody td {
+        border-bottom: 1px solid #d5dbe8;
+        color: #222;
+        padding: var(--embed-table-pad-y, 0.45em) var(--embed-table-pad-x, 0.55em);
+        line-height: 1.25;
+      }
+      html.browse-embed #cardsTable tbody tr:nth-child(even),
+      html.browse-embed table.dataTable tbody tr:nth-child(even) {
+        background: #f4f6fb;
+      }
+      html.browse-embed .dataTables_wrapper .sorting,
+      html.browse-embed .dataTables_wrapper .sorting_asc,
+      html.browse-embed .dataTables_wrapper .sorting_desc {
+        cursor: pointer;
+      }
+
+      /* Chart: compact toolbar + canvas fills remaining height */
+      html.browse-embed .chart-toolbar {
+        flex: 0 0 auto;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 0.4rem 0.75rem;
+        margin-bottom: 0.35rem;
+      }
+      html.browse-embed #chartType {
+        font-size: 0.85rem;
+        text-align: left;
+        margin: 0;
+        display: inline-flex;
+        gap: 0.35rem;
+      }
+      html.browse-embed .chart-axis-select {
+        font-size: 1rem;
+        font-weight: 400;
+        color: var(--color-dark-blue, #072589);
+        border-color: var(--color-dark-blue, #072589);
+      }
+      html.browse-embed .chart-axis-fixed {
+        font-size: 1rem;
+        font-weight: 400;
+        color: #222;
+        border: 0;
+        background: transparent;
+      }
+      html.browse-embed .chart-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        width: auto;
+        height: auto;
+        min-height: 0;
+        margin: 0;
+        padding: 0.25rem 0.55rem;
+        border: 2px solid var(--color-dark-blue, #072589);
+        border-radius: 0;
+        background: var(--color-dark-blue, #072589);
+        color: #fff;
+      }
+      html.browse-embed .chart-button .icon {
+        display: inline-flex;
+        width: 1.35rem;
+        height: 1.35rem;
+      }
+      html.browse-embed .chart-button .icon img {
+        width: 100%;
+        min-width: 0;
+        height: 100%;
+        object-fit: contain;
+        filter: brightness(0) invert(1);
+      }
+      html.browse-embed .chart-button .title {
+        position: static;
+        bottom: auto;
+        color: inherit;
+        font-size: 0.85rem;
+      }
+      html.browse-embed .chart-button:hover {
+        background: #fff;
+        color: var(--color-dark-blue, #072589);
+      }
+      html.browse-embed .chart-button:hover .icon img {
+        filter: none;
+      }
+      html.browse-embed .chart-button.selected,
+      html.browse-embed .chart-button[aria-pressed="true"] {
+        background: #fff;
+        color: var(--color-dark-blue, #072589);
+        outline: 2px solid var(--color-mid-blue, #6DF8FF);
+      }
+      html.browse-embed .chart-button.selected .icon img,
+      html.browse-embed .chart-button[aria-pressed="true"] .icon img {
+        filter: none;
+      }
+      html.browse-embed .chart-stage {
+        flex: 1 1 auto;
+        min-height: 0;
+        position: relative;
+        overflow: hidden;
+      }
+      html.browse-embed .chart-stage canvas {
+        width: 100% !important;
+        height: 100% !important;
+        max-width: none !important;
+        max-height: none !important;
+        display: block;
+      }
+    </style>
+    <% } %>
 </head>
 <body>
+    <% if (!embed) { %>
     <div class="sidebar">
         <img class="odi-logo" src="/assets/odi-logo.png">
         <ul>
@@ -28,29 +287,99 @@
           <li class="arrow-icon"><a href="#table" class="toggle-link">Table view</a></li>
         </ul>
     </div>
+    <% } %>
     <div class="main-content">
+        <% if (embed) { %>
+        <section id="browse-cards" class="hidden" aria-label="Card view"></section>
+        <% } %>
         <%- include('../partials/tableView') %>
         <%- include('../partials/chartView') %>
     </div>
 
     <script>
-
-        // Extract queryParam from the URL and parse it as an array
         const urlParams = new URLSearchParams(window.location.search);
-        const queryParam = urlParams.get('cards');
-        const queryParamArray = queryParam.split(',').map(Number);
+        const queryParam = urlParams.get('cards') || '';
+        const queryParamArray = queryParam.split(',').map(Number).filter(function(n) { return !isNaN(n) && n > 0; });
+        const embedMode = <%= embed ? 'true' : 'false' %>;
 
-        // Fetch and display CSV data
-        $(document).ready( function () {
-            document.getElementById('charts').classList.remove('hidden');
+        function formatFeature(feature, value) {
+          if (value === undefined || value === null) return '';
+          var text = feature.format === 'integer' ? String(value) : Number(value).toLocaleString();
+          return (feature.prefix || '') + text + (feature.suffix || '');
+        }
+
+        function renderBrowseCards(cardList) {
+          var host = document.getElementById('browse-cards');
+          if (!host) return;
+          var features = window.GAME_FEATURES || [];
+          host.innerHTML = cardList.map(function(data) {
+            var rows = features.map(function(feature) {
+              return '<tr><td class="attribute">' + feature.label + '</td><td class="value">' +
+                formatFeature(feature, data[feature.column]) + '</td></tr>';
+            }).join('');
+            return '<card class="draggable" id="browse-' + data.index + '">' +
+              '<div class="card-head"><h1 class="target">' + (data.city || '') + '</h1>' +
+              '<h1 class="number">#' + data.index + '</h1></div>' +
+              '<image src="/img/house.png"></image>' +
+              '<table class="blue">' + rows + '</table></card>';
+          }).join('');
+          if (host._sortable) {
+            host._sortable.destroy();
+          }
+          host._sortable = Sortable.create(host, {
+            animation: 150,
+            draggable: 'card'
+          });
+        }
+
+        function showEmbedTab(id) {
+          ['browse-cards', 'charts', 'table'].forEach(function(sectionId) {
+            var el = document.getElementById(sectionId);
+            if (el) el.classList.add('hidden');
+          });
+          var target = document.getElementById(id);
+          if (target) target.classList.remove('hidden');
+          if (!embedMode) return;
+          requestAnimationFrame(function() {
+            if (id === 'table' && typeof fitEmbedTable === 'function') {
+              fitEmbedTable();
+            }
+            if (id === 'charts') {
+              if (typeof renderChart === 'function') {
+                renderChart();
+              }
+              if (typeof resizeEmbedChart === 'function') {
+                resizeEmbedChart();
+              }
+            }
+          });
+        }
+        window.showEmbedTab = showEmbedTab;
+
+        $(document).ready(function () {
+            if (embedMode) {
+              showEmbedTab('browse-cards');
+              window.addEventListener('resize', function() {
+                if (!document.getElementById('table').classList.contains('hidden') && typeof fitEmbedTable === 'function') {
+                  fitEmbedTable();
+                }
+                if (!document.getElementById('charts').classList.contains('hidden') && typeof resizeEmbedChart === 'function') {
+                  resizeEmbedChart();
+                }
+              });
+            } else {
+              document.getElementById('charts').classList.remove('hidden');
+            }
             fetchPack(function (packCards) {
                 const cards = filterPack(packCards, queryParamArray);
                 chartData = cards;
+                if (embedMode) {
+                  renderBrowseCards(cards);
+                }
                 renderCardsTable(cards);
                 renderChart();
             });
         });
-
     </script>
 </body>
 </html>

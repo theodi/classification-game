@@ -1,21 +1,60 @@
 <section id="table" class="hidden">
-    <h1>Table view</h1>
+    <h1 class="visually-hidden">Table view</h1>
     <p>You can sort the table using the up/down arrows. You can multi-sort by holding shift and clicking.</p>
     <div id="groupButtons" class="hidden">
         <button type="button" name="getTrainingDataCSV"><a id="groupcsv" href="/data/csvs/Group_1.csv">Download cards (csv)</a></button>
         <button type="button" name="getTrainingDataPDF"><a id="grouppdf" href="/data/pdfs/Group_1.pdf">Download cards (pdf)</a></button>
     </div>
-    <table id="cardsTable" class="display">
-        <thead>
-            <tr id="cardsTableHead"></tr>
-        </thead>
-        <tbody id="cardsTableBody">
-        </tbody>
-    </table>
+    <div class="table-stage">
+        <table id="cardsTable" class="display">
+            <thead>
+                <tr id="cardsTableHead"></tr>
+            </thead>
+            <tbody id="cardsTableBody">
+            </tbody>
+        </table>
+    </div>
 </section>
 <script>
+    function fitEmbedTable() {
+        if (typeof embedMode === 'undefined' || !embedMode) return;
+        var section = document.getElementById('table');
+        var stage = section && section.querySelector('.table-stage');
+        var table = document.getElementById('cardsTable');
+        if (!section || !stage || !table || section.classList.contains('hidden')) return;
+
+        var MIN_PX = 11;
+        var MAX_PX = 14;
+        section.classList.remove('is-scrollable');
+        stage.style.overflow = 'hidden';
+
+        var size = MAX_PX;
+        table.style.fontSize = size + 'px';
+        section.style.setProperty('--embed-table-pad-y', '0.45em');
+        section.style.setProperty('--embed-table-pad-x', '0.55em');
+
+        // Force layout, then shrink until content fits or we hit the floor
+        var guard = 20;
+        while (guard-- > 0 && size > MIN_PX && table.scrollHeight > stage.clientHeight) {
+            size -= 0.5;
+            table.style.fontSize = size + 'px';
+            var padY = Math.max(0.2, 0.45 - (MAX_PX - size) * 0.04);
+            var padX = Math.max(0.3, 0.55 - (MAX_PX - size) * 0.03);
+            section.style.setProperty('--embed-table-pad-y', padY.toFixed(2) + 'em');
+            section.style.setProperty('--embed-table-pad-x', padX.toFixed(2) + 'em');
+        }
+
+        if (table.scrollHeight > stage.clientHeight + 1) {
+            section.classList.add('is-scrollable');
+            stage.style.overflow = 'auto';
+        }
+    }
+
     function renderCardsTable(cards) {
         const features = window.GAME_FEATURES || [];
+        if ($.fn.DataTable.isDataTable('#cardsTable')) {
+            $('#cardsTable').DataTable().clear().destroy();
+        }
         const head = document.getElementById('cardsTableHead');
         head.innerHTML = '<th>Card</th>' + features.map(function(feature) {
             return '<th>' + feature.label + '</th>';
@@ -32,24 +71,36 @@
             cardsTableBody.appendChild(row);
         });
 
+        if (typeof embedMode !== 'undefined' && embedMode) {
+            $('#cardsTable').DataTable({
+                paging: false,
+                searching: false,
+                info: false,
+                lengthChange: false,
+                ordering: true,
+                dom: 'rt',
+                drawCallback: function() {
+                    requestAnimationFrame(fitEmbedTable);
+                }
+            });
+            requestAnimationFrame(fitEmbedTable);
+            return;
+        }
+
         try {
             document.getElementById('groupcsv').href = '/data/csvs/Group_1.csv';
             document.getElementById('grouppdf').href = '/data/pdfs/Group_1.pdf';
             document.getElementById('groupButtons').classList.remove('hidden');
-            if (!$.fn.DataTable.isDataTable('#cardsTable')) {
-                $('#cardsTable').DataTable({
-                  pageLength: 25,
-                  dom: '<"dt-top"f>rt<"dt-bottom"<"dt-length"l><"dt-info"i><"dt-paginate"p>>'
-                });
-            }
+            $('#cardsTable').DataTable({
+              pageLength: 25,
+              dom: '<"dt-top"f>rt<"dt-bottom"<"dt-length"l><"dt-info"i><"dt-paginate"p>>'
+            });
         } catch (err) {
-            if (!$.fn.DataTable.isDataTable('#cardsTable')) {
-                $('#cardsTable').DataTable({
-                    dom: '<"dt-top"Bf>rt<"dt-bottom"<"dt-length"l><"dt-info"i><"dt-paginate"p>>',
-                    buttons: [{ extend: 'csv', text: 'Download CSV' }],
-                    pageLength: 25
-                });
-            }
+            $('#cardsTable').DataTable({
+                dom: '<"dt-top"Bf>rt<"dt-bottom"<"dt-length"l><"dt-info"i><"dt-paginate"p>>',
+                buttons: [{ extend: 'csv', text: 'Download CSV' }],
+                pageLength: 25
+            });
         }
     }
 </script>

@@ -14,11 +14,63 @@ var results = {};
 results.vsMachine = { win: 0, draw: 0, lost: 0 };
 results.vsHybrid = { win: 0, draw: 0, lost: 0 };
 confidences.player = false;
+var modelHasRun = false;
 
 var GAME_FEATURES = [];
 var OPPONENTS = null;
 var EVAL_SETS = null;
 var EVAL_POOL = [];
+
+function boxCityCounts(box, cardset) {
+    var counts = { 'New York': 0, 'San Francisco': 0 };
+    var set = cardset || (typeof cards !== 'undefined' ? cards.trainingSet : []) || [];
+    set.forEach(function(card) {
+        if (card.box === box && counts[card.city] !== undefined) {
+            counts[card.city] += 1;
+        }
+    });
+    return counts;
+}
+
+function majorityCityFromCounts(counts) {
+    if (!counts) {
+        return '';
+    }
+    if (counts['New York'] > counts['San Francisco']) {
+        return 'New York';
+    }
+    if (counts['San Francisco'] > counts['New York']) {
+        return 'San Francisco';
+    }
+    if (counts['New York'] === 0 && counts['San Francisco'] === 0) {
+        return '';
+    }
+    return '?';
+}
+
+function majorityCityForBox(box, cardset) {
+    if (cardset) {
+        assignBoxes(cardset);
+    } else if (typeof cards !== 'undefined' && cards.trainingSet) {
+        assignBoxes(cards.trainingSet);
+    }
+    return majorityCityFromCounts(boxCityCounts(box, cardset));
+}
+
+function restoreCardsToBoxes(cardset) {
+    var set = cardset || (typeof cards !== 'undefined' ? cards.trainingSet : []) || [];
+    assignBoxes(set);
+    set.forEach(function(card) {
+        var el = document.getElementById('b' + card.index);
+        var dest = document.getElementById('box_' + card.box);
+        if (el && dest) {
+            dest.appendChild(el);
+        }
+    });
+    if (typeof refreshCardboxes === 'function') {
+        refreshCardboxes();
+    }
+}
 
 function loadGameData() {
     return Promise.all([
@@ -81,7 +133,18 @@ function featureRows(data, hidden) {
 }
 
 function cardMarkup(data, count, color, type, idPrefix) {
-    return '<card draggable="true" class="draggable drag-drop card-' + type + '" id="' + idPrefix + count + '"><h1 class="target">' + data.city + '</h1><h1 class="number">#' + count + '</h1><image src="/img/house.png"></image><table class="' + color + '">' + featureRows(data, type === 'test') + '</table></card>';
+    var cityOnly = type === 'test';
+    var displayNum = (data.displayId != null && data.displayId !== '') ? data.displayId : count;
+    var table = cityOnly
+        ? ''
+        : '<table class="' + color + '">' + featureRows(data, false) + '</table>';
+    return '<card draggable="true" class="draggable drag-drop card-' + type +
+        (cityOnly ? ' card-test--city-only' : '') +
+        '" id="' + idPrefix + count + '">' +
+        '<div class="card-head"><h1 class="target">' + data.city + '</h1><h1 class="number">#' + displayNum + '</h1></div>' +
+        '<image src="/img/house.png"></image>' +
+        table +
+        '</card>';
 }
 
 function loadPack(pack) {
@@ -102,8 +165,8 @@ function renderRedCard(data, count, color) {
 }
 
 function renderPurpleCard(data, count, color) {
-    var hidden = Object.assign({}, data, { city: '?' });
-    $('#test-set').append(cardMarkup(hidden, count, color, 'test', 'p'));
+    // City visible; features omitted (holdout look without leaking attributes).
+    $('#test-set').append(cardMarkup(data, count, color, 'test', 'p'));
 }
 
 function renderCards(cardList, type) {
@@ -112,22 +175,74 @@ function renderCards(cardList, type) {
     });
 }
 
-function getRandomPurples(count) {
-    var pool = cards.trainingSet.slice();
-    var i = pool.length;
+function clearTestSet() {
+    if (cards.testSet && cards.testSet.length) {
+        clearRendered(cards.testSet, 'p');
+    }
+    cards.testSet = [];
+    pCount = 0;
+    var deck = document.getElementById('test-set');
+    if (deck) {
+        deck.querySelectorAll('card').forEach(function(el) {
+            el.remove();
+        });
+    }
+}
+
+function shufflePool(pool) {
+    var list = pool.slice();
+    var i = list.length;
     while (i > 0) {
         var swap = Math.floor(Math.random() * i);
         i -= 1;
-        var held = pool[i];
-        pool[i] = pool[swap];
-        pool[swap] = held;
+        var held = list[i];
+        list[i] = list[swap];
+        list[swap] = held;
     }
-    pool.slice(0, count).forEach(function(card, index) {
-        var copy = Object.assign({}, card, { index: index + 1 });
+    return list;
+}
+
+function getRandomPurples(count) {
+    clearTestSet();
+    var source = (EVAL_POOL && EVAL_POOL.length) ? EVAL_POOL : cards.trainingSet;
+    var pool = shufflePool(source);
+    var take = Math.min(count || 20, pool.length);
+    pool.slice(0, take).forEach(function(card, index) {
+        var copy = Object.assign({}, card, {
+            index: index + 1,
+            displayId: card.id != null ? String(card.id) : String(index + 1),
+            city: actualCity(card)
+        });
         cards.testSet.push(copy);
         renderPurpleCard(copy, copy.index, 'purple');
         pCount += 1;
     });
+}
+
+function dealTestSet() {
+    var deck = document.getElementById('test-set');
+    if (!deck) {
+        return;
+    }
+    if (typeof returnCardsInstant === 'function' && cards.testSet && cards.testSet.length) {
+        returnCardsInstant(cards.testSet, 'test-set', 'p');
+    }
+    deck.classList.remove('game-deck-dealing');
+    void deck.offsetWidth;
+    deck.classList.add('game-deck-dealing');
+    var cardsInDeck = deck.querySelectorAll('card');
+    cardsInDeck.forEach(function(card, index) {
+        card.style.setProperty('--deal-i', String(index));
+    });
+    window.clearTimeout(dealTestSet._timer);
+    dealTestSet._timer = window.setTimeout(function() {
+        deck.classList.remove('game-deck-dealing');
+    }, 1200 + cardsInDeck.length * 40);
+}
+
+function reshuffleAndDealTestSet(count) {
+    getRandomPurples(count || 20);
+    dealTestSet();
 }
 
 function copyEvalCard(card) {
@@ -212,12 +327,39 @@ function returnCards(cardset, boxid, color) {
     });
 }
 
+function returnCardsInstant(cardset, boxid, color) {
+    var dest = document.getElementById(boxid);
+    if (!dest) {
+        return;
+    }
+    cardset.forEach(function(card) {
+        var el = document.getElementById(color + card.index);
+        if (el) {
+            el.removeAttribute('style');
+            dest.appendChild(el);
+        }
+    });
+}
+
+function currentTreeModel() {
+    if (typeof liveGameTree === 'function') {
+        return liveGameTree();
+    }
+    if (typeof TreeScore !== 'undefined' && window.gameTree) {
+        return window.gameTree.toGameTree();
+    }
+    return { factors: {}, boundaries: {}, predictions: predictions || {} };
+}
+
 function sortCard(card, currentPosition) {
     if (currentPosition === '') {
         card.box = '';
     }
-    var factor = $('#factor_' + currentPosition).val();
-    var boundary = $('#condition_' + currentPosition + 'a').val();
+    var tree = currentTreeModel();
+    var factorKey = currentPosition === '' ? '_' : currentPosition;
+    var boundaryKey = currentPosition === '' ? 'a' : currentPosition + 'a';
+    var factor = tree.factors && tree.factors[factorKey];
+    var boundary = tree.boundaries && tree.boundaries[boundaryKey];
     if (!factor || boundary === '' || boundary === undefined || boundary === null) {
         return card;
     }
@@ -241,6 +383,10 @@ function assignBoxes(cardset) {
 }
 
 function sortCards(cardset, color, number) {
+    if ((color === 'p' || color === 'r') &&
+        window.gameTree && typeof window.gameTree.showAllLeafCards === 'function') {
+        window.gameTree.showAllLeafCards();
+    }
     assignBoxes(cardset);
     var interval = 0;
     cardset.forEach(function(card) {
@@ -250,11 +396,283 @@ function sortCards(cardset, color, number) {
         }, interval);
         interval += 200;
     });
+    var settleMs = interval + 700;
     if (color === 'b') {
+        // Wait until the last card finishes its flight; do not auto-end leaves.
         setTimeout(function() {
-            getPredictions(cardset, typeof entryMode !== 'undefined' && entryMode);
-        }, 500);
+            modelHasRun = true;
+            getPredictions(cardset, true, { applyToTree: false });
+            if (typeof showTrainingRunSummary === 'function') {
+                showTrainingRunSummary(cardset);
+            }
+        }, settleMs);
+    } else if (color === 'p') {
+        setTimeout(function() {
+            if (typeof showTestRunSummary === 'function') {
+                showTestRunSummary(cardset);
+            }
+        }, settleMs);
     }
+}
+
+function branchLabel(path) {
+    if (!path) {
+        return 'Root';
+    }
+    return path.split('').map(function(side) {
+        return side === 'l' ? 'L' : 'R';
+    }).join('') || 'Root';
+}
+
+function leafMatchStats(cardset) {
+    assignBoxes(cardset || []);
+    var byBox = {};
+    (cardset || []).forEach(function(card) {
+        var box = card.box || '';
+        if (!byBox[box]) {
+            byBox[box] = { path: box, total: 0, match: 0, prediction: '' };
+        }
+        byBox[box].total += 1;
+        var pred = leafCityFromTree(box);
+        if ((!pred || pred === '?') && typeof predictions !== 'undefined' && predictions[box]) {
+            pred = predictions[box].prediction || '';
+        }
+        byBox[box].prediction = pred || '';
+        if (pred && pred !== '?' && actualCity(card) === pred) {
+            byBox[box].match += 1;
+        }
+    });
+    return Object.keys(byBox).sort().map(function(key) {
+        return byBox[key];
+    });
+}
+
+function scoreCardsetAgainstTree(cardset) {
+    var total = (cardset || []).length;
+    var match = 0;
+    (cardset || []).forEach(function(card) {
+        var pred = playerPrediction(card);
+        if (pred && pred !== '?' && actualCity(card) === pred) {
+            match += 1;
+        }
+    });
+    return {
+        total: total,
+        match: match,
+        percent: total ? Math.round((match / total) * 100) : 0
+    };
+}
+
+var runSummaryState = {
+    training: null,
+    test: null,
+    view: 'training'
+};
+
+function renderLeafStatsHtml(stats) {
+    if (!stats || !stats.length) {
+        return '<p>No cards landed in leaf boxes.</p>';
+    }
+    var rows = stats.map(function(row) {
+        var pct = row.total ? Math.round((row.match / row.total) * 100) : 0;
+        var pred = row.prediction && row.prediction !== '?' ? row.prediction : 'no prediction yet';
+        var pathAttr = String(row.path || '').replace(/"/g, '');
+        return '<tr data-box-path="' + pathAttr + '"><td>' + branchLabel(row.path) + '</td><td>' + pred +
+            '</td><td>' + row.match + ' / ' + row.total + '</td><td>' + pct + '%</td></tr>';
+    }).join('');
+    return '<table class="game-run-stats"><thead><tr><th>Branch</th><th>Prediction</th><th>Match</th><th>%</th></tr></thead><tbody>' +
+        rows + '</tbody></table>';
+}
+
+function clearLeafSpotlights() {
+    document.querySelectorAll('.game-leaf-slot--spotlight, .game-leaf-dropzone--spotlight').forEach(function(el) {
+        el.classList.remove('game-leaf-slot--spotlight', 'game-leaf-dropzone--spotlight');
+    });
+}
+
+function spotlightLeafBox(path) {
+    clearLeafSpotlights();
+    var box = document.getElementById('box_' + (path || ''));
+    if (!box) {
+        return;
+    }
+    box.classList.add('game-leaf-dropzone--spotlight');
+    var slot = box.closest('.game-leaf-slot');
+    if (slot) {
+        slot.classList.add('game-leaf-slot--spotlight');
+    }
+}
+
+function bindRunSummaryRowHover() {
+    var body = document.getElementById('game-run-summary-body');
+    if (!body || body._spotlightBound) {
+        return;
+    }
+    body._spotlightBound = true;
+    body.addEventListener('mouseover', function(event) {
+        var row = event.target.closest('tr[data-box-path]');
+        if (!row || !body.contains(row)) {
+            return;
+        }
+        spotlightLeafBox(row.getAttribute('data-box-path') || '');
+    });
+    body.addEventListener('mouseleave', function() {
+        clearLeafSpotlights();
+    });
+}
+
+function renderSummaryScoresHtml() {
+    var parts = [];
+    if (runSummaryState.training) {
+        var train = runSummaryState.training.overall;
+        parts.push('<button type="button" class="game-run-score' +
+            (runSummaryState.view === 'training' ? ' selected' : '') +
+            '" data-summary-view="training"><span class="game-run-score-label">Training</span>' +
+            '<span class="game-run-score-value">' + train.percent + '%</span>' +
+            '<span class="game-run-score-sub">' + train.match + ' / ' + train.total + '</span></button>');
+    }
+    if (runSummaryState.test) {
+        var test = runSummaryState.test.overall;
+        parts.push('<button type="button" class="game-run-score' +
+            (runSummaryState.view === 'test' ? ' selected' : '') +
+            '" data-summary-view="test"><span class="game-run-score-label">Test</span>' +
+            '<span class="game-run-score-value">' + test.percent + '%</span>' +
+            '<span class="game-run-score-sub">' + test.match + ' / ' + test.total + '</span></button>');
+    }
+    return parts.join('');
+}
+
+function refreshRunSummaryPanel() {
+    var panel = document.getElementById('game-run-summary');
+    var scores = document.getElementById('game-run-summary-scores');
+    var tabs = document.getElementById('game-run-summary-tabs');
+    var body = document.getElementById('game-run-summary-body');
+    var deck = document.querySelector('.game-training-deck');
+    var runTest = document.querySelector('[data-run-test]');
+    var enterEval = document.querySelector('[data-enter-evaluation]');
+    var backTrain = document.querySelector('[data-back-to-training]');
+    if (!panel || !body) {
+        return;
+    }
+    var hasTrain = !!runSummaryState.training;
+    var hasTest = !!runSummaryState.test;
+    if (!hasTrain && !hasTest) {
+        hideRunSummaryPanel();
+        return;
+    }
+    if (runSummaryState.view === 'test' && !hasTest) {
+        runSummaryState.view = 'training';
+    }
+    if (runSummaryState.view === 'training' && !hasTrain && hasTest) {
+        runSummaryState.view = 'test';
+    }
+    var active = runSummaryState[runSummaryState.view];
+    if (scores) {
+        scores.innerHTML = renderSummaryScoresHtml();
+    }
+    if (tabs) {
+        tabs.classList.toggle('hidden', !(hasTrain && hasTest));
+        tabs.querySelectorAll('[data-summary-view]').forEach(function(tab) {
+            tab.classList.toggle('selected', tab.getAttribute('data-summary-view') === runSummaryState.view);
+        });
+    }
+    var blurb = runSummaryState.view === 'test'
+        ? '<p class="game-run-blurb">Per-leaf matches on the holdout test set:</p>'
+        : '<p class="game-run-blurb">Per-leaf matches on the training set:</p>';
+    body.innerHTML = blurb + renderLeafStatsHtml(active ? active.stats : []);
+    panel.classList.remove('hidden');
+    if (deck) {
+        deck.classList.add('has-run-summary');
+    }
+    if (runTest) {
+        runTest.classList.remove('hidden');
+        runTest.disabled = false;
+        runTest.textContent = hasTest ? 'Run another test' : 'Run a test?';
+    }
+    if (enterEval) {
+        enterEval.classList.remove('hidden');
+        enterEval.disabled = false;
+    }
+    if (backTrain) {
+        backTrain.classList.remove('hidden');
+        var onTraining = (typeof currentPlayMode === 'undefined' || currentPlayMode === 'training');
+        backTrain.disabled = !!onTraining;
+        backTrain.title = onTraining ? 'Already in training' : 'Return to training and show the cards again';
+    }
+    bindRunSummaryRowHover();
+    clearLeafSpotlights();
+}
+
+function setRunSummaryView(view) {
+    if (view !== 'training' && view !== 'test') {
+        return;
+    }
+    if (view === 'test' && !runSummaryState.test) {
+        return;
+    }
+    if (view === 'training' && !runSummaryState.training) {
+        return;
+    }
+    runSummaryState.view = view;
+    refreshRunSummaryPanel();
+}
+
+function hideRunSummaryPanel() {
+    var panel = document.getElementById('game-run-summary');
+    var deck = document.querySelector('.game-training-deck');
+    if (panel) {
+        panel.classList.add('hidden');
+    }
+    if (deck) {
+        deck.classList.remove('has-run-summary');
+    }
+    runSummaryState.training = null;
+    runSummaryState.test = null;
+    runSummaryState.view = 'training';
+    clearLeafSpotlights();
+}
+
+function showTrainingRunSummary(cardset) {
+    runSummaryState.training = {
+        stats: leafMatchStats(cardset),
+        overall: scoreCardsetAgainstTree(cardset)
+    };
+    runSummaryState.test = null;
+    runSummaryState.view = 'training';
+    refreshRunSummaryPanel();
+}
+
+function showTestRunSummary(cardset) {
+    runSummaryState.test = {
+        stats: leafMatchStats(cardset),
+        overall: scoreCardsetAgainstTree(cardset)
+    };
+    runSummaryState.view = 'test';
+    refreshRunSummaryPanel();
+}
+
+function startGuidedTest() {
+    if (typeof ensureLeafPredictionsForEval === 'function') {
+        var finalizeError = ensureLeafPredictionsForEval(cards.trainingSet);
+        if (finalizeError) {
+            alert(finalizeError);
+            return;
+        }
+    }
+    if (!modelHasRun && !confidences.player && confidences.player !== 0) {
+        alert('Run your model on the training set first.');
+        return;
+    }
+    if (typeof setPlayMode === 'function') {
+        setPlayMode('test', { force: true });
+    }
+    reshuffleAndDealTestSet(20);
+    window.setTimeout(function() {
+        if (window.gameTree && typeof window.gameTree.showAllLeafCards === 'function') {
+            window.gameTree.showAllLeafCards();
+        }
+        sortCards(cards.testSet, 'p');
+    }, 550);
 }
 
 function setElementToOption(elementid, option) {
@@ -292,10 +710,16 @@ function evaluateTree(tree, card) {
 }
 
 function playerPrediction(card) {
+    var tree = currentTreeModel();
+    if (typeof TreeScore !== 'undefined' && TreeScore.predict) {
+        return TreeScore.predict(tree, card);
+    }
     var position = '';
     for (var depth = 0; depth < 3; depth++) {
-        var factor = $('#factor_' + position).val();
-        var boundary = $('#condition_' + position + 'a').val();
+        var factorKey = position === '' ? '_' : position;
+        var boundaryKey = position === '' ? 'a' : position + 'a';
+        var factor = tree.factors && tree.factors[factorKey];
+        var boundary = tree.boundaries && tree.boundaries[boundaryKey];
         if (!factor || boundary === '' || boundary === undefined || boundary === null) {
             break;
         }
@@ -308,43 +732,82 @@ function playerPrediction(card) {
     if (predictions[position] && predictions[position].prediction && predictions[position].prediction !== '?') {
         return predictions[position].prediction;
     }
-    var select = document.getElementById('prediction_box_' + position);
-    if (select && select.value && select.value !== '?') {
-        return select.value;
-    }
     return null;
 }
 
-function getPredictions(cardset, keepExisting) {
+function leafCityFromTree(path) {
+    if (!window.gameTree || typeof window.gameTree.find !== 'function') {
+        return '';
+    }
+    var node = window.gameTree.find(path);
+    if (node && node.mode === 'leaf' && node.city && node.city !== '?') {
+        return node.city;
+    }
+    return '';
+}
+
+function predictionsComplete(cardset) {
+    assignBoxes(cardset || (typeof cards !== 'undefined' ? cards.trainingSet : []));
+    var set = cardset || (typeof cards !== 'undefined' ? cards.trainingSet : []);
+    if (!set || !set.length) {
+        return false;
+    }
+    for (var i = 0; i < set.length; i++) {
+        var box = set[i].box;
+        if (!box) {
+            return false;
+        }
+        var prediction = leafCityFromTree(box) ||
+            (predictions[box] && predictions[box].prediction);
+        if (!prediction || prediction === '?') {
+            return false;
+        }
+    }
+    return true;
+}
+
+function getPredictions(cardset, keepExisting, options) {
+    options = options || {};
+    var applyToTree = options.applyToTree === true;
     var counts = {};
     cardset.forEach(function(card) {
+        if (!card.box) {
+            return;
+        }
         if (!counts[card.box]) {
             counts[card.box] = { 'New York': 0, 'San Francisco': 0 };
         }
-        counts[card.box][card.city] += 1;
+        if (counts[card.box][card.city] !== undefined) {
+            counts[card.box][card.city] += 1;
+        }
     });
     var right = 0;
     Object.keys(counts).forEach(function(box) {
         var values = counts[box];
-        var existing = predictions[box] && predictions[box].prediction;
         if (!predictions[box]) {
             predictions[box] = {};
         }
         predictions[box]['New York'] = values['New York'];
         predictions[box]['San Francisco'] = values['San Francisco'];
-        var prediction = existing;
-        if (!keepExisting || !prediction || prediction === '?') {
-            if (values['New York'] > values['San Francisco']) {
-                prediction = 'New York';
-            } else if (values['New York'] < values['San Francisco']) {
-                prediction = 'San Francisco';
-            } else {
-                prediction = '?';
+
+        var treeCity = leafCityFromTree(box);
+        var existing = predictions[box].prediction;
+        var prediction = treeCity || existing;
+        if (applyToTree && (!keepExisting || !prediction || prediction === '?')) {
+            prediction = majorityCityFromCounts(values) || prediction;
+        }
+        if (treeCity) {
+            prediction = treeCity;
+        }
+        if (!applyToTree && !treeCity) {
+            // Keep vote counts, but do not invent a leaf prediction until End branch.
+            if (!existing || existing === '?') {
+                prediction = '';
             }
         }
-        predictions[box].prediction = prediction;
-        setElementToOption('prediction_box_' + box, prediction);
+        predictions[box].prediction = prediction || existing || '';
         if (prediction && prediction !== '?') {
+            setElementToOption('prediction_box_' + box, prediction);
             right += values[prediction] || 0;
         }
     });
@@ -352,13 +815,83 @@ function getPredictions(cardset, keepExisting) {
     if (OPPONENTS) {
         confidences.machine = OPPONENTS.overfitted.confidence;
         confidences.hybrid = OPPONENTS.humanGuided.confidence;
-        document.getElementById('confidence-stoopid-ai').innerHTML = confidences.machine + '%';
-        document.getElementById('confidence-hybrid').innerHTML = confidences.hybrid + '%';
+        var machineEl = document.getElementById('confidence-stoopid-ai');
+        var hybridEl = document.getElementById('confidence-hybrid');
+        if (machineEl) {
+            machineEl.innerHTML = confidences.machine + '%';
+        }
+        if (hybridEl) {
+            hybridEl.innerHTML = confidences.hybrid + '%';
+        }
     }
     $('.prediction').show();
-    document.getElementById('confidence-user').innerHTML = confidences.player + '%';
+    var userEl = document.getElementById('confidence-user');
+    if (userEl) {
+        userEl.innerHTML = confidences.player + '%';
+    }
     $('.evaluation-button').show();
+
+    if (applyToTree && window.gameTree && typeof window.gameTree.applyLeafCities === 'function') {
+        var cityMap = {};
+        Object.keys(predictions).forEach(function(box) {
+            if (predictions[box] && predictions[box].prediction && predictions[box].prediction !== '?') {
+                cityMap[box] = predictions[box].prediction;
+            }
+        });
+        window.gameTree.applyLeafCities(cityMap);
+        restoreCardsToBoxes(cardset);
+    }
     saveData();
+}
+
+function ensureLeafPredictionsForEval(cardset) {
+    var set = cardset || (typeof cards !== 'undefined' ? cards.trainingSet : []);
+    if (!set || !set.length) {
+        return 'Run your model on the training cards first.';
+    }
+    if (!modelHasRun) {
+        return 'Run your model on the training set before you can proceed.';
+    }
+    if (!window.gameTree) {
+        return 'Build your decision tree first.';
+    }
+    assignBoxes(set);
+    window.gameTree.readFromDom();
+
+    var cityMap = {};
+    var problems = [];
+
+    function walk(path, node) {
+        if (!node || node.mode === 'leaf') {
+            if (node && node.city && node.city !== '?') {
+                cityMap[path] = node.city;
+                return;
+            }
+            var majority = majorityCityFromCounts(boxCityCounts(path, set));
+            if (majority && majority !== '?') {
+                cityMap[path] = majority;
+                return;
+            }
+            if (majority === '?') {
+                problems.push('Branch "' + (path || 'root') + '" is tied 50/50 — choose NY or SF.');
+            } else {
+                problems.push('Branch "' + (path || 'root') + '" has no cards — end it and choose NY or SF.');
+            }
+            return;
+        }
+        walk(path + 'l', node.left);
+        walk(path + 'r', node.right);
+    }
+
+    walk('', window.gameTree.root);
+    if (problems.length) {
+        return problems.join('\n');
+    }
+
+    window.gameTree.applyLeafCities(cityMap);
+    restoreCardsToBoxes(set);
+    getPredictions(set, true, { applyToTree: false });
+    return null;
 }
 
 function updateConfidence(cardset) {
@@ -499,7 +1032,10 @@ function autoEvaluate() {
         scoreRun(runCards, number);
         runs.push(runCards);
     }
-    $('#evaluationButton').hide();
+    var primary = document.getElementById('play-primary-action');
+    if (primary) {
+        primary.classList.add('hidden');
+    }
     var rerun = document.getElementById('rerunEvaluation');
     if (rerun) {
         rerun.classList.remove('hidden');

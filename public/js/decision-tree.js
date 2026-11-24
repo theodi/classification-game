@@ -1,35 +1,7 @@
 /* Decision tree functions */
 var lockPlayerName = false;
 function onchange() {
-	    var condition_a = $('#condition_a');
-	    var condition_b = $('#condition_b');
-	    condition_b.val(condition_a.val());
-
-	    var condition_la = $('#condition_la');
-	    var condition_lb = $('#condition_lb');
-	    condition_lb.val(condition_la.val());
-
-	    var condition_ra = $('#condition_ra');
-	    var condition_rb = $('#condition_rb');
-	    condition_rb.val(condition_ra.val());
-
-	    var condition_lra = $('#condition_lra');
-	    var condition_lrb = $('#condition_lrb');
-	    condition_lrb.val(condition_lra.val());
-
-	    var condition_rla = $('#condition_rla');
-	    var condition_rlb = $('#condition_rlb');
-	    condition_rlb.val(condition_rla.val());
-
-	    var condition_lla = $('#condition_lla');
-	    var condition_llb = $('#condition_llb');
-	    condition_llb.val(condition_lla.val());
-
-	    var condition_rra = $('#condition_rra');
-	    var condition_rrb = $('#condition_rrb');
-	    condition_rrb.val(condition_rra.val());
-
-	    saveData();
+	saveData();
 }
 
 function saveData() {
@@ -38,27 +10,12 @@ function saveData() {
 		storage = JSON.parse(window.localStorage.getItem(sessionId));
 	}
 
-	var boundaries = {};
-	boundaries["a"] = $('#condition_a').val();
-
-  boundaries["la"] = $('#condition_la').val();
-  boundaries["ra"] = $('#condition_ra').val();
-
-  boundaries["lra"] = $('#condition_lra').val();
-  boundaries["rla"] = $('#condition_rla').val();
-  boundaries["lla"] = $('#condition_lla').val();
-  boundaries["rra"] = $('#condition_rra').val();
-
-  var factors = {};
-	factors["_"] = $('#factor_').val();
-
-	factors["l"] = $('#factor_l').val();
-	factors["r"] = $('#factor_r').val();
-
-	factors["lr"] = $('#factor_lr').val();
-	factors["rl"] = $('#factor_rl').val();
-	factors["ll"] = $('#factor_ll').val();
-	factors["rr"] = $('#factor_rr').val();
+	var tree = typeof liveGameTree === 'function' ? liveGameTree() : null;
+	var factors = tree && tree.factors ? tree.factors : {};
+	var boundaries = tree && tree.boundaries ? tree.boundaries : {};
+	if (tree && tree.predictions) {
+		predictions = Object.assign({}, predictions, tree.predictions);
+	}
 
 	try {
 		storage.factors = factors;
@@ -142,24 +99,6 @@ function saveResult() {
 	window.localStorage.setItem(sessionId, JSON.stringify(storage));
 }
 
-function confirmReset() {
-	if (confirm("Are you sure you want to reset the tree? This blanks all decisions and boundaries.")) {
-		resetTree();
-	}
-}
-
-function resetTree() {
-	player_name = storage.playerName;
-	storage.factors = "";
-	storage.boundaries = "";
-	storage.predictions = "";
-	storage.confidences = "";
-	window.localStorage.setItem(sessionId,JSON.stringify(storage));
-
-	alert("Tree reset, please refresh your browser to complete the reset!");
-
-}
-
 function changeName() {
 	if (!lockPlayerName) {
 		player_name = prompt("Team name. Use a team name or first names only.", player_name || "");
@@ -204,70 +143,16 @@ function processLoad(storage) {
 	      $('#playerWelcome').css("display","inline");
 	    }
 
-		$('#factor_').val(factors["_"]);
-
-		if (factors["l"]) {
-			$('#factor_l').val(factors["l"]);
-			addBranch('decision_l');
+		if (window.gameTree && typeof window.gameTree.fromGameTree === 'function') {
+			window.gameTree.fromGameTree({
+				factors: factors || {},
+				boundaries: boundaries || {},
+				predictions: predictions || {}
+			});
 		}
-		if (factors["r"]) {
-			$('#factor_r').val(factors["r"]);
-			addBranch('decision_r');
-		}
-
-		if (factors["lr"]) {
-			$('#factor_lr').val(factors["lr"]);
-			addBranch('decision_lr');
-		}
-		if (factors["rl"]) {
-			$('#factor_rl').val(factors["rl"]);
-			addBranch('decision_rl');
-		}
-		if (factors["ll"]) {
-			$('#factor_ll').val(factors["ll"]);
-			addBranch('decision_ll');
-		}
-		if (factors["rr"]) {
-			$('#factor_rr').val(factors["rr"]);
-			addBranch('decision_rr');
-		}
-
-		$('#condition_a').val(boundaries["a"]);
-		$('#condition_b').val(boundaries["a"]);
-
-		$('#condition_la').val(boundaries["la"]);
-		$('#condition_lb').val(boundaries["la"]);
-		$('#condition_ra').val(boundaries["ra"]);
-		$('#condition_rb').val(boundaries["ra"]);
-
-		$('#condition_lra').val(boundaries["lra"]);
-		$('#condition_lrb').val(boundaries["lra"]);
-		$('#condition_rla').val(boundaries["rla"]);
-		$('#condition_rlb').val(boundaries["rla"]);
-		$('#condition_lla').val(boundaries["lla"]);
-		$('#condition_llb').val(boundaries["lla"]);
-		$('#condition_rra').val(boundaries["rra"]);
-		$('#condition_rrb').val(boundaries["rra"]);
 	} catch (err) {
 
 	}
-
-	try {
-		$('#prediction_box_l').val(predictions["l"].prediction);
-		$('#prediction_box_r').val(predictions["r"].prediction);
-    	$('#prediction_box_ll').val(predictions["ll"].prediction);
-    	$('#prediction_box_lr').val(predictions["lr"].prediction);
-    	$('#prediction_box_rl').val(predictions["rl"].prediction);
-    	$('#prediction_box_rr').val(predictions["rr"].prediction);
-    	$('#prediction_box_lll').val(predictions["lll"].prediction);
-    	$('#prediction_box_llr').val(predictions["llr"].prediction);
-    	$('#prediction_box_lrl').val(predictions["lrl"].prediction);
-    	$('#prediction_box_lrr').val(predictions["lrr"].prediction);
-    	$('#prediction_box_rll').val(predictions["rll"].prediction);
-    	$('#prediction_box_rlr').val(predictions["rlr"].prediction);
-    	$('#prediction_box_rrl').val(predictions["rrl"].prediction);
-    	$('#prediction_box_rrr').val(predictions["rrr"].prediction);
-    } catch (err) {}
 }
 
 function loadLeaderboardData() {
@@ -334,32 +219,354 @@ function loadLeaderboardData() {
 	}
 }
 
-function browseCluster(cluster) {
-	event.preventDefault();
-	const filteredData = cards.trainingSet.filter(item => item.box === cluster);
-	const indexNumbers = filteredData.map(item => item.index);
-	const indexNumbersString = indexNumbers.join(',');
-	const url = `/browse?cards=${indexNumbersString}`;
-	window.open(url,'_blank');
+var browseDownloadState = {
+	indexes: [],
+	allowPdf: false,
+	sourceSet: null,
+	csvObjectUrl: null
+};
+
+function setBrowseModalTab(tabId) {
+	var id = tabId || 'browse-cards';
+	document.querySelectorAll('[data-browse-tab]').forEach(function(btn) {
+		var active = btn.getAttribute('data-browse-tab') === id;
+		btn.classList.toggle('selected', active);
+		btn.setAttribute('aria-selected', active ? 'true' : 'false');
+	});
+	var frame = document.getElementById('cluster-browse-frame');
+	try {
+		if (frame && frame.contentWindow && typeof frame.contentWindow.showEmbedTab === 'function') {
+			frame.contentWindow.showEmbedTab(id);
+		}
+	} catch (err) {}
 }
 
+function csvEscape(value) {
+	var text = value === undefined || value === null ? '' : String(value);
+	if (/[",\n\r]/.test(text)) {
+		return '"' + text.replace(/"/g, '""') + '"';
+	}
+	return text;
+}
+
+function resolveBrowseCards(indexes) {
+	var byIndex = {};
+	var sources = [];
+	if (browseDownloadState.sourceSet && browseDownloadState.sourceSet.length) {
+		sources.push(browseDownloadState.sourceSet);
+	}
+	if (typeof cards !== 'undefined') {
+		sources.push(cards.trainingSet, cards.testSet, cards.evaluationSet);
+	}
+	sources.forEach(function(set) {
+		(set || []).forEach(function(card) {
+			if (card && card.index !== undefined && card.index !== null) {
+				byIndex[String(card.index)] = card;
+			}
+		});
+	});
+	return (indexes || []).map(function(id) {
+		return byIndex[String(id)];
+	}).filter(Boolean);
+}
+
+function buildBrowseCardsCsv(cardList) {
+	var features = window.GAME_FEATURES || [];
+	var header = ['Card'].concat(features.map(function(feature) {
+		return feature.label || feature.column;
+	})).concat(['City']);
+	var lines = [header.map(csvEscape).join(',')];
+	(cardList || []).forEach(function(card) {
+		var row = [card.index].concat(features.map(function(feature) {
+			return card[feature.column];
+		})).concat([card.city || '']);
+		lines.push(row.map(csvEscape).join(','));
+	});
+	return lines.join('\n');
+}
+
+function syncBrowseDownloads() {
+	var csvLink = document.getElementById('browse-download-csv');
+	var pdfLink = document.getElementById('browse-download-pdf');
+	var downloadRoot = document.querySelector('.cluster-browse-download');
+	if (!csvLink) return;
+
+	var cardList = resolveBrowseCards(browseDownloadState.indexes);
+	var csv = buildBrowseCardsCsv(cardList);
+	if (browseDownloadState.csvObjectUrl) {
+		URL.revokeObjectURL(browseDownloadState.csvObjectUrl);
+	}
+	browseDownloadState.csvObjectUrl = URL.createObjectURL(new Blob([csv], {
+		type: 'text/csv;charset=utf-8'
+	}));
+	csvLink.href = browseDownloadState.csvObjectUrl;
+	csvLink.download = browseDownloadState.allowPdf ? 'cards.csv' : 'cluster-cards.csv';
+	csvLink.classList.toggle('is-disabled', !cardList.length);
+
+	if (pdfLink) {
+		if (browseDownloadState.allowPdf) {
+			pdfLink.removeAttribute('hidden');
+			pdfLink.href = '/data/pdfs/Group_1.pdf';
+			pdfLink.setAttribute('download', 'cards.pdf');
+		} else {
+			pdfLink.setAttribute('hidden', '');
+			pdfLink.removeAttribute('href');
+		}
+	}
+	if (downloadRoot) {
+		downloadRoot.classList.toggle('pdf-available', !!browseDownloadState.allowPdf);
+	}
+}
+
+function openBrowseModal(indexes, title, options) {
+	var opts = options || {};
+	var list = (indexes || []).filter(function(n) { return n !== undefined && n !== null && n !== ''; });
+	if (!list.length) {
+		alert('No cards to browse in this cluster yet.');
+		return;
+	}
+	browseDownloadState.indexes = list.slice();
+	browseDownloadState.allowPdf = !!opts.allowPdf;
+	browseDownloadState.sourceSet = opts.sourceSet || null;
+	syncBrowseDownloads();
+
+	var indexNumbersString = list.join(',');
+	var url = '/browse?embed=1&cards=' + encodeURIComponent(indexNumbersString);
+	var modal = document.getElementById('cluster-browse-modal');
+	var frame = document.getElementById('cluster-browse-frame');
+	if (modal && frame && typeof modal.showModal === 'function') {
+		setBrowseModalTab('browse-cards');
+		frame.onload = function() {
+			setBrowseModalTab('browse-cards');
+		};
+		frame.src = url;
+		modal.showModal();
+		return;
+	}
+	window.open('/browse?cards=' + encodeURIComponent(indexNumbersString), '_blank');
+}
+
+function indexesFromDropzone(path) {
+	var box = document.getElementById('box_' + path);
+	var ids = [];
+	if (box) {
+		box.querySelectorAll('card').forEach(function(el) {
+			var id = el.id || '';
+			var match = id.match(/^b(\d+)$/);
+			if (match) {
+				ids.push(match[1]);
+			}
+		});
+	}
+	return ids;
+}
+
+function browseCluster(cluster, event) {
+	if (event && event.preventDefault) {
+		event.preventDefault();
+	}
+	if (typeof currentPlayMode !== 'undefined' && currentPlayMode === 'test') {
+		return;
+	}
+	if (typeof assignBoxes === 'function' && typeof cards !== 'undefined' && cards.trainingSet) {
+		assignBoxes(cards.trainingSet);
+	}
+	var set = (typeof cards !== 'undefined' && cards.trainingSet) ? cards.trainingSet : [];
+	var fromDom = indexesFromDropzone(cluster);
+	var fromModel = set.filter(function(item) { return item.box === cluster; }).map(function(item) {
+		return item.index;
+	});
+	var seen = {};
+	var merged = [];
+	fromDom.concat(fromModel).forEach(function(id) {
+		var key = String(id);
+		if (!seen[key]) {
+			seen[key] = true;
+			merged.push(id);
+		}
+	});
+	openBrowseModal(merged, 'Browse cluster', {
+		allowPdf: false,
+		sourceSet: set
+	});
+}
+
+function browseAllCards(event) {
+	if (event && event.preventDefault) {
+		event.preventDefault();
+	}
+	if (typeof currentPlayMode !== 'undefined' && currentPlayMode === 'test') {
+		return;
+	}
+	var cfg = (typeof activeDeckConfig === 'function') ? activeDeckConfig() : {
+		set: (typeof cards !== 'undefined' && cards.trainingSet) ? cards.trainingSet : [],
+		boxId: 'training-set',
+		color: 'b'
+	};
+	var set = cfg.set || [];
+	var indexes = set.map(function(item) { return item.index; });
+	if (!indexes.length) {
+		var deck = document.getElementById(cfg.boxId || 'training-set');
+		if (deck) {
+			var prefix = cfg.color || 'b';
+			var re = new RegExp('^' + prefix + '(\\d+)$');
+			deck.querySelectorAll('card').forEach(function(el) {
+				var match = (el.id || '').match(re);
+				if (match) {
+					indexes.push(match[1]);
+				}
+			});
+		}
+	}
+	openBrowseModal(indexes, 'Browse cards', {
+		allowPdf: true,
+		sourceSet: set
+	});
+}
+
+function closeClusterBrowse() {
+	var modal = document.getElementById('cluster-browse-modal');
+	var frame = document.getElementById('cluster-browse-frame');
+	if (modal && modal.open) {
+		modal.close();
+	}
+	if (frame) {
+		frame.src = 'about:blank';
+	}
+	document.querySelectorAll('.cluster-browse-download-menu').forEach(function(menu) {
+		menu.setAttribute('hidden', '');
+	});
+	document.querySelectorAll('[data-browse-download-toggle]').forEach(function(btn) {
+		btn.setAttribute('aria-expanded', 'false');
+	});
+	if (browseDownloadState.csvObjectUrl) {
+		URL.revokeObjectURL(browseDownloadState.csvObjectUrl);
+		browseDownloadState.csvObjectUrl = null;
+	}
+}
+
+document.addEventListener('click', function(event) {
+	if (event.target.closest('[data-bring-cards-back]')) {
+		if (event.preventDefault) {
+			event.preventDefault();
+		}
+		var cfg = (typeof activeDeckConfig === 'function') ? activeDeckConfig() : null;
+		if (cfg && typeof returnCards === 'function' && cfg.set) {
+			returnCards(cfg.set, cfg.boxId, cfg.color);
+		}
+		if (typeof hideRunSummaryPanel === 'function') {
+			hideRunSummaryPanel();
+		}
+		return;
+	}
+	var summaryView = event.target.closest('[data-summary-view]');
+	if (summaryView) {
+		if (event.preventDefault) {
+			event.preventDefault();
+		}
+		if (typeof setRunSummaryView === 'function') {
+			setRunSummaryView(summaryView.getAttribute('data-summary-view'));
+		}
+		return;
+	}
+	if (event.target.closest('[data-run-test]')) {
+		if (event.preventDefault) {
+			event.preventDefault();
+		}
+		if (typeof startGuidedTest === 'function') {
+			startGuidedTest();
+		}
+		return;
+	}
+	if (event.target.closest('[data-enter-evaluation]')) {
+		if (event.preventDefault) {
+			event.preventDefault();
+		}
+		if (typeof setPlayMode === 'function') {
+			setPlayMode('evaluation');
+		}
+		return;
+	}
+	if (event.target.closest('[data-back-to-training]')) {
+		if (event.preventDefault) {
+			event.preventDefault();
+		}
+		if (typeof setPlayMode === 'function') {
+			setPlayMode('training', { force: true });
+		}
+		if (typeof returnCardsInstant === 'function' && typeof cards !== 'undefined') {
+			returnCardsInstant(cards.trainingSet, 'training-set', 'b');
+			returnCardsInstant(cards.testSet, 'test-set', 'p');
+		}
+		if (typeof hideRunSummaryPanel === 'function') {
+			hideRunSummaryPanel();
+		}
+		return;
+	}
+	if (event.target.closest('[data-browse-all-cards]')) {
+		browseAllCards(event);
+		return;
+	}
+	var browse = event.target.closest('[data-browse-cluster]');
+	if (browse) {
+		browseCluster(browse.getAttribute('data-browse-cluster') || '', event);
+		return;
+	}
+	var browseTab = event.target.closest('[data-browse-tab]');
+	if (browseTab) {
+		if (event.preventDefault) {
+			event.preventDefault();
+		}
+		setBrowseModalTab(browseTab.getAttribute('data-browse-tab'));
+		return;
+	}
+	var downloadToggle = event.target.closest('[data-browse-download-toggle]');
+	if (downloadToggle) {
+		if (event.preventDefault) {
+			event.preventDefault();
+		}
+		syncBrowseDownloads();
+		var menu = downloadToggle.parentNode && downloadToggle.parentNode.querySelector('.cluster-browse-download-menu');
+		if (menu) {
+			var open = menu.hasAttribute('hidden');
+			if (open) {
+				menu.removeAttribute('hidden');
+			} else {
+				menu.setAttribute('hidden', '');
+			}
+			downloadToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+		}
+		return;
+	}
+	if (event.target.closest('#browse-download-csv.is-disabled')) {
+		if (event.preventDefault) {
+			event.preventDefault();
+		}
+		return;
+	}
+	var downloadRoot = event.target.closest('.cluster-browse-download');
+	if (!downloadRoot) {
+		document.querySelectorAll('.cluster-browse-download-menu').forEach(function(menu) {
+			menu.setAttribute('hidden', '');
+		});
+		document.querySelectorAll('[data-browse-download-toggle]').forEach(function(btn) {
+			btn.setAttribute('aria-expanded', 'false');
+		});
+	}
+	if (event.target.closest('[data-cluster-browse-close]')) {
+		closeClusterBrowse();
+	}
+});
+
 function updatePredictions() {
-	if (predictions["l"]) { predictions["l"].prediction = $('#prediction_box_l').find(":selected").val(); }
-	if (predictions["r"]) { predictions["r"].prediction = $('#prediction_box_r').find(":selected").val(); }
-    if (predictions["ll"]) { predictions["ll"].prediction = $('#prediction_box_ll').find(":selected").val(); }
-    if (predictions["lr"]) { predictions["lr"].prediction = $('#prediction_box_lr').find(":selected").val(); }
-    if (predictions["rl"]) { predictions["rl"].prediction = $('#prediction_box_rl').find(":selected").val(); }
-    if (predictions["rr"]) { predictions["rr"].prediction = $('#prediction_box_rr').find(":selected").val(); }
-    if (predictions["lll"]) { predictions["lll"].prediction = $('#prediction_box_lll').find(":selected").val(); }
-    if (predictions["llr"]) { predictions["llr"].prediction = $('#prediction_box_llr').find(":selected").val(); }
-    if (predictions["lrl"]) { predictions["lrl"].prediction = $('#prediction_box_lrl').find(":selected").val(); }
-    if (predictions["lrr"]) { predictions["lrr"].prediction = $('#prediction_box_lrr').find(":selected").val(); }
-    if (predictions["rll"]) { predictions["rll"].prediction = $('#prediction_box_rll').find(":selected").val(); }
-    if (predictions["rlr"]) { predictions["rlr"].prediction = $('#prediction_box_rlr').find(":selected").val(); }
-    if (predictions["rrl"]) { predictions["rrl"].prediction = $('#prediction_box_rrl').find(":selected").val(); }
-    if (predictions["rrr"]) { predictions["rrr"].prediction = $('#prediction_box_rrr').find(":selected").val(); }
-    updateConfidence(cards.trainingSet);
-    saveData();
+	if (typeof liveGameTree === 'function') {
+		var tree = liveGameTree();
+		predictions = Object.assign({}, predictions, tree.predictions || {});
+	}
+	if (typeof cards !== 'undefined' && cards.trainingSet) {
+		updateConfidence(cards.trainingSet);
+	}
+	saveData();
 }
 function addBranch(branch) {
 	$('.'+branch).show();

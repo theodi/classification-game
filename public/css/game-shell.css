@@ -1,0 +1,1071 @@
+/* Light ODI game shell — pairs with admin.css flow/tree tokens */
+
+body.game-page {
+  margin: 0;
+  max-width: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  color: var(--color-dark-grey);
+  background: var(--background-body, #fff);
+}
+
+body.game-page .hidden {
+  display: none !important;
+}
+
+.game-header {
+  flex: 0 0 auto;
+  width: 100%;
+}
+
+.game-header .header-top {
+  align-items: center;
+  gap: 1rem;
+}
+
+.game-header-pin {
+  display: none;
+  margin: 0;
+  padding: 0.35rem 0.65rem;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  font-size: 1.1rem;
+  letter-spacing: 0.1em;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.game-main {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: 100%;
+  max-width: none;
+  padding: 1.25rem 1.5rem 2rem;
+  overflow-x: auto;
+  box-sizing: border-box;
+}
+
+.game-main section,
+.game-main subsection {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+
+.game-main #footer {
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-light-grey);
+  font-size: 0.85rem;
+  color: #667;
+}
+
+/* Train / test / eval workspace: tree scrolls; deck floats over it */
+.game-workspace {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  margin-top: 0.25rem;
+}
+
+.game-workspace-scroll {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.game-workspace-tree,
+#decision-tree-wrapper {
+  width: max-content;
+  min-width: 100%;
+  max-width: none;
+  overflow-x: visible;
+}
+
+#game-decision-tree {
+  width: max-content;
+  min-width: 736px;
+  max-width: none;
+  overflow-x: visible;
+  overflow-y: visible;
+  padding: 0.25rem 0 1rem;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+#game-decision-tree .flow-tree {
+  width: max-content;
+  min-width: 100%;
+  box-sizing: border-box;
+}
+
+#game-decision-tree .flow-node.flow-decision {
+  width: 100%;
+}
+
+#game-decision-tree .flow-fork,
+#game-decision-tree .flow-branches {
+  width: 100%;
+}
+
+#game-decision-tree .flow-root-side--left,
+#game-decision-tree [data-tree-team-slot] {
+  display: none;
+}
+
+#game-decision-tree .flow-root-head--game {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-bottom: 0;
+}
+
+/*
+ * Equal 1fr columns so the stem / horizontal / verticals always meet.
+ * minmax keeps room for card boxes; the wrapper scrolls when needed.
+ */
+#game-decision-tree > .flow-tree > .flow-decision > .flow-branches {
+  min-width: 736px;
+  grid-template-columns: minmax(368px, 1fr) minmax(368px, 1fr);
+}
+
+#game-decision-tree > .flow-tree > .flow-decision > .flow-branches > .flow-branch {
+  min-width: 368px;
+}
+
+#game-decision-tree .flow-child .flow-branches {
+  min-width: 368px;
+  grid-template-columns: minmax(184px, 1fr) minmax(184px, 1fr);
+}
+
+#game-decision-tree .flow-child .flow-branch {
+  min-width: 184px;
+}
+
+/*
+ * Leaf dropzones: top branch = 2-column stack; deeper leaves = single column.
+ * Hover actions sit in a sibling overlay so cards stay nth-child 1..n.
+ * Empty: End branch + Add branch. With cards: those two + Browse cluster.
+ */
+.game-leaf-slot {
+  --card-stack-peek: 24px;
+  position: relative;
+  margin: 0.35rem auto 0;
+}
+
+.game-leaf-slot--collapsed {
+  height: 0;
+  margin: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* Browse still available via city-row eye expand; keep hover usable when expanded */
+
+.game-leaf-dropzone.cardbox {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  height: 300px;
+  max-height: 300px;
+  overflow: hidden;
+  margin: 0;
+  border: 1px dashed #aeb9d4;
+  background: #f7f9fc;
+  text-align: left;
+  box-sizing: border-box;
+}
+
+.game-leaf-hover {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.75rem;
+  background: rgba(247, 249, 252, 0.92);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
+.game-leaf-slot:hover .game-leaf-hover,
+.game-leaf-slot:focus-within .game-leaf-hover {
+  opacity: 1;
+}
+
+.game-leaf-slot:hover .game-leaf-hover .flow-leaf-btn,
+.game-leaf-slot:focus-within .game-leaf-hover .flow-leaf-btn {
+  pointer-events: auto;
+}
+
+.game-leaf-hover .flow-leaf-btn {
+  width: 9.5rem;
+  max-width: 100%;
+}
+
+.flow-city-row .flow-leaf-btn--compact {
+  width: auto;
+  margin: 0;
+  padding: 0.2rem 0.45rem;
+  font-size: 0.75rem;
+  line-height: 1.1;
+}
+
+/* Game city picker: full names; San Francisco wraps to two lines; icons to the right */
+#game-decision-tree .flow-city-row--full {
+  align-items: center;
+  gap: 0.25rem;
+  min-height: 2.4em;
+}
+
+#game-decision-tree .flow-city-row--full .flow-field--city {
+  position: relative;
+  display: block;
+  min-width: 5.75rem;
+  margin: 0;
+}
+
+#game-decision-tree .flow-city-row--full .flow-city-display {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1.15;
+  color: var(--color-dark-blue, #072589);
+  pointer-events: none;
+}
+
+#game-decision-tree .flow-city-row--full .flow-field--city select {
+  position: absolute;
+  inset: 0;
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  height: 100%;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  opacity: 0;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+#game-decision-tree .flow-city-row--full .flow-eye,
+#game-decision-tree .flow-city-row--full .flow-trash {
+  align-self: center;
+  flex: 0 0 auto;
+}
+
+.game-leaf-browse {
+  display: none;
+}
+
+.game-leaf-slot:has(card) .game-leaf-browse {
+  display: inline-block;
+}
+
+dialog.admin-modal.cluster-browse-modal {
+  width: calc(100vw - 20px);
+  max-width: none;
+  height: calc(100vh - 20px);
+  max-height: none;
+  margin: 10px;
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+
+.cluster-browse-modal::backdrop {
+  background: rgba(7, 37, 137, 0.35);
+}
+
+.cluster-browse-card {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  max-height: none;
+  margin: 0;
+  padding: 0.65rem 0.85rem 0.85rem;
+  box-sizing: border-box;
+}
+
+.cluster-browse-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex: 0 0 auto;
+  margin-bottom: 0.55rem;
+}
+
+.cluster-browse-tabs {
+  display: flex;
+  gap: 0;
+  border: 2px solid #aeb9d4;
+  background: #eef1f7;
+}
+
+.cluster-browse-tab {
+  margin: 0;
+  padding: 0.7rem 1.35rem;
+  width: auto;
+  height: auto;
+  border: 0;
+  border-right: 2px solid #aeb9d4;
+  border-radius: 0;
+  background: transparent;
+  color: var(--color-dark-blue, #072589);
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cluster-browse-tab:last-child {
+  border-right: 0;
+}
+
+.cluster-browse-tab.selected {
+  background: var(--color-dark-blue, #072589);
+  color: #fff;
+}
+
+.cluster-browse-tab:hover:not(.selected) {
+  background: #fff;
+  color: var(--color-dark-blue, #072589);
+}
+
+.cluster-browse-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-left: auto;
+}
+
+.cluster-browse-download {
+  position: relative;
+}
+
+.cluster-browse-download-toggle,
+.cluster-browse-toolbar .btn-secondary {
+  margin: 0;
+  width: auto;
+  height: auto;
+  padding: 0.7rem 1.2rem;
+  background: var(--color-dark-blue, #072589);
+  color: #fff;
+  border: 2px solid var(--color-dark-blue, #072589);
+  font-size: 1.05rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cluster-browse-download-toggle:hover,
+.cluster-browse-toolbar .btn-secondary:hover {
+  background: #fff;
+  color: var(--color-dark-blue, #072589);
+}
+
+.cluster-browse-download-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 5;
+  min-width: 8rem;
+  background: #fff;
+  border: 2px solid var(--color-dark-blue, #072589);
+  box-shadow: 0 4px 12px rgba(7, 37, 137, 0.18);
+}
+
+.cluster-browse-download-menu a {
+  display: block;
+  padding: 0.65rem 0.9rem;
+  color: var(--color-dark-blue, #072589);
+  text-decoration: none;
+  font-size: 1rem;
+  font-weight: 600;
+  border-bottom: 1px solid #d5dbe8;
+}
+
+.cluster-browse-download-menu a:last-child {
+  border-bottom: 0;
+}
+
+.cluster-browse-download-menu a:hover {
+  background: #eef3ff;
+}
+
+.cluster-browse-download-menu a[hidden],
+.cluster-browse-download-menu a.is-disabled {
+  display: none;
+}
+
+#cluster-browse-frame {
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 0;
+  height: auto;
+  border: 1px solid var(--color-light-grey, #c5c5c5);
+  background: #fff;
+}
+
+.game-leaf-dropzone.cardbox card {
+  display: block;
+  position: absolute;
+  width: 160px;
+  margin: 0;
+  left: 12px;
+  top: 0;
+  z-index: 1;
+}
+
+/* Top branch only: two columns + side margins, centered under the leaf */
+.game-leaf-slot.game-leaf-dropzone--cols2 {
+  width: 356px;
+  min-width: 356px;
+}
+
+.game-leaf-dropzone--cols2 .game-leaf-dropzone card:nth-child(even) {
+  left: 184px;
+}
+
+.game-leaf-dropzone--cols2 .game-leaf-dropzone card:nth-child(1) { top: 0; z-index: 1; }
+.game-leaf-dropzone--cols2 .game-leaf-dropzone card:nth-child(2) { top: 0; z-index: 2; }
+.game-leaf-dropzone--cols2 .game-leaf-dropzone card:nth-child(3) { top: calc(var(--card-stack-peek) * 1); z-index: 3; }
+.game-leaf-dropzone--cols2 .game-leaf-dropzone card:nth-child(4) { top: calc(var(--card-stack-peek) * 1); z-index: 4; }
+.game-leaf-dropzone--cols2 .game-leaf-dropzone card:nth-child(5) { top: calc(var(--card-stack-peek) * 2); z-index: 5; }
+.game-leaf-dropzone--cols2 .game-leaf-dropzone card:nth-child(6) { top: calc(var(--card-stack-peek) * 2); z-index: 6; }
+.game-leaf-dropzone--cols2 .game-leaf-dropzone card:nth-child(7) { top: calc(var(--card-stack-peek) * 3); z-index: 7; }
+.game-leaf-dropzone--cols2 .game-leaf-dropzone card:nth-child(8) { top: calc(var(--card-stack-peek) * 3); z-index: 8; }
+.game-leaf-dropzone--cols2 .game-leaf-dropzone card:nth-child(9) { top: calc(var(--card-stack-peek) * 4); z-index: 9; }
+.game-leaf-dropzone--cols2 .game-leaf-dropzone card:nth-child(10) { top: calc(var(--card-stack-peek) * 4); z-index: 10; }
+.game-leaf-dropzone--cols2 .game-leaf-dropzone card:nth-child(11) { top: calc(var(--card-stack-peek) * 5); z-index: 11; }
+.game-leaf-dropzone--cols2 .game-leaf-dropzone card:nth-child(12) { top: calc(var(--card-stack-peek) * 5); z-index: 12; }
+.game-leaf-dropzone--cols2 .game-leaf-dropzone card:nth-child(13) { top: calc(var(--card-stack-peek) * 6); z-index: 13; }
+.game-leaf-dropzone--cols2 .game-leaf-dropzone card:nth-child(14) { top: calc(var(--card-stack-peek) * 6); z-index: 14; }
+.game-leaf-dropzone--cols2 .game-leaf-dropzone card:nth-child(15) { top: calc(var(--card-stack-peek) * 7); z-index: 15; }
+.game-leaf-dropzone--cols2 .game-leaf-dropzone card:nth-child(16) { top: calc(var(--card-stack-peek) * 7); z-index: 16; }
+.game-leaf-dropzone--cols2 .game-leaf-dropzone card:nth-child(17) { top: calc(var(--card-stack-peek) * 8); z-index: 17; }
+.game-leaf-dropzone--cols2 .game-leaf-dropzone card:nth-child(18) { top: calc(var(--card-stack-peek) * 8); z-index: 18; }
+.game-leaf-dropzone--cols2 .game-leaf-dropzone card:nth-child(19) { top: calc(var(--card-stack-peek) * 9); z-index: 19; }
+.game-leaf-dropzone--cols2 .game-leaf-dropzone card:nth-child(20) { top: calc(var(--card-stack-peek) * 9); z-index: 20; }
+
+/* Deeper leaves: single-column stack, centered */
+.game-leaf-slot.game-leaf-dropzone--cols1 {
+  width: 184px;
+  min-width: 184px;
+}
+
+.game-leaf-dropzone--cols1 .game-leaf-dropzone card {
+  left: 12px;
+}
+
+.game-leaf-dropzone--cols1 .game-leaf-dropzone card:nth-child(1) { top: 0; z-index: 1; }
+.game-leaf-dropzone--cols1 .game-leaf-dropzone card:nth-child(2) { top: calc(var(--card-stack-peek) * 1); z-index: 2; }
+.game-leaf-dropzone--cols1 .game-leaf-dropzone card:nth-child(3) { top: calc(var(--card-stack-peek) * 2); z-index: 3; }
+.game-leaf-dropzone--cols1 .game-leaf-dropzone card:nth-child(4) { top: calc(var(--card-stack-peek) * 3); z-index: 4; }
+.game-leaf-dropzone--cols1 .game-leaf-dropzone card:nth-child(5) { top: calc(var(--card-stack-peek) * 4); z-index: 5; }
+.game-leaf-dropzone--cols1 .game-leaf-dropzone card:nth-child(6) { top: calc(var(--card-stack-peek) * 5); z-index: 6; }
+.game-leaf-dropzone--cols1 .game-leaf-dropzone card:nth-child(7) { top: calc(var(--card-stack-peek) * 6); z-index: 7; }
+.game-leaf-dropzone--cols1 .game-leaf-dropzone card:nth-child(8) { top: calc(var(--card-stack-peek) * 7); z-index: 8; }
+.game-leaf-dropzone--cols1 .game-leaf-dropzone card:nth-child(9) { top: calc(var(--card-stack-peek) * 8); z-index: 9; }
+.game-leaf-dropzone--cols1 .game-leaf-dropzone card:nth-child(10) { top: calc(var(--card-stack-peek) * 9); z-index: 10; }
+.game-leaf-dropzone--cols1 .game-leaf-dropzone card:nth-child(11) { top: calc(var(--card-stack-peek) * 10); z-index: 11; }
+.game-leaf-dropzone--cols1 .game-leaf-dropzone card:nth-child(12) { top: calc(var(--card-stack-peek) * 11); z-index: 12; }
+.game-leaf-dropzone--cols1 .game-leaf-dropzone card:nth-child(13) { top: calc(var(--card-stack-peek) * 12); z-index: 13; }
+.game-leaf-dropzone--cols1 .game-leaf-dropzone card:nth-child(14) { top: calc(var(--card-stack-peek) * 13); z-index: 14; }
+.game-leaf-dropzone--cols1 .game-leaf-dropzone card:nth-child(15) { top: calc(var(--card-stack-peek) * 14); z-index: 15; }
+.game-leaf-dropzone--cols1 .game-leaf-dropzone card:nth-child(16) { top: calc(var(--card-stack-peek) * 15); z-index: 16; }
+.game-leaf-dropzone--cols1 .game-leaf-dropzone card:nth-child(17) { top: calc(var(--card-stack-peek) * 16); z-index: 17; }
+.game-leaf-dropzone--cols1 .game-leaf-dropzone card:nth-child(18) { top: calc(var(--card-stack-peek) * 17); z-index: 18; }
+.game-leaf-dropzone--cols1 .game-leaf-dropzone card:nth-child(19) { top: calc(var(--card-stack-peek) * 18); z-index: 19; }
+.game-leaf-dropzone--cols1 .game-leaf-dropzone card:nth-child(20) { top: calc(var(--card-stack-peek) * 19); z-index: 20; }
+
+.game-play-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.game-play-actions .flow-leaf-btn {
+  width: 9.5rem;
+  max-width: 100%;
+}
+
+.game-eval-status {
+  margin: 0.35rem 0 0;
+  font-size: 0.85rem;
+  color: #445;
+  text-align: left;
+}
+
+
+body.game-page.stage-training .game-main,
+body.game-page.stage-test .game-main,
+body.game-page.stage-evaluation .game-main {
+  padding-top: 0.75rem;
+}
+
+/* Eval band: results + session LB above the tree */
+.game-eval-band {
+  display: none;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 280px);
+  gap: 1rem;
+  align-items: start;
+  margin: 0 0 0.75rem;
+  padding: 0.75rem 0 0.5rem;
+  border-bottom: 1px solid var(--color-light-grey, #c5c5c5);
+}
+
+body.game-page.stage-evaluation .game-eval-band {
+  display: grid;
+}
+
+.game-eval-results {
+  min-width: 0;
+  overflow-x: auto;
+}
+
+.game-eval-session-lb {
+  min-width: 0;
+}
+
+.game-eval-session-lb h3 {
+  margin: 0 0 0.4rem;
+  font-size: 1rem;
+}
+
+.game-session-lb-table {
+  font-size: 0.8rem;
+}
+
+.game-instructions-card {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 2rem);
+  padding: 1rem 1.25rem 1.25rem;
+}
+
+.game-instructions-body {
+  overflow-y: auto;
+  max-height: min(70vh, 640px);
+}
+
+.game-instructions-video {
+  position: relative;
+  width: 100%;
+  max-width: 36rem;
+  margin: 0.75rem auto;
+  padding-top: 56.25%;
+}
+
+.game-instructions-video iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Floating deck chrome over the tree (draggable) */
+.game-deck-chrome {
+  position: absolute;
+  top: 0.25rem;
+  left: 0.25rem;
+  z-index: 40;
+  width: 356px;
+  min-width: 356px;
+  box-shadow: 0 8px 24px rgba(7, 37, 137, 0.16);
+  background: #fff;
+  box-sizing: border-box;
+  touch-action: none;
+}
+
+.game-deck-chrome.is-dragging {
+  box-shadow: 0 12px 32px rgba(7, 37, 137, 0.22);
+  opacity: 0.97;
+  user-select: none;
+}
+
+.game-deck-drag-handle {
+  height: 0.85rem;
+  margin: 0;
+  border: 1px solid #aeb9d4;
+  border-bottom: 0;
+  background:
+    radial-gradient(circle, #8a96b3 1.1px, transparent 1.2px) 0 0 / 6px 6px,
+    #eef1f7;
+  background-position: center;
+  cursor: grab;
+}
+
+.game-deck-chrome.is-dragging .game-deck-drag-handle {
+  cursor: grabbing;
+}
+
+.game-training-deck {
+  --card-stack-peek: 24px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  width: 100%;
+  margin: 0;
+  border: 1px dashed #aeb9d4;
+  background: #f7f9fc;
+  box-sizing: border-box;
+  pointer-events: auto;
+  overflow: hidden;
+}
+
+.game-deck-stack-area {
+  position: relative;
+  flex: 0 0 auto;
+  width: 100%;
+  height: 460px;
+  min-height: 460px;
+  overflow: hidden;
+  transition: height 0.15s ease, min-height 0.15s ease;
+}
+
+/* Empty deck: collapse stack to a compact bordered bring-back strip */
+body.game-page.stage-training .game-deck-stack-area:not(:has(#training-set card)),
+body.game-page.stage-test .game-deck-stack-area:not(:has(#test-set card)),
+body.game-page.stage-evaluation .game-deck-stack-area:not(:has(#evaluation-set card)) {
+  height: 4.25rem;
+  min-height: 4.25rem;
+}
+
+/* After a run, summary replaces the tall empty card well */
+.game-training-deck.has-run-summary .game-deck-stack-area {
+  height: 4.25rem;
+  min-height: 4.25rem;
+}
+
+.game-run-summary {
+  padding: 0.65rem 0.75rem 0.85rem;
+  border-top: 1px solid rgba(174, 185, 212, 0.7);
+  background: #fff;
+  font-size: 0.8rem;
+  line-height: 1.35;
+  color: var(--color-dark-grey, #333);
+}
+
+.game-run-summary-scores {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.55rem;
+}
+
+.game-run-score {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.1rem;
+  margin: 0;
+  padding: 0.55rem 0.35rem;
+  width: auto;
+  height: auto;
+  border: 2px solid #aeb9d4;
+  border-radius: 0;
+  background: #eef1f7;
+  color: var(--color-dark-blue, #072589);
+  cursor: pointer;
+}
+
+.game-run-score.selected {
+  border-color: var(--color-dark-blue, #072589);
+  background: #fff;
+}
+
+.game-run-score-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.game-run-score-value {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.05;
+}
+
+.game-run-score-sub {
+  font-size: 0.75rem;
+  color: #556;
+}
+
+.game-run-summary-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 0.4rem;
+  border: 1px solid #aeb9d4;
+}
+
+.game-run-tab {
+  flex: 1 1 0;
+  margin: 0;
+  padding: 0.3rem 0.25rem;
+  width: auto;
+  height: auto;
+  border: 0;
+  border-right: 1px solid #aeb9d4;
+  border-radius: 0;
+  background: #eef1f7;
+  color: var(--color-dark-blue, #072589);
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.game-run-tab:last-child {
+  border-right: 0;
+}
+
+.game-run-tab.selected {
+  background: var(--color-dark-blue, #072589);
+  color: #fff;
+  font-weight: 600;
+}
+
+.game-run-summary-body {
+  margin-bottom: 0.55rem;
+}
+
+.game-run-summary-body p,
+.game-run-blurb {
+  margin: 0 0 0.4rem;
+}
+
+.game-run-stats {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.35rem 0 0.5rem;
+  font-size: 0.75rem;
+}
+
+.game-run-stats th,
+.game-run-stats td {
+  border: 1px solid #d5dbe8;
+  padding: 0.25rem 0.35rem;
+  text-align: left;
+}
+
+.game-run-stats th {
+  background: #eef1f7;
+}
+
+.game-run-stats tbody tr[data-box-path] {
+  cursor: pointer;
+}
+
+.game-run-stats tbody tr[data-box-path]:hover {
+  background: #e8eefc;
+}
+
+.game-leaf-slot--spotlight,
+.game-leaf-dropzone--spotlight {
+  box-shadow: 0 0 0 3px var(--color-dark-blue, #072589);
+  outline: 2px solid var(--color-light-blue, #6DF8FF);
+  outline-offset: 1px;
+}
+
+.game-run-summary-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.4rem;
+}
+
+.game-run-summary-actions-row {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 0.4rem;
+}
+
+.game-run-summary-actions-row .flow-leaf-btn {
+  width: auto;
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: none;
+  margin: 0;
+}
+
+.game-run-summary-actions .game-run-submit-eval {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  height: auto;
+  padding: 0.55rem 0.75rem;
+  white-space: normal;
+  line-height: 1.25;
+}
+
+.game-run-summary-actions .flow-leaf-btn.hidden {
+  display: none !important;
+}
+
+.game-run-summary-actions .flow-leaf-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Test: hide run model + bring-cards-back. Evaluate keeps Evaluate model. */
+body.game-page.stage-test .game-deck-actions,
+body.game-page.stage-test .game-deck-bring-back,
+body.game-page.stage-test .game-deck-hover,
+body.game-page.stage-evaluation .game-deck-bring-back,
+body.game-page.stage-evaluation .game-deck-hover {
+  display: none !important;
+}
+
+body.game-page.stage-test .game-training-deck.has-run-summary .game-deck-stack-area {
+  display: none;
+}
+
+body.game-page.stage-test .game-training-deck {
+  border-color: #b48ad4;
+  background: #f7f0fc;
+}
+
+body.game-page.stage-evaluation .game-training-deck {
+  border-color: #d49a9a;
+  background: #fcf3f3;
+}
+
+.game-deck-stack card.card-test image,
+.game-deck-stack card.card-test img,
+.game-leaf-dropzone card.card-test image,
+.game-leaf-dropzone card.card-test img {
+  filter: hue-rotate(250deg) saturate(1.35);
+}
+
+card.card-test--city-only {
+  height: 140px;
+}
+
+card.card-test--city-only image,
+card.card-test--city-only img {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+/* Test mode: no browsing (deck or leaf clusters) */
+body.game-page.stage-test .game-deck-browse,
+body.game-page.stage-test .game-leaf-browse {
+  display: none !important;
+}
+
+.flow-incomplete-feature .flow-decision-card,
+.flow-field--feature.flow-incomplete-feature,
+.flow-incomplete-feature .flow-decision-diamond {
+  box-shadow: 0 0 0 3px #c62828;
+}
+
+.flow-edge-threshold.flow-incomplete-threshold {
+  box-shadow: 0 0 0 3px #c62828;
+  border-radius: 2px;
+}
+
+.flow-incomplete-feature select,
+.flow-incomplete-threshold input {
+  outline: 2px solid #c62828;
+  outline-offset: 1px;
+}
+
+.game-deck-stack.game-deck-dealing card {
+  animation: game-deck-deal 0.55s ease both;
+  animation-delay: calc(var(--deal-i, 0) * 35ms);
+}
+
+@keyframes game-deck-deal {
+  from {
+    opacity: 0;
+    transform: translate(-40px, -80px) rotate(-8deg) scale(0.85);
+  }
+  to {
+    opacity: 0.9;
+    transform: none;
+  }
+}
+
+.game-deck-stack.cardSet {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  isolation: isolate; /* keep card z-index (drag-drop: 1000) inside this box */
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.game-deck-stack card {
+  display: block;
+  position: absolute;
+  left: 12px;
+  width: 160px;
+  margin: 0;
+  z-index: 1;
+}
+
+.game-deck-stack card:nth-child(even) {
+  left: 184px;
+}
+
+.game-deck-stack card:nth-child(1) { top: 0; z-index: 1; }
+.game-deck-stack card:nth-child(2) { top: 0; z-index: 2; }
+.game-deck-stack card:nth-child(3) { top: calc(var(--card-stack-peek) * 1); z-index: 3; }
+.game-deck-stack card:nth-child(4) { top: calc(var(--card-stack-peek) * 1); z-index: 4; }
+.game-deck-stack card:nth-child(5) { top: calc(var(--card-stack-peek) * 2); z-index: 5; }
+.game-deck-stack card:nth-child(6) { top: calc(var(--card-stack-peek) * 2); z-index: 6; }
+.game-deck-stack card:nth-child(7) { top: calc(var(--card-stack-peek) * 3); z-index: 7; }
+.game-deck-stack card:nth-child(8) { top: calc(var(--card-stack-peek) * 3); z-index: 8; }
+.game-deck-stack card:nth-child(9) { top: calc(var(--card-stack-peek) * 4); z-index: 9; }
+.game-deck-stack card:nth-child(10) { top: calc(var(--card-stack-peek) * 4); z-index: 10; }
+.game-deck-stack card:nth-child(11) { top: calc(var(--card-stack-peek) * 5); z-index: 11; }
+.game-deck-stack card:nth-child(12) { top: calc(var(--card-stack-peek) * 5); z-index: 12; }
+.game-deck-stack card:nth-child(13) { top: calc(var(--card-stack-peek) * 6); z-index: 13; }
+.game-deck-stack card:nth-child(14) { top: calc(var(--card-stack-peek) * 6); z-index: 14; }
+.game-deck-stack card:nth-child(15) { top: calc(var(--card-stack-peek) * 7); z-index: 15; }
+.game-deck-stack card:nth-child(16) { top: calc(var(--card-stack-peek) * 7); z-index: 16; }
+.game-deck-stack card:nth-child(17) { top: calc(var(--card-stack-peek) * 8); z-index: 17; }
+.game-deck-stack card:nth-child(18) { top: calc(var(--card-stack-peek) * 8); z-index: 18; }
+.game-deck-stack card:nth-child(19) { top: calc(var(--card-stack-peek) * 9); z-index: 19; }
+.game-deck-stack card:nth-child(20) { top: calc(var(--card-stack-peek) * 9); z-index: 20; }
+
+/* Always-visible Run model / Evaluate at top center of the box */
+.game-deck-actions {
+  position: relative;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  flex: 0 0 auto;
+  padding: 0.55rem 0.5rem;
+  border-bottom: 1px solid rgba(174, 185, 212, 0.7);
+  background: rgba(247, 249, 252, 0.96);
+}
+
+body.game-page.stage-test .game-deck-actions {
+  background: rgba(247, 240, 252, 0.96);
+  border-bottom-color: rgba(180, 138, 212, 0.55);
+}
+
+body.game-page.stage-evaluation .game-deck-actions {
+  background: rgba(252, 243, 243, 0.96);
+  border-bottom-color: rgba(212, 154, 154, 0.55);
+}
+
+.game-deck-actions .flow-leaf-btn {
+  width: 9.5rem;
+  max-width: 100%;
+  margin: 0;
+}
+
+/* Browse / Bring cards back on hover over the stack */
+.game-deck-hover {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  background: rgba(247, 249, 252, 0.92);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
+body.game-page.stage-test .game-deck-hover {
+  background: rgba(247, 240, 252, 0.92);
+}
+
+body.game-page.stage-evaluation .game-deck-hover {
+  background: rgba(252, 243, 243, 0.92);
+}
+
+.game-deck-bring-back {
+  display: none;
+}
+
+/* Empty active deck: always show bring-cards-back */
+body.game-page.stage-training .game-deck-stack-area:not(:has(#training-set card)) .game-deck-hover,
+body.game-page.stage-test .game-deck-stack-area:not(:has(#test-set card)) .game-deck-hover {
+  opacity: 1;
+}
+
+body.game-page.stage-training .game-deck-stack-area:not(:has(#training-set card)) .game-deck-browse,
+body.game-page.stage-test .game-deck-stack-area:not(:has(#test-set card)) .game-deck-browse,
+body.game-page.stage-evaluation .game-deck-stack-area:not(:has(#evaluation-set card)) .game-deck-browse {
+  display: none;
+}
+
+body.game-page.stage-training .game-deck-stack-area:not(:has(#training-set card)) .game-deck-bring-back,
+body.game-page.stage-test .game-deck-stack-area:not(:has(#test-set card)) .game-deck-bring-back {
+  display: inline-block;
+  pointer-events: auto;
+}
+
+/* Eval empty: still show compact strip (no bring-back until cards exist) */
+body.game-page.stage-evaluation .game-deck-stack-area:not(:has(#evaluation-set card)) .game-deck-hover {
+  opacity: 0;
+  pointer-events: none;
+}
+
+body.game-page.stage-evaluation .game-deck-stack-area:has(#evaluation-set card) .game-deck-bring-back {
+  display: inline-block;
+}
+
+/* Stacked deck: browse on hover */
+body.game-page.stage-training .game-deck-stack-area:has(#training-set card):hover .game-deck-hover,
+body.game-page.stage-training .game-deck-stack-area:has(#training-set card):focus-within .game-deck-hover,
+body.game-page.stage-test .game-deck-stack-area:has(#test-set card):hover .game-deck-hover,
+body.game-page.stage-test .game-deck-stack-area:has(#test-set card):focus-within .game-deck-hover,
+body.game-page.stage-evaluation .game-deck-stack-area:has(#evaluation-set card):hover .game-deck-hover,
+body.game-page.stage-evaluation .game-deck-stack-area:has(#evaluation-set card):focus-within .game-deck-hover {
+  opacity: 1;
+}
+
+body.game-page.stage-training .game-deck-stack-area:has(#training-set card):hover .game-deck-browse,
+body.game-page.stage-training .game-deck-stack-area:has(#training-set card):focus-within .game-deck-browse,
+body.game-page.stage-test .game-deck-stack-area:has(#test-set card):hover .game-deck-browse,
+body.game-page.stage-test .game-deck-stack-area:has(#test-set card):focus-within .game-deck-browse,
+body.game-page.stage-evaluation .game-deck-stack-area:has(#evaluation-set card):hover .game-deck-browse,
+body.game-page.stage-evaluation .game-deck-stack-area:has(#evaluation-set card):focus-within .game-deck-browse,
+body.game-page.stage-evaluation .game-deck-stack-area:has(#evaluation-set card):hover .game-deck-bring-back,
+body.game-page.stage-evaluation .game-deck-stack-area:has(#evaluation-set card):focus-within .game-deck-bring-back {
+  pointer-events: auto;
+}
+
+@media (max-width: 960px) {
+  .game-eval-band {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  .game-header .main-nav ul {
+    flex-wrap: wrap;
+  }
+}

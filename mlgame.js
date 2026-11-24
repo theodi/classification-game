@@ -258,7 +258,7 @@ app.get('/game/:id/result', async function(req, res) {
 });
 
 app.get('/browse', function(req, res) {
-  res.render('pages/browse');
+  res.render('pages/browse', { embed: req.query.embed === '1' || req.query.embed === 'true' });
 });
 
 app.get('/schools/:id/public-results', async function(req, res) {

@@ -478,7 +478,8 @@ table.admin-table td button {
   border: none !important;
 }
 
-.flow-trash {
+.flow-trash,
+.flow-eye {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -494,13 +495,15 @@ table.admin-table td button {
   opacity: 0.85;
 }
 
-.flow-trash:hover {
+.flow-trash:hover,
+.flow-eye:hover {
   color: var(--color-dark-blue);
   background: transparent;
   opacity: 1;
 }
 
-.flow-trash svg {
+.flow-trash svg,
+.flow-eye svg {
   display: block;
   width: 1.15rem;
   height: 1.15rem;
@@ -611,6 +614,7 @@ table.admin-table td button {
   position: relative;
 }
 
+/* Equal columns keep this bar centred under the stem (25% → 75%). */
 .flow-branches::before {
   content: '';
   position: absolute;
@@ -619,6 +623,8 @@ table.admin-table td button {
   width: 50%;
   height: 2px;
   background: #222;
+  z-index: 1;
+  pointer-events: none;
 }
 
 .flow-branch {
@@ -629,6 +635,7 @@ table.admin-table td button {
   width: 100%;
   padding: 0 0.75rem;
   box-sizing: border-box;
+  position: relative;
 }
 
 .flow-edge {
@@ -637,6 +644,8 @@ table.admin-table td button {
   align-items: center;
   gap: 0;
   margin-bottom: 0.35rem;
+  position: relative;
+  z-index: 1;
 }
 
 .flow-edge-drop {
@@ -644,6 +653,7 @@ table.admin-table td button {
   width: 2px;
   height: 0.9rem;
   background: #222;
+  margin-top: -1px; /* overlap bar so Firefox doesn't leave a hairline gap */
 }
 
 .flow-edge-threshold {

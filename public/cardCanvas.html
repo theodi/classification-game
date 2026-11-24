@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Card Renderer</title>
+    <link href="/css/odi-bootstrap.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/css/water.css"/>
+    <link rel="stylesheet" href="/css/cards.css"/>
+    <link rel="stylesheet" href="/css/decision-tree.css"/>
+    <link rel="stylesheet" href="/css/switch.css"/>
+    <script src="/js/d3.v5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <style>
+        #card-canvas {
+            display: block;
+            border: 1px solid black;
+        }
+        table.blue tr:nth-child(2n) {
+            background: #0bf6;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="card-canvas" width="2000" height="2720"></canvas>
+    <button id="download-zip-1">Download Group 1</button>
+    <button id="download-zip-2">Download Group 2</button>
+    <button id="download-zip-3">Download Group 3</button>
+    <button id="download-zip-4">Download Group 4</button>
+    <button id="download-zip-5">Download Group 5</button>
+    <button id="download-zip-6">Download Group 6</button>
+    <button id="download-zip-red">Download Red Packs</button>
+
+    <script>
+        function renderCardToCanvas(data, count, color, type, callback) {
+            var canvas = document.getElementById("card-canvas");
+            var ctx = canvas.getContext("2d");
+
+            // Clear the canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Set background color
+            ctx.fillStyle = "white";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            const padding = 110;
+            // Draw the city name and number
+            ctx.fillStyle = "black";
+            ctx.font = "160px Arial";
+            ctx.textAlign = "left";
+            if (!data.city) {
+                data.city = "?";
+            }
+            ctx.fillText(data.city, 100 + padding, 320);  // 20px from the left edge
+            ctx.textAlign = "right";
+            ctx.fillText("#" + count, canvas.width - (100 + padding), 320);  // 20px from the right edge
+
+            // Draw the details in a table-like manner below the image
+            var detailsY = 300 + canvas.height / 3 + 25; // Starting Y position for details
+            var rowHeight = 180; // Increased row height for more padding
+            var attributes = [
+                { attribute: "Bathrooms", value: data.bath },
+                { attribute: "Bedrooms", value: data.beds },
+                { attribute: "Year built", value: data.year_built },
+                { attribute: "Elevation", value: formatNumber(data.elevation) + "ft" },
+                { attribute: "Square Footage", value: formatNumber(data.sqft) },
+                { attribute: "Price", value: "$" + formatNumber(data.price) },
+                { attribute: "Price per sqft", value: "$" + formatNumber(data.price_per_sqft) }
+            ];
+
+            attributes.forEach((item, index) => {
+                // Set alternating row color
+                if (index % 2 === 0) {
+                    ctx.fillStyle = "#0bf6";
+                    if (color == "red") {
+                        ctx.fillStyle = "#c006";
+                    }
+                    ctx.fillRect(0, detailsY + (index + 1) * rowHeight - rowHeight + 10, canvas.width, rowHeight);
+                }
+            });
+
+            attributes.forEach((item, index) => {
+                // Calculate vertical alignment for the text
+                var textY = detailsY + index * rowHeight + (rowHeight / 2) + 45;
+
+                ctx.fillStyle = "black";
+                ctx.textAlign = "left";
+                ctx.font = "85px Arial";
+                ctx.fillText(item.attribute, (100 + padding), textY);  // 20px from the left edge
+                ctx.textAlign = "right";
+                ctx.font = "bold 85px Arial";
+                ctx.fillText(item.value, canvas.width - (100 + padding), textY);  // 20px from the right edge
+            });
+
+            // Draw the SVG path directly onto the canvas
+            ctx.fillStyle = "black";  // Set the fill color for the SVG path
+            const multiplier = 40;
+            ctx.beginPath();
+            ctx.translate((canvas.width / 4) + 40, 335);
+            ctx.moveTo(12 * multiplier, 1 * multiplier);  // Move to (180, 15)
+            ctx.lineTo(22 * multiplier, 9 * multiplier);  // Line to (330, 135)
+            ctx.lineTo(22 * multiplier, 11 * multiplier); // Line to (330, 165)
+            ctx.lineTo(20 * multiplier, 11 * multiplier); // Line to (300, 165)
+            ctx.lineTo(20 * multiplier, 21 * multiplier); // Line to (300, 315)
+            ctx.lineTo(15 * multiplier, 21 * multiplier); // Line to (225, 315)
+            ctx.lineTo(15 * multiplier, 14 * multiplier); // Line to (225, 255)
+            ctx.lineTo(9 * multiplier, 14 * multiplier);  // Line to (135, 315)
+            ctx.lineTo(9 * multiplier, 21 * multiplier);  // Line to (135, 315)
+            ctx.lineTo(4 * multiplier, 21 * multiplier);  // Line to (60, 315)
+            ctx.lineTo(4 * multiplier, 11 * multiplier);  // Line to (60, 165)
+            ctx.lineTo(2 * multiplier, 11 * multiplier);  // Line to (30, 165)
+            ctx.lineTo(2 * multiplier, 9 * multiplier);   // Line to (30, 135)
+            ctx.lineTo(12 * multiplier, 1 * multiplier);  // Line to (180, 15)
+            ctx.closePath();
+            ctx.fill();  // Fill the path with the current fill color
+            ctx.translate(-((canvas.width / 4) +40), -335);
+            ctx.restore();
+
+            if (callback) callback();  // Ensure callback is called after drawing
+        }
+
+        function getFirstCard(group) {
+            data = {};
+            d3.csv('/data/houses.csv').then(function(data) {
+                var firstCard = data.find(d => d.group == group);
+                firstCard.index = 1; // Use index 1 for the first card
+                renderCardToCanvas(firstCard, firstCard.index, 'blue', "training");
+            });
+        }
+
+        function getBlueCards(group) {
+            data = {};
+            var cards = [];
+            d3.csv('/data/houses.csv').then(function(data) {
+                var index = 1;
+                data.forEach(function(d) {
+                    d.index = index;
+                    if (d.group == group) {
+                        cards.push(d);
+                    }
+                    index += 1;
+                });
+                renderCardsToZip(cards, "training", group);
+            });
+        }
+
+        function getFirstRedCard() {
+            data = {};
+            d3.csv('/data/red_cards_odi_index.csv').then(function(data) {
+                // Find the first red card
+                if (data.length > 0) {
+                    var firstCard = data[0];
+                    firstCard.index = 1; // Set the index to 1 for display purposes
+                    renderCardToCanvas(firstCard, firstCard.index, 'red', "evaluation");
+                } else {
+                    console.log("No red cards found in the CSV.");
+                }
+            });
+        }
+
+        function getRedCards(number) {
+            var cards = [];
+            var target0 = [];
+            var target1 = [];
+            data = {};
+
+            d3.csv('/data/red_cards_odi_index.csv').then(function(data) {
+                // Separate the data into two arrays based on the target value
+                data.forEach(function(d) {
+                    if (d.target == '0') {
+                        target0.push(d);
+                    } else if (d.target == '1') {
+                        target1.push(d);
+                    }
+                });
+
+                // Shuffle the arrays to randomize the selection
+                target0 = d3.shuffle(target0);
+                target1 = d3.shuffle(target1);
+
+                // Calculate how many cards to take from each group
+                var halfNumber = Math.floor(number / 2);
+
+                // Select the required number of cards from each group
+                cards = cards.concat(target0.slice(0, halfNumber));
+                cards = cards.concat(target1.slice(0, halfNumber));
+
+                // If the number is odd, add one more card from the larger group
+                if (number % 2 !== 0) {
+                    if (target0.length > target1.length) {
+                        cards.push(target0[halfNumber]);
+                    } else {
+                        cards.push(target1[halfNumber]);
+                    }
+                }
+
+                // Render the selected cards into a ZIP file
+                renderCardsToZip(cards, "evaluation", "Evaluation", 'red');
+            });
+        }
+
+        function renderCardsToZip(cards, type, group, color) {
+            var zip = new JSZip();
+            var canvas = document.getElementById("card-canvas");
+
+            function processCard(card, callback) {
+                renderCardToCanvas(card, card.index, color, type, function() {
+                    var imgData = canvas.toDataURL("image/png").split(",")[1];
+                    zip.file("card_" + card.index + ".png", imgData, { base64: true });
+                    callback();
+                });
+            }
+
+            function processNextCard(index) {
+                if (index < cards.length) {
+                    processCard(cards[index], function() {
+                        processNextCard(index + 1);
+                    });
+                } else {
+                    zip.generateAsync({ type: "blob" }).then(function(content) {
+                        saveAs(content, "Group_" + group + ".zip");
+                    });
+                }
+            }
+
+            processNextCard(0);
+        }
+
+        $(document).ready(function() {
+            // Render the first card on the canvas as soon as the document is ready
+            // getFirstCard(5);
+            getFirstRedCard();
+
+            // Set up download button to render and download the ZIP
+            $("#download-zip-1").click(function () {
+                zip = new JSZip(); // Reset zip for new download
+                getBlueCards(1);
+            });
+            $("#download-zip-2").click(function () {
+                zip = new JSZip(); // Reset zip for new download
+                getBlueCards(2);
+            });
+            $("#download-zip-3").click(function () {
+                zip = new JSZip(); // Reset zip for new download
+                getBlueCards(3);
+            });
+            $("#download-zip-4").click(function () {
+                zip = new JSZip(); // Reset zip for new download
+                getBlueCards(4);
+            });
+            $("#download-zip-5").click(function () {
+                zip = new JSZip(); // Reset zip for new download
+                getBlueCards(5);
+            });
+            $("#download-zip-6").click(function () {
+                zip = new JSZip(); // Reset zip for new download
+                getBlueCards(6);
+            });
+            $("#download-zip-red").click(function () {
+                zip = new JSZip(); // Reset zip for new download
+                getRedCards(108);
+            });
+
+        });
+
+        function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+    </script>
+</body>
+</html>

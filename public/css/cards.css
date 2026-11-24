@@ -52,16 +52,18 @@ button a {
 }
 card {
 	width: 160px;
+	height: 224px;
 	opacity: 0.9;
-	display: inline-block;
+	display: inline-flex;
+	flex-direction: column;
+	align-items: stretch;
 	text-align: center;
 	margin: 2px;
 	border: 1px solid black;
 	background-color: white;
 	z-index: 1;
-	padding-top: 2px;
-	padding-bottom: 6px;
-	height: 224px;
+	padding: 2px 0 4px;
+	box-sizing: border-box;
 	vertical-align: top;
 }
 card h1 {
@@ -71,32 +73,43 @@ card h1 {
 h1 {
 	margin: 0px;
 }
-img {
-	margin: 10px;
-	width: 95px;
-	margin-top: 0px;
-    margin-bottom: 0px;
+card .card-head {
+	display: flex;
+	justify-content: space-between;
+	align-items: baseline;
+	flex: 0 0 auto;
+	width: 100%;
+	min-height: 1.15em;
+}
+card image,
+card img {
+	display: block;
+	width: 88px;
+	margin: 6px auto;
+	flex: 1 1 auto;
+	object-fit: contain;
+	align-self: center;
 }
 .target {
-	float: left;
-	display: inline-block;
+	float: none;
+	display: block;
 	font-size: 0.8em;
-	padding-top: 0;
-	padding-bottom: 0;
-	padding-left: 0.5em;
+	padding: 0 0 0 0.5em;
 	color: black;
+	text-align: left;
 }
 .number {
-	float: right;
-	position: relative;
+	float: none;
+	position: static;
 	font-size: 0.8em;
-	padding-top: 0;
-	padding-bottom: 0;
+	padding: 0 0.5em 0 0;
 	color: black;
-	padding-right: 0.5em;
+	text-align: right;
 }
 card table {
 	width: 100%;
+	margin-top: auto;
+	flex: 0 0 auto;
 	font-size: 0.7em;
 	font-family: Arial, Helvetica, sans-serif;
 	color: black;

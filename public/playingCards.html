@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Card Renderer</title>
+    <link href="/css/odi-bootstrap.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/css/water.css"/>
+    <link rel="stylesheet" href="/css/cards.css"/>
+    <link rel="stylesheet" href="/css/decision-tree.css"/>
+    <link rel="stylesheet" href="/css/switch.css"/>
+    <script src="/js/d3.v5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.js"></script>
+    <style>
+        card {
+            width: auto;
+            opacity: 0.9;
+            display: inline-block;
+            text-align: center;
+            margin: 2px;
+            border: 1px solid black;
+            background-color: white;
+            z-index: 1;
+            padding-top: 2px;
+            padding-bottom: 6px;
+            height: auto;
+            vertical-align: top;
+        }
+        card img {
+            display: block;
+            width: 50%;
+            margin-left: auto;
+            margin-right: auto;
+            top: 2em;
+        }
+        card .titles {
+            display: flex;
+            justify-content: space-between;
+            padding: 0px;
+            font-size: 2em;
+            font-weight: bold;
+        }
+        .target {
+            padding-left: 0.4em;
+        }
+        .number {
+            padding-right: 0.4em;
+        }
+        card table {
+            font-size: 1em;
+            line-height: 30px;
+        }
+        card table .attribute {
+            padding-left: 0.8em;
+        }
+        card table .value {
+            padding-right: 0.8em;
+        }
+        card {
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <section id="training">
+        <div id='training-set-container' class='invisbox-small dropzone snapzone'>
+            <div id="training-set" class="cardSet"></div>
+        </div>
+    </section>
+    <script>
+        function renderCards(cards, type) {
+            var color = (type === 'training') ? 'blue' : 'red';
+            cards.forEach(function(card) {
+                renderCard(card, card.index, color, type);
+            });
+        }
+
+        function renderCard(data, count, color, type) {
+            var cardHtml = `
+                <card class="card-${type}" id="b${count}">
+                    <div class="titles">
+                        <h1 class="target">${data.city}</h1>
+                        <h1 class="number">#${count}</h1>
+                    </div>
+                    <image src="/img/house.png"></image>
+                    <table class="${color}">
+                        <tr><td class="attribute">Bathrooms</td><td class="value">${data.bath}</td></tr>
+                        <tr><td class="attribute">Bedrooms</td><td class="value">${data.beds}</td></tr>
+                        <tr><td class="attribute">Year built</td><td class="value">${data.year_built}</td></tr>
+                        <tr><td class="attribute">Elevation</td><td class="value">${formatNumber(data.elevation)}ft</td></tr>
+                        <tr><td class="attribute">Square Footage</td><td class="value">${formatNumber(data.sqft)}</td></tr>
+                        <tr><td class="attribute">Price</td><td class="value">$${formatNumber(data.price)}</td></tr>
+                        <tr><td class="attribute">Price per sqft</td><td class="value">$${formatNumber(data.price_per_sqft)}</td></tr>
+                    </table>
+                </card>`;
+            $(`#${type}-set`).append(cardHtml);
+        }
+
+        function getBlueCards(group) {
+            var cards = [];
+            d3.csv('/data/houses.csv').then(function(data) {
+                var index = 1;
+                data.forEach(function(d) {
+                    d.index = index;
+                    if (d.group == group) {
+                        cards.push(d);
+                    }
+                    index += 1;
+                });
+                renderCards(cards, "training");
+            });
+        }
+
+        $(document).ready(function() {
+            getBlueCards(1);
+        });
+
+        function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+    </script>
+</body>
+</html>

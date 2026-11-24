@@ -1,0 +1,21 @@
+<nav class="breadcrumbs" aria-label="Breadcrumb">
+  <ol>
+    <% (typeof crumbs !== 'undefined' ? crumbs : []).forEach(function(crumb, index) { %>
+      <li>
+        <% if (index > 0) { %><span class="breadcrumb-sep" aria-hidden="true">/</span><% } %>
+        <% if (crumb.href) { %>
+          <a href="<%= crumb.href %>"><%= crumb.label %></a>
+        <% } else { %>
+          <span aria-current="page"><%= crumb.label %></span>
+        <% } %>
+      </li>
+    <% }) %>
+  </ol>
+  <% if (typeof breadcrumbActions !== 'undefined' && breadcrumbActions && breadcrumbActions.length) { %>
+    <div class="breadcrumb-actions">
+      <% breadcrumbActions.forEach(function(action) { %>
+        <a href="<%= action.href %>"><%= action.label %></a>
+      <% }) %>
+    </div>
+  <% } %>
+</nav>

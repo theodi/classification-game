@@ -1,73 +1,45 @@
-<!-- views/partials/header.ejs -->
 <!DOCTYPE html>
-<html prefix="dct: http://purl.org/dc/terms/
-              rdf: http://www.w3.org/1999/02/22-rdf-syntax-ns#
-              dcat: http://www.w3.org/ns/dcat#
-              odrs: http://schema.theodi.org/odrs#">
+<html lang="en">
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title><%= pageTitle %></title>
-<link href="/css/odi-bootstrap.css" rel="stylesheet">
-<link href="/css/style.css" rel="stylesheet">
-<link href="/css/nav.css" rel="stylesheet">
-<link href="/css/flags.css" rel="stylesheet">
+<title><%= typeof pageTitle !== 'undefined' ? pageTitle : 'Classification Game' %></title>
 <link rel="shortcut icon" href="/images/odifavicon32.ico">
-<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+<link href="/css/water.css" rel="stylesheet">
+<link href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css" rel="stylesheet">
+<link href="/css/admin.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+<script src="/js/admin-tables.js"></script>
 </head>
 <body>
-<div class="navigation" style="margin: 0 -20px; width: initial;">
-<div class="navigation-inner clearfix">
-<div id="odiLearning" style="margin-left: 30px; width: 50%;"></div>
-<a href="javascript:void(0)" class="icon">
-  <div class="hamburger">
-    <div class="menui top-menu"></div>
-    <div class="menui mid-menu"></div>
-    <div class="menui bottom-menu"></div>
+<header class="header">
+  <div class="container">
+    <div class="header-top">
+      <a href="/" class="logo" aria-label="Open Data Institute"></a>
+      <nav class="main-nav" aria-label="Main">
+        <ul>
+          <% if (user) { %>
+            <% if (user.type === 'selfpaced') { %>
+              <li><a href="/play" class="<%= typeof pageLink !== 'undefined' && pageLink === '/play' ? 'selected' : '' %>">Play</a></li>
+            <% } %>
+            <% if (user.type === 'teacher' || user.type === 'admin') { %>
+              <li><a href="/schools" class="<%= typeof pageLink !== 'undefined' && String(pageLink).indexOf('/schools') === 0 ? 'selected' : '' %>">Schools</a></li>
+            <% } %>
+            <% if (user.type === 'admin') { %>
+              <li><a href="/accounts" class="<%= typeof pageLink !== 'undefined' && pageLink === '/accounts' ? 'selected' : '' %>">Admin</a></li>
+            <% } %>
+            <li><a href="/profile" class="<%= typeof pageLink !== 'undefined' && pageLink === '/profile' ? 'selected' : '' %>">Profile</a></li>
+            <li><a href="/help" class="<%= typeof pageLink !== 'undefined' && pageLink === '/help' ? 'selected' : '' %>">Help</a></li>
+            <li><a href="#" class="sign-out">Sign out</a></li>
+          <% } else { %>
+            <li><a href="/login" class="<%= typeof pageLink !== 'undefined' && pageLink === '/login' ? 'selected' : '' %>">Sign in</a></li>
+          <% } %>
+        </ul>
+      </nav>
+    </div>
   </div>
-</a>
-</div>
-</div>
-<div class="mobilenav">
-	<li><a href="/">Home</a></li>
-	<% if(user) { %>
-		<li><a href="/play">Play</a></li>
-		<% if(user.type === 'teacher' || user.type === 'admin') { %>
-			<li><a href="/leaderboards">Leaderboards</a></li>
-		<% } %>
-		<% if(user.type === 'admin') { %>
-			<li><a href="/accounts">Accounts</a></li>
-		<% } %>
-		<li><a href="/profile">Profile</a></li>
-		<li><a href="/help">Help</a></li>
-		<li><a href="#" class="sign-out">Sign out</a></li>
-	<% } else { %>
-		<li><a href="/login">Sign in</a></li>
-	<% } %>
-</div>
-<div class='navbar navbar-static-top' id='mainnav'>
-	<div class='container'>
-		<div class='navbar-inner'>
-			<ul class='nav pull-right'>
-	<li><a href="/">Home</a></li>
-	<% if(user) { %>
-		<li><a href="/play">Play</a></li>
-		<% if(user.type === 'teacher' || user.type === 'admin') { %>
-			<li><a href="/leaderboards">Leaderboards</a></li>
-		<% } %>
-		<% if(user.type === 'admin') { %>
-			<li><a href="/accounts">Accounts</a></li>
-		<% } %>
-		<li><a href="/profile">Profile</a></li>
-		<li><a href="/help">Help</a></li>
-		<li><a href="#" class="sign-out">Sign out</a></li>
-	<% } else { %>
-		<li><a href="/login">Sign in</a></li>
-	<% } %>
-			</ul>
-		</div>
-	</div>
-</div>
+</header>
 <script>
   document.querySelectorAll('.sign-out').forEach(function(link) {
     link.addEventListener('click', function(event) {
@@ -78,9 +50,4 @@
     });
   });
 </script>
-<div class='whiteout'>
-<header>
-	<div class='container'>
-		<h1></h1>
-	</div>
-</header>
+<main class="main-content">

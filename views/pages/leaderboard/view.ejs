@@ -207,7 +207,7 @@
             $('#beatHybrid').html((Math.round((beatHybrid / (resultsCount*4))*10000)/100) + "%");
             populateTable(leaders,document.getElementById('leaders_body'));
             $('#leaders').DataTable({
-                dom: 'Bfrtip',
+                dom: '<"dt-top"Bf>rt<"dt-bottom"<"dt-length"l><"dt-info"i><"dt-paginate"p>>',
                 responsive: true,
                 pageLength: 25,
                 buttons: [
@@ -216,7 +216,7 @@
             });
             populateTable(loosers,document.getElementById('loosers_body'));
             $('#loosers').DataTable({
-                dom: 'Bfrtip',
+                dom: '<"dt-top"Bf>rt<"dt-bottom"<"dt-length"l><"dt-info"i><"dt-paginate"p>>',
                 responsive: true,
                 pageLength: 25,
                 buttons: [
@@ -235,7 +235,7 @@
                 processResult(data[i]);
             }
             $('#table').DataTable({
-                dom: 'Bfrtip',
+                dom: '<"dt-top"Bf>rt<"dt-bottom"<"dt-length"l><"dt-info"i><"dt-paginate"p>>',
                 responsive: true,
                 pageLength: 25,
                 order: [[3, 'desc'],[2, 'desc'],[5, 'desc'],[4, 'desc']],

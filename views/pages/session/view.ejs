@@ -1,286 +1,130 @@
 <%- include('../../partials/header') %>
-<link rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.12.1/css/jquery.dataTables.css">
-<link rel="stylesheet" type="text/css" href="//cdn.datatables.net/responsive/2.3.0/css/responsive.dataTables.min.css">
-<link rel="stylesheet" type="text/css" href="//cdn.datatables.net/buttons/2.2.3/css/buttons.dataTables.min.css"/>
-<script type="text/javascript" charset="utf8" src="//cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
-<script type="text/javascript" charset="utf8" src="//cdn.datatables.net/responsive/2.3.0/js/dataTables.responsive.min.js"></script>
-<script type="text/javascript" charset="utf8" src="//cdn.datatables.net/buttons/2.2.3/js/dataTables.buttons.min.js"></script>
-<script type="text/javascript" charset="utf8" src="//cdn.datatables.net/buttons/2.2.3/js/buttons.colVis.min.js"></script>
-<script type="text/javascript" src="//cdn.datatables.net/buttons/2.2.3/js/buttons.html5.min.js"></script>
-<script type="text/javascript" src="//cdn.datatables.net/buttons/2.2.3/js/buttons.print.min.js"></script>
-<style>
-.statsBubble {
-    list-style-type: none;
-}
-.statsBubble li {
-    display: inline-grid;
-    width: 350px;
-    height: 150px;
-    margin: 1em;
-    border: 1px solid black;
-}
-.statsBubble h2 {
-    font-size: 1.2em;
-}
-.statsBubble p {
-    font-size: 3em;
-    font-weight: bold;
-}
-</style>
-<div class="container box">
-    <div class="jumbotron text-center text-primary">
-        <h1><span class="fa fa-lock"></span>Session dashboard</h1>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css"/>
+<script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<section class="content-block white">
+  <div class="container">
+    <%- include('../../partials/breadcrumbs', {
+      crumbs: [
+        { label: 'Schools', href: '/schools' },
+        { label: typeof schoolName !== 'undefined' ? schoolName : 'School', href: '/schools/' + id },
+        { label: typeof pageTitle !== 'undefined' ? pageTitle : 'Session' }
+      ],
+      breadcrumbActions: [
+        { label: 'Class board', href: '/schools/' + id + '/sessions/' + sessionId + '/board' }
+      ]
+    }) %>
+    <div class="page-title"><h1 id="session-heading">Session</h1></div>
+    <p id="session-message" class="message"></p>
+
+    <div class="panel-split">
+      <section class="page-panel" id="details-section">
+        <h2>Session name</h2>
+        <form id="session-name-form" class="detail-form">
+          <label for="session-name">Name</label>
+          <input id="session-name" name="name" required>
+          <p id="details-message" class="message"></p>
+          <div class="form-actions">
+            <button type="submit">Save name</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="page-panel" id="share-section">
+        <h2>Share game link</h2>
+        <div class="share-card">
+          <div id="game-qr" class="game-qr" aria-label="QR code for game link"></div>
+          <button type="button" id="game-link" class="game-link" title="Click to copy"></button>
+        </div>
+        <div class="section-actions">
+          <button type="button" id="open-invite-modal">Send link</button>
+        </div>
+      </section>
     </div>
-    <h2>Enter a team result</h2>
-    <form id="entryForm">
-      <label for="entryTeam">Team name</label>
-      <input id="entryTeam" type="text" maxlength="80" required placeholder="Team name or first names only">
-      <button type="submit">Open the recording sheet</button>
-    </form>
-    <p><a href="/leaderboard/<%= id %>/<%= sessionId %>/board">Open the class board</a></p>
-    <ul class="statsBubble">
-        <li><h2>Best score</h2><p id="bestScore"></p></li>
-        <li><h2>Worst score</h2><p id="worstScore"></p></li>
-        <li><h2>Average score</h2><p id="averageScore"></p></li>
-        <li><h2>100% Confident</h2><p id="oneHundredClub"></p></li>
-        <li><h2>Better than machine only model</h2><p id="beatMachine"></p></li>
-        <li><h2>Better than human+machine model</h2><p id="beatHybrid"></p></li>
-    </ul>
-    <h2>Best results</h2>
-    <table id="leaders" class="display responsive wrap" cellspacing="0" width="100%">
-        <thead>
-            <tr>
-                <th>Team</th>
-                <th>Training score</th>
-                <th>Written confidence</th>
-                <th>Run 1</th>
-                <th>Run 2</th>
-                <th>Run 3</th>
-                <th>Run 4</th>
-                <th>Total</th>
-                <th>Gap</th>
-                <th>Tree</th>
-            </tr>
-        </thead>
-        <tbody id="leaders_body">
-            
-        </tbody>
-    </table>
-    <h2>Worst results</h2>
-    <table id="loosers" class="display responsive wrap" cellspacing="0" width="100%">
-        <thead>
-            <tr>
-                <th>Team</th>
-                <th>Training score</th>
-                <th>Written confidence</th>
-                <th>Run 1</th>
-                <th>Run 2</th>
-                <th>Run 3</th>
-                <th>Run 4</th>
-                <th>Total</th>
-                <th>Gap</th>
-                <th>Tree</th>
-            </tr>
-        </thead>
-        <tbody id="loosers_body">
-            
-        </tbody>
-    </table>
-    <h2>Leaderboard (all results)</h2>
-    <table id="table" class="display responsive wrap" cellspacing="0" width="100%">
-        <thead>
-            <tr>
-                <th>Team</th>
-                <th>Training score</th>
-                <th>Written confidence</th>
-                <th>Run 1</th>
-                <th>Run 2</th>
-                <th>Run 3</th>
-                <th>Run 4</th>
-                <th>Total</th>
-                <th>Gap</th>
-                <th>Tree</th>
-            </tr>
-        </thead>
-        <tbody id="table_body">
-            
-        </tbody>
-    </table>
 
-</div>
+    <section class="page-panel" id="results-section">
+      <h2>Results</h2>
+      <p id="results-empty" class="message hidden">No group results yet.</p>
+      <table class="admin-table" id="results-table">
+        <thead>
+          <tr>
+            <th>Team</th>
+            <th>Training score</th>
+            <th>Written confidence</th>
+            <th>Run 1</th>
+            <th>Run 2</th>
+            <th>Run 3</th>
+            <th>Run 4</th>
+            <th>Total</th>
+            <th>Gap</th>
+            <th>Tree</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <section class="page-panel" id="add-group-section">
+      <h2>Add group submission</h2>
+      <p>Enter a team’s tree from the paper recording sheet, then run the evaluation.</p>
+      <div class="section-actions">
+        <button type="button" id="open-group-modal">Add group submission</button>
+      </div>
+    </section>
+
+    <section class="page-panel danger-zone" id="danger-section">
+      <h2>Danger zone</h2>
+      <p>Deleting a session cannot be undone. Sessions with results cannot be deleted.</p>
+      <div class="section-actions">
+        <button type="button" id="delete-session">Delete session</button>
+      </div>
+    </section>
+  </div>
+</section>
+
+<dialog id="invite-modal" class="admin-modal">
+  <form method="dialog" id="invite-form" class="admin-modal-card">
+    <h2>Send game link</h2>
+    <p>Enter one or more email addresses, separated by commas or new lines.</p>
+    <label for="invite-emails">Email addresses</label>
+    <textarea id="invite-emails" rows="6" required placeholder="student1@school.edu&#10;student2@school.edu"></textarea>
+    <p id="invite-message" class="message"></p>
+    <div class="form-actions">
+      <button type="submit" value="confirm">Send link</button>
+      <button type="submit" value="cancel" class="btn-secondary" formnovalidate>Cancel</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="group-modal" class="admin-modal admin-modal-wide">
+  <div class="admin-modal-card group-tree-card">
+    <h2>Add group submission</h2>
+    <div class="admin-tree-scroll">
+      <div id="group-team-rail" class="group-team-rail detail-form">
+        <label for="group-team">Team name</label>
+        <input id="group-team" type="text" maxlength="80" required placeholder="Team name">
+        <label for="group-confidence">Accuracy</label>
+        <input id="group-confidence" type="number" min="0" max="100" step="1" inputmode="decimal" placeholder="%">
+      </div>
+      <%- include('../../partials/adminDecisionTree') %>
+    </div>
+    <p id="group-modal-message" class="message"></p>
+    <div class="form-actions stack-row">
+      <button type="button" id="load-sample-tree">Load sample tree</button>
+      <button type="button" id="check-group-tree">Check tree</button>
+      <button type="button" id="save-group-tree">Save and evaluate</button>
+      <button type="button" id="close-group-modal" class="btn-secondary">Cancel</button>
+    </div>
+  </div>
+</dialog>
+
 <script>
-    var interval;
-
-    function addToRow(row,value) {
-        var td = document.createElement('td');
-        td.textContent = value === undefined || value === null ? '' : String(value);
-        row.append(td);
-    }
-    function addToRowLink(row,link,value) {
-        var td = document.createElement('td');
-        var a = document.createElement('a');
-        a.setAttribute('href', link);
-        a.innerHTML = value;
-        td.append(a)
-        row.append(td);
-    }
-    function addToRowHidden(row,value) {
-        var td = document.createElement('td');
-        td.className = "none";
-        td.innerHTML = value;
-        row.append(td);
-    }
-
-    var leader = false;
-    var leaders = [];
-    var looser = false;
-    var loosers = [];
-    var averageScore = 0;
-    var oneHundredClub = 0;
-    var beatMachine = 0;
-    var beatHybrid = 0;
-    var resultsCount = 0;
-    var resultsTotal = 0;
-    var resultsProcessed = 0;
-
-    function addResultToTable(result, table) {
-        if (!result.playerName) {
-            return;
-        }
-        var row = document.createElement('tr');
-        var runs = [1, 2, 3, 4].map(function(number) {
-            return result.result && result.result[number] ? result.result[number].player : '';
-        });
-        var training = result.confidences ? result.confidences.player : '';
-        var written = result.writtenConfidence;
-        if (written === undefined || written === null) {
-            written = result.confidences && result.confidences.written !== undefined ? result.confidences.written : '';
-        }
-        var numericRuns = runs.filter(function(value) { return value !== ''; }).map(Number);
-        var gap = '';
-        if (numericRuns.length && training !== '') {
-            var average = numericRuns.reduce(function(sum, value) { return sum + value; }, 0) / numericRuns.length;
-            gap = Math.round((Number(training) - average) * 10) / 10;
-        }
-        addToRow(row, result.playerName);
-        addToRow(row, training);
-        addToRow(row, written === null || written === undefined ? '' : written);
-        runs.forEach(function(value) { addToRow(row, value); });
-        addToRow(row, result.score);
-        addToRow(row, gap);
-        addToRowLink(row, "/result/" + result.id + "/tree", "Re-run");
-        table.append(row);
-    }
-
-    function populateTable(results,table) {
-        for(var i=0;i<results.length;i++) {
-            addResultToTable(results[i],table);
-        }
-        
-    }
-
-    function processResult(result) {
-        if (!result.playerName) {
-            return;
-        }
-        if (result.vsMachine && result.vsMachine.win) { beatMachine = beatMachine + (result.vsMachine.win * 4); }
-        if (result.vsHybrid && result.vsHybrid.win) { beatHybrid = beatHybrid + (result.vsHybrid.win * 4); }
-        if (result.confidences && result.confidences.player > 99) { oneHundredClub = oneHundredClub + 1; }
-        resultsTotal += result.score;
-        var confidence = result.confidences && result.confidences.player ? result.confidences.player : 0;
-        if (!leader) {
-            leader = result;
-            leaders.push(result);
-        } else {
-            var leaderConfidence = leader.confidences && leader.confidences.player ? leader.confidences.player : 0;
-            if (confidence > leaderConfidence && result.score > leader.score) {
-                leader = result;
-                leaders = [];
-                leaders.push(result);
-            } else if (result.score == leader.score) {
-                leaders.push(result);
-            }
-        }
-        
-        if (!looser) {
-            looser = result;
-            loosers.push(result);
-        } else {
-            if (result.score < looser.score) {
-                looser = result;
-                loosers = [];
-                loosers.push(result);
-            } else if (result.score == looser.score) {
-                loosers.push(result);
-            } 
-        }
-
-        addResultToTable(result,document.getElementById('table_body'));
-
-        resultsProcessed += 1;
-
-    }
-
-    function checkReady() {
-        if (resultsProcessed >= resultsCount) {
-            averageScore = resultsTotal / resultsCount;
-            $('#averageScore').html(Math.round(averageScore * 100) / 100);
-            $('#bestScore').html(Math.round(leader.score * 100) / 100);
-            $('#worstScore').html(Math.round(looser.score * 100) / 100);
-            $('#oneHundredClub').html((Math.round((oneHundredClub / resultsCount)*10000)/100) + "%");
-            $('#beatMachine').html((Math.round((beatMachine / (resultsCount*4))*10000)/100) + "%");
-            $('#beatHybrid').html((Math.round((beatHybrid / (resultsCount*4))*10000)/100) + "%");
-            populateTable(leaders,document.getElementById('leaders_body'));
-            $('#leaders').DataTable({
-                dom: 'Bfrtip',
-                responsive: true,
-                pageLength: 25,
-                buttons: [
-                   'copy', 'excel', 'csv'
-                ]
-            });
-            populateTable(loosers,document.getElementById('loosers_body'));
-            $('#loosers').DataTable({
-                dom: 'Bfrtip',
-                responsive: true,
-                pageLength: 25,
-                buttons: [
-                   'copy', 'excel', 'csv'
-                ]
-            });
-            clearInterval(interval);
-            resultsProcessed = 0;
-        }
-    }
-
-    $(document).ready( function () {
-        $.getJSON('/leaderboard/<%= id %>/<%= sessionId %>/results', function(data) {
-            resultsCount = data.length;
-            for (i=0;i<data.length;i++) {
-                if (data[i].playerName) {
-                    processResult(data[i]);
-                } else {
-                    resultsCount = resultsCount - 1;
-                }
-            }
-            $('#table').DataTable({
-                dom: 'Bfrtip',
-                responsive: true,
-                pageLength: 25,
-                order: [[7, 'desc']],
-                buttons: [
-                   'copy', 'excel', 'csv'
-                ]
-            });
-        });
-        var interval = setInterval(function () {
-            checkReady();
-        }, 1000);
-        document.getElementById('entryForm').addEventListener('submit', function(event) {
-            event.preventDefault();
-            var team = document.getElementById('entryTeam').value;
-            window.location = '/game/<%= sessionId %>?entry=1&team=' + encodeURIComponent(team);
-        });
-    });
+  window.SCHOOL_ID = '<%= id %>';
+  window.SESSION_ID = '<%= sessionId %>';
 </script>
+<script src="/js/tree-score.js"></script>
+<script src="/js/session-tree.js"></script>
+<script src="/js/session-page.js"></script>
 <%- include('../../partials/footer') %>

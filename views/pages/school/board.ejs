@@ -1,0 +1,31 @@
+<%- include('../../partials/header') %>
+<section class="content-block white">
+  <div class="container">
+    <%- include('../../partials/breadcrumbs', {
+      crumbs: [
+        { label: 'Schools', href: '/schools' },
+        { label: typeof schoolName !== 'undefined' ? schoolName : 'School', href: '/schools/' + id },
+        { label: 'School leaderboard' }
+      ]
+    }) %>
+    <div class="page-title"><h1>School leaderboard</h1></div>
+    <table class="admin-table" id="board-table">
+      <thead><tr><th>Team</th><th>Score</th><th>Session</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</section>
+<script>
+fetch('/schools/<%= id %>/results', { headers: { 'Accept': 'application/json' } })
+  .then(function(response) { return response.json(); })
+  .then(function(rows) {
+    var body = document.querySelector('#board-table tbody');
+    rows.forEach(function(row) {
+      var tr = document.createElement('tr');
+      tr.innerHTML = '<td>' + (row.playerName || '') + '</td><td>' + (row.score || '') + '</td><td>' + (row.sessionId || '') + '</td>';
+      body.appendChild(tr);
+    });
+    initAdminTable('#board-table', { order: [[1, 'desc']] });
+  });
+</script>
+<%- include('../../partials/footer') %>

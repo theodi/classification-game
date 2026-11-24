@@ -1,0 +1,116 @@
+<%- include('../../partials/header') %>
+<section class="content-block white">
+  <div class="container school-page">
+    <%- include('../../partials/breadcrumbs', {
+      crumbs: [
+        { label: 'Schools', href: '/schools' },
+        { label: typeof schoolName !== 'undefined' ? schoolName : 'School' }
+      ]
+    }) %>
+    <div class="page-title"><h1 id="school-heading"><%= typeof schoolName !== 'undefined' ? schoolName : 'School' %></h1></div>
+    <p id="school-message" class="message"></p>
+
+    <section class="page-panel" id="details-section">
+      <h2>Details</h2>
+      <% if (user && user.type === 'admin') { %>
+        <form id="school-form" class="detail-form">
+          <label for="name">School name</label>
+          <input id="name" name="name" required>
+          <label for="domain">Email domain</label>
+          <input id="domain" name="domain" required>
+          <label for="expiresAt">Expiry date</label>
+          <input id="expiresAt" name="expiresAt" type="date" required>
+          <p id="expiry-status" class="message"></p>
+          <div class="form-actions">
+            <button type="submit">Save details</button>
+          </div>
+        </form>
+      <% } else { %>
+        <dl class="detail-list">
+          <dt>Name</dt><dd id="detail-name"></dd>
+          <dt>Domain</dt><dd id="detail-domain"></dd>
+          <dt>Expires</dt><dd id="detail-expires"></dd>
+        </dl>
+      <% } %>
+    </section>
+
+    <section class="page-panel" id="teachers-section">
+      <h2>Teachers</h2>
+      <p id="teachers-message" class="message"></p>
+      <table class="admin-table" id="teachers-table">
+        <thead><tr><th>Email</th><th>Status</th><th></th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <div class="section-actions">
+        <button type="button" id="open-teacher-modal">Add teacher</button>
+      </div>
+    </section>
+
+    <section class="page-panel" id="sessions-section">
+      <h2>Sessions</h2>
+      <p id="sessions-message" class="message"></p>
+      <table class="admin-table" id="sessions-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Created</th>
+            <th>Results</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <div class="section-actions">
+        <button type="button" id="open-session-modal">Create session</button>
+      </div>
+    </section>
+
+    <section class="page-panel" id="leaderboard-section">
+      <h2>School leaderboard</h2>
+      <p>View combined results across all sessions for this school.</p>
+      <div class="section-actions">
+        <a class="btn" href="/schools/<%= schoolId %>/results">Open school leaderboard</a>
+      </div>
+    </section>
+
+    <% if (user && user.type === 'admin') { %>
+      <section class="page-panel danger-zone" id="danger-section">
+        <h2>Danger zone</h2>
+        <p>Deleting a school cannot be undone. Remove teachers and sessions first if required.</p>
+        <div class="section-actions">
+          <button type="button" id="delete-school">Delete school</button>
+        </div>
+      </section>
+    <% } %>
+  </div>
+</section>
+
+<dialog id="teacher-modal" class="admin-modal">
+  <form method="dialog" id="add-teacher-form" class="admin-modal-card">
+    <h2>Add teacher</h2>
+    <p>Email must use this school’s domain.</p>
+    <label for="teacher-email">Teacher email</label>
+    <input id="teacher-email" type="email" required placeholder="teacher@school.edu">
+    <p id="teacher-modal-message" class="message"></p>
+    <div class="form-actions">
+      <button type="submit" value="confirm">Add teacher</button>
+      <button type="submit" value="cancel" class="btn-secondary" formnovalidate>Cancel</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="session-modal" class="admin-modal">
+  <form method="dialog" id="create-session-form" class="admin-modal-card">
+    <h2>Create session</h2>
+    <label for="session-name">Session name</label>
+    <input type="text" id="session-name" name="name" required>
+    <p id="session-modal-message" class="message"></p>
+    <div class="form-actions">
+      <button type="submit" value="confirm">Create session</button>
+      <button type="submit" value="cancel" class="btn-secondary" formnovalidate>Cancel</button>
+    </div>
+  </form>
+</dialog>
+
+<script>window.SCHOOL_ID = '<%= schoolId %>'; window.IS_ADMIN = <%= user && user.type === 'admin' ? 'true' : 'false' %>;</script>
+<script src="/js/school-page.js"></script>
+<%- include('../../partials/footer') %>

@@ -1,0 +1,49 @@
+<%- include('../../partials/header') %>
+<section class="content-block white">
+  <div class="container">
+    <%- include('../../partials/breadcrumbs', {
+      crumbs: [{ label: 'Schools' }]
+    }) %>
+    <div class="page-title"><h1>Schools</h1></div>
+    <p id="schools-message" class="message"></p>
+
+    <section class="page-panel" id="schools-section">
+      <table class="admin-table" id="schools-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Domain</th>
+            <th>Expires</th>
+            <th>Teachers</th>
+            <th>Sessions</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <div class="section-actions">
+        <button type="button" id="open-school-modal">Add school</button>
+      </div>
+    </section>
+  </div>
+</section>
+
+<dialog id="school-modal" class="admin-modal">
+  <form method="dialog" id="create-school-form" class="admin-modal-card">
+    <h2>Add school</h2>
+    <label for="school-name">School name</label>
+    <input id="school-name" name="name" required>
+    <label for="school-domain">Email domain</label>
+    <input id="school-domain" name="domain" placeholder="school.edu" required>
+    <label for="school-expiresAt">Expiry date</label>
+    <input id="school-expiresAt" name="expiresAt" type="date" required>
+    <p>Teacher and student emails must use this domain. Only listed teachers get teacher access. Access ends at the end of the expiry date (UTC).</p>
+    <p id="school-modal-message" class="message"></p>
+    <div class="form-actions">
+      <button type="submit" value="confirm">Add school</button>
+      <button type="submit" value="cancel" class="btn-secondary" formnovalidate>Cancel</button>
+    </div>
+  </form>
+</dialog>
+
+<script src="/js/schools.js"></script>
+<%- include('../../partials/footer') %>

@@ -1,10 +1,8 @@
 <%- include('../partials/header') %>
-<div class="container box">
-    <div class="jumbotron text-center text-primary">
-        <h1><span class="fa fa-lock"></span>400: Bad Request</h1>
-        <% if(start){ %>
-            <p>The page you requested is online available between <%= start %> and <%= end %>.<br/>Please try again between these times.</p>
-        <% } %>
-    </div>
-</div>
+<section class="content-block white">
+  <div class="container">
+    <div class="page-title"><h1>400 Bad request</h1></div>
+    <div class="infobox"><p>That request was not valid. <a href="/">Home</a></p></div>
+  </div>
+</section>
 <%- include('../partials/footer') %>

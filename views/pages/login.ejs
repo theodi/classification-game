@@ -1,19 +1,23 @@
 <%- include('../partials/header') %>
-<div class="container box">
-  <h1>Sign in</h1>
-  <p>Enter your email. We will send a 6-digit code. There is no password.</p>
-  <form id="email-form">
-    <label for="email">Email</label>
-    <input id="email" name="email" type="email" required>
-    <button type="submit">Email me a code</button>
-  </form>
-  <form id="code-form" hidden>
-    <label for="code">Code</label>
-    <input id="code" name="code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required>
-    <button type="submit">Sign in</button>
-  </form>
-  <p id="login-message"></p>
-  <p><a href="/account-request">Request an account</a></p>
-</div>
+<section class="content-block white">
+  <div class="container">
+    <div class="page-title"><h1>Sign in</h1></div>
+    <div class="infobox">
+      <p>Enter your email. We will send a 6-digit code. There is no password.</p>
+      <form id="email-form">
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" required>
+        <button type="submit">Email me a code</button>
+      </form>
+      <form id="code-form" hidden>
+        <label for="code">Code</label>
+        <input id="code" name="code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required>
+        <button type="submit">Sign in</button>
+      </form>
+      <p id="login-message" class="message"></p>
+      <p><a href="/account-request">Request an account</a></p>
+    </div>
+  </div>
+</section>
 <script src="/js/login.js"></script>
 <%- include('../partials/footer') %>

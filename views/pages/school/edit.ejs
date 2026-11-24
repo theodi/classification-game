@@ -1,0 +1,52 @@
+<%- include('../../partials/header') %>
+<section class="content-block white">
+  <div class="container">
+    <div class="page-title"><h1>Edit school</h1></div>
+    <div class="infobox">
+      <form id="school-form">
+        <label for="name">School name</label>
+        <input id="name" name="name" required>
+        <label for="domain">Email domain</label>
+        <input id="domain" name="domain" required>
+        <label for="expiresAt">Expiry date</label>
+        <input id="expiresAt" name="expiresAt" type="date" required>
+        <button type="submit">Save</button>
+        <a class="btn" href="/schools/<%= schoolId %>">Cancel</a>
+      </form>
+      <p id="school-message" class="message"></p>
+    </div>
+  </div>
+</section>
+<script>
+var schoolId = '<%= schoolId %>';
+fetch('/schools/' + schoolId, { headers: { 'Accept': 'application/json' } })
+  .then(function(response) { return response.json(); })
+  .then(function(school) {
+    document.getElementById('name').value = school.name || '';
+    document.getElementById('domain').value = school.domain || '';
+    document.getElementById('expiresAt').value = school.expiresOn || '';
+  });
+document.getElementById('school-form').addEventListener('submit', function(event) {
+  event.preventDefault();
+  fetch('/schools/' + schoolId, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+    body: JSON.stringify({
+      name: document.getElementById('name').value,
+      domain: document.getElementById('domain').value,
+      expiresAt: document.getElementById('expiresAt').value
+    })
+  }).then(function(response) {
+    return response.json().then(function(body) {
+      return { ok: response.ok, body: body };
+    });
+  }).then(function(result) {
+    if (!result.ok) {
+      document.getElementById('school-message').textContent = result.body.error || 'Could not save';
+      return;
+    }
+    window.location = '/schools/' + schoolId;
+  });
+});
+</script>
+<%- include('../../partials/footer') %>

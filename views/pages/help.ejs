@@ -1,20 +1,19 @@
-<!-- views/profile.ejs -->
 <%- include('../partials/header') %>
+<section class="content-block white">
   <div class="container">
-    <div class="jumbotron">
-      <h1 class="text-primary  text-center">Walkthrough video</h1>
-        <div class="row">
-          <div class="col-sm-6">
-          <p>If the video does not load, use these steps. The game does not need the video.</p>
-          <ol>
-            <li>Open the training cards. There are 10 New York homes and 10 San Francisco homes, and every class uses this same pack.</li>
-            <li>Build a decision tree from the five features on the cards. Run the model to see how many of the 20 cards it gets right. That percentage is the training score.</li>
-            <li>Write down how confident the team is, as a percentage, before the evaluation.</li>
-            <li>Evaluate the tree. A class session uses a fixed set of new homes, so the teacher can run it again in the next lesson and get the same result.</li>
-          </ol>
-          <div style="padding:47.14% 0 0 0;position:relative;"><iframe src="https://player.vimeo.com/video/893677874?h=988b2c5b98&amp;badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" style="position:absolute;top:0;left:0;width:100%;height:100%;" title="ML Game - Tutor's guide"></iframe></div>
-          </div>
+    <div class="page-title"><h1>Help</h1></div>
+    <div class="infobox">
+      <p>If the video does not load, use these steps. The game does not need the video.</p>
+      <ol>
+        <li>Open the training cards. There are 10 New York homes and 10 San Francisco homes, and every class uses this same pack.</li>
+        <li>Build a decision tree from the five features on the cards. Run the model to see how many of the 20 cards it gets right. That percentage is the training score.</li>
+        <li>Write down how confident the team is, as a percentage, before the evaluation.</li>
+        <li>Evaluate the tree. A class session uses a fixed set of new homes, so the teacher can run it again in the next lesson and get the same result.</li>
+      </ol>
+      <div style="padding:47.14% 0 0 0;position:relative;">
+        <iframe src="https://player.vimeo.com/video/893677874?h=988b2c5b98&amp;badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" style="position:absolute;top:0;left:0;width:100%;height:100%;" title="ML Game - Tutor's guide"></iframe>
       </div>
-     </div>
+    </div>
   </div>
+</section>
 <%- include('../partials/footer') %>

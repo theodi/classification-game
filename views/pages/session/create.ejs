@@ -1,39 +1,23 @@
 <%- include('../../partials/header') %>
-<style>
-    label {
-        display: inline;
-    }
-    .para {
-        font-size: 18px;
-        line-height: 24px;
-    }
-</style>
-<div class="container box">
-    <div class="jumbotron text-center text-primary">
-        <h1><span class="fa fa-lock"></span>Create session</h1>
-    </div>
-    <form action="/leaderboard/<%= id %>/createSession" method="post" id="lform">
-      <label class="para" for="name">Session name:</label><br/><br/>
-      <input type="text" id="name" name="name" placeholder="Name" required><br><br/>
-      <label class="para" for="tutorMode">Require code for evaluation (tutor mode):</label><br/><br/>
-      <input type="checkbox" id="tutorMode" name="tutorMode"/><br><br/>
-      <label class="para" for="startTime" required>Start time (UTC):</label><br/><br/>
-      <input type="datetime-local" id="startTime" name="startTime"><br/><br/>
-      <label class="para" for="endTime">End time (UTC):</label><br/><br/>
-      <input type="datetime-local" id="endTime" name="endTime"><br/><br/>
-      <label class="para" for="hidePublic">Hide from public leaderboard</label><br/><br/>
-      <input type="checkbox" id="hidePublic" name="hidePublic"/><br><br/>
-      <label class="para" for="evalSetId">Evaluation set</label><br/><br/>
-      <select id="evalSetId" name="evalSetId">
-        <option value="">Next in rotation</option>
-        <% evalSetIds.forEach(function(setId) { %>
-          <option value="<%= setId %>"><%= setId %></option>
-        <% }) %>
-      </select><br/><br/>
-      <!--<label class="para" for="timeLimit">User time limit (minutes):</label><br/><br/>
-      <input type="number" id="timeLimit" name="timeLimit"><br/><br/>-->
-
-      <input type="submit" value="Submit">
-    </form>
-</div>
+<section class="content-block white">
+  <div class="container">
+    <%- include('../../partials/breadcrumbs', {
+      crumbs: [
+        { label: 'Schools', href: '/schools' },
+        { label: typeof schoolName !== 'undefined' ? schoolName : 'School', href: '/schools/' + id },
+        { label: 'Create session' }
+      ]
+    }) %>
+    <div class="page-title"><h1>Create session</h1></div>
+    <section class="page-panel">
+      <form action="/schools/<%= id %>/sessions" method="post" id="lform" class="detail-form">
+        <label for="name">Session name</label>
+        <input type="text" id="name" name="name" required>
+        <div class="form-actions">
+          <button type="submit">Create session</button>
+        </div>
+      </form>
+    </section>
+  </div>
+</section>
 <%- include('../../partials/footer') %>

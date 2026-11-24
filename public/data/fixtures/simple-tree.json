@@ -1,0 +1,36 @@
+{
+  "name": "Elevation then price per sq ft",
+  "note": "Simple classroom-style tree for smoke-testing submissions. Elevation ≤ 32 → New York; else price_per_sqft ≤ 850 → San Francisco; else New York.",
+  "expectedTrainingMin": 70,
+  "teamName": "Sample team",
+  "writtenConfidence": 80,
+  "tree": {
+    "factors": {
+      "_": "elevation",
+      "r": "price_per_sqft"
+    },
+    "boundaries": {
+      "a": "32",
+      "ra": "850"
+    },
+    "predictions": {
+      "l": { "prediction": "New York" },
+      "rl": { "prediction": "San Francisco" },
+      "rr": { "prediction": "New York" }
+    }
+  },
+  "ui": {
+    "root": {
+      "feature": "elevation",
+      "threshold": "32",
+      "left": { "mode": "leaf", "city": "New York" },
+      "right": {
+        "mode": "split",
+        "feature": "price_per_sqft",
+        "threshold": "850",
+        "left": { "mode": "leaf", "city": "San Francisco" },
+        "right": { "mode": "leaf", "city": "New York" }
+      }
+    }
+  }
+}

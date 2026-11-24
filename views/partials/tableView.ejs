@@ -37,12 +37,15 @@
             document.getElementById('grouppdf').href = '/data/pdfs/Group_1.pdf';
             document.getElementById('groupButtons').classList.remove('hidden');
             if (!$.fn.DataTable.isDataTable('#cardsTable')) {
-                $('#cardsTable').DataTable({ pageLength: 25 });
+                $('#cardsTable').DataTable({
+                  pageLength: 25,
+                  dom: '<"dt-top"f>rt<"dt-bottom"<"dt-length"l><"dt-info"i><"dt-paginate"p>>'
+                });
             }
         } catch (err) {
             if (!$.fn.DataTable.isDataTable('#cardsTable')) {
                 $('#cardsTable').DataTable({
-                    dom: 'Bfrtip',
+                    dom: '<"dt-top"Bf>rt<"dt-bottom"<"dt-length"l><"dt-info"i><"dt-paginate"p>>',
                     buttons: [{ extend: 'csv', text: 'Download CSV' }],
                     pageLength: 25
                 });

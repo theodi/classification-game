@@ -1,0 +1,46 @@
+<%- include('../../partials/header') %>
+<section class="content-block white">
+  <div class="container">
+    <%- include('../../partials/breadcrumbs', {
+      crumbs: [
+        { label: 'Schools', href: '/schools' },
+        { label: typeof schoolName !== 'undefined' ? schoolName : 'School', href: '/schools/' + id },
+        { label: typeof sessionName !== 'undefined' ? sessionName : 'Session', href: '/schools/' + id + '/sessions/' + sessionId },
+        { label: 'Add group submission' }
+      ]
+    }) %>
+    <div class="page-title"><h1>Add group submission</h1></div>
+    <p id="submit-message" class="message"></p>
+
+    <section class="page-panel">
+      <h2>Team</h2>
+      <form id="team-form" class="detail-form" onsubmit="return false;">
+        <label for="team-name">Team name</label>
+        <input id="team-name" type="text" maxlength="80" required placeholder="Team name or first names only">
+        <label for="written-confidence">Written confidence (%)</label>
+        <input id="written-confidence" type="number" min="0" max="100" step="1">
+      </form>
+    </section>
+
+    <section class="page-panel">
+      <h2>Decision tree</h2>
+      <p>Build the tree up to three levels deep. Choose a feature and threshold at each split, then New York, San Francisco, or split again.</p>
+      <div id="tree-builder" class="tree-builder"></div>
+      <p id="check-message" class="message"></p>
+      <div class="form-actions stack-row">
+        <button type="button" id="load-sample">Load sample tree</button>
+        <button type="button" id="check-tree">Check tree</button>
+        <button type="button" id="save-tree">Save and evaluate</button>
+        <a class="btn btn-secondary" href="/schools/<%= id %>/sessions/<%= sessionId %>">Cancel</a>
+      </div>
+    </section>
+  </div>
+</section>
+<script>
+  window.SCHOOL_ID = '<%= id %>';
+  window.SESSION_ID = '<%= sessionId %>';
+  window.EVAL_SET_ID = <%- JSON.stringify(typeof evalSetId !== 'undefined' ? evalSetId : '') %>;
+</script>
+<script src="/js/tree-score.js"></script>
+<script src="/js/session-submit.js"></script>
+<%- include('../../partials/footer') %>

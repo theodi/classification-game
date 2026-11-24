@@ -38,8 +38,8 @@ function register(app, deps) {
       return res.status(400).json({ error: 'Enter a valid email address' });
     }
     try {
-      const message = await accounts.requestCode(dbo, email);
-      return res.status(202).json({ message: message });
+      const result = await accounts.requestCode(dbo, email);
+      return res.status(202).json(result);
     } catch (error) {
       if (error.code === 'NO_MAIL') {
         return res.status(503).json({ error: 'Email is not configured' });
@@ -55,7 +55,15 @@ function register(app, deps) {
     if (!email || !/^\d{6}$/.test(code)) {
       return res.status(401).json({ error: 'That code is not valid' });
     }
-    const account = await accounts.checkCode(dbo, email, code);
+    let account;
+    try {
+      account = await accounts.checkCode(dbo, email, code);
+    } catch (error) {
+      if (error.code === 'SCHOOL_EXPIRED') {
+        return res.status(403).json({ error: error.message });
+      }
+      throw error;
+    }
     if (!account) {
       return res.status(401).json({ error: 'That code is not valid' });
     }
@@ -63,11 +71,7 @@ function register(app, deps) {
       if (err) {
         return res.status(500).json({ error: 'Could not start the session' });
       }
-      req.session.account = {
-        id: String(account._id),
-        email: account.email,
-        type: account.type
-      };
+      req.session.account = accounts.sessionAccount(account);
       req.session.save(function(saveErr) {
         if (saveErr) {
           return res.status(500).json({ error: 'Could not start the session' });

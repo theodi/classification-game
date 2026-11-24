@@ -1,144 +1,74 @@
 <%- include('../../partials/header') %>
-<link rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.12.1/css/jquery.dataTables.css">
-<link rel="stylesheet" type="text/css" href="//cdn.datatables.net/responsive/2.3.0/css/responsive.dataTables.min.css">
-<link rel="stylesheet" type="text/css" href="//cdn.datatables.net/buttons/2.2.3/css/buttons.dataTables.min.css"/>
-<script type="text/javascript" charset="utf8" src="//cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
-<script type="text/javascript" charset="utf8" src="//cdn.datatables.net/responsive/2.3.0/js/dataTables.responsive.min.js"></script>
-<script type="text/javascript" charset="utf8" src="//cdn.datatables.net/buttons/2.2.3/js/dataTables.buttons.min.js"></script>
-<script type="text/javascript" charset="utf8" src="//cdn.datatables.net/buttons/2.2.3/js/buttons.colVis.min.js"></script>
-<script type="text/javascript" src="//cdn.datatables.net/buttons/2.2.3/js/buttons.html5.min.js"></script>
-<script type="text/javascript" src="//cdn.datatables.net/buttons/2.2.3/js/buttons.print.min.js"></script>
-<div class="container box">
-    <div class="jumbotron text-center text-primary">
-        <h1 id="title"><span class="fa fa-lock"></span>Sessions for leaderboard <span id="leaderboard-name"><%= id  %></span></h1>
-        <a href="/leaderboard/<%= id %>/session/create"><button>Create New Session</button></a>
-        <h2 style="color:red;" id="message"><%= msg %></h2>
-        <table id="table" class="display responsive wrap" cellspacing="0" width="100%">
+<section class="content-block white">
+  <div class="container">
+    <div class="page-title"><h1>Sessions — <span id="school-name"><%= typeof schoolName !== 'undefined' ? schoolName : id %></span></h1></div>
+    <p class="stack-row">
+      <a class="btn" href="/schools/<%= id %>#sessions-section">Back to school</a>
+      <a class="btn" href="/schools/<%= id %>/results">School leaderboard</a>
+    </p>
+    <p id="message" class="message"><%= typeof msg !== 'undefined' ? msg : '' %></p>
+    <section class="page-panel">
+      <table class="admin-table" id="table">
         <thead>
-            <tr>
-                <th>Name</th>
-                <th>Start date</th>
-                <th>End data</th>
-                <th>Tutor mode</th>
-                <th>Results</th>
-                <th>Game link</th>
-                <th>Leaderboard</th>
-                <th>Edit</th>
-                <th>Delete</th>
-            </tr>
+          <tr>
+            <th>Name</th>
+            <th>Created</th>
+            <th>Results</th>
+          </tr>
         </thead>
-        <tbody id="table_body">
-
-        </tbody>
-        </table>
-    </div>
-</div>
+        <tbody id="table_body"></tbody>
+      </table>
+    </section>
+  </div>
+</section>
 <script>
-    function addToRow(row,value) {
-        var td = document.createElement('td');
-        td.innerHTML = value;
-        row.append(td);
-    }
-    function addToRowLink(row,link,value) {
-        var td = document.createElement('td');
-        var a = document.createElement('a');
-        a.setAttribute('href', link);
-        a.innerHTML = value;
-        td.append(a)
-        row.append(td);
-    }
-    function addArrayToRow(row,array) {
-        var output = "";
-        for(var i=0;i<array.length;i++) {
-            if (i>0) {
-                output += ", ";
-            }
-            output += array[i];
+var schoolId = '<%= id %>';
+
+fetch('/schools/' + schoolId, { headers: { 'Accept': 'application/json' } })
+  .then(function(r) { return r.json(); })
+  .then(function(school) {
+    document.getElementById('school-name').textContent = school.name;
+  });
+
+fetch('/schools/' + schoolId + '/sessions', { headers: { 'Accept': 'application/json' } })
+  .then(function(r) { return r.json(); })
+  .then(function(rows) {
+    return Promise.all(rows.map(function(session) {
+      return fetch('/schools/' + schoolId + '/sessions/' + session._id + '/results', {
+        headers: { 'Accept': 'application/json' }
+      }).then(function(r) { return r.json(); }).then(function(results) {
+        session._resultCount = results.length;
+        return session;
+      });
+    }));
+  })
+  .then(function(rows) {
+    var body = document.getElementById('table_body');
+    body.innerHTML = '';
+    rows.forEach(function(session) {
+      var tr = document.createElement('tr');
+      tr.className = 'clickable-row';
+      tr.dataset.href = '/schools/' + schoolId + '/sessions/' + session._id;
+      var created = '—';
+      if (session.createdAt) {
+        var date = new Date(session.createdAt);
+        if (!Number.isNaN(date.getTime())) {
+          created = date.toISOString().slice(0, 10);
         }
-        addToRow(row,output);
-    }
-    function addDeleteLink(row,link,leaderboardId,sessionId,value) {
-        var td = document.createElement('td');
-        var a = document.createElement('a');
-        a.setAttribute('href', '#');
-        a.setAttribute('onClick','processDelete("'+link+'","'+leaderboardId+'","'+sessionId+'");')
-        a.innerHTML = value;
-        td.append(a)
-        row.append(td);
-    }
-    function addCopyLink(row,link,value) {
-        var td = document.createElement('td');
-        var a = document.createElement('a');
-        a.setAttribute('href', '#');
-        a.setAttribute('onClick','copyText("'+link+'");')
-        a.innerHTML = value;
-        td.append(a)
-        row.append(td);
-    }
-    function copyText(text) {
-      navigator.clipboard.writeText(text);
-      alert("Copied the text: " + text);
-    }
-
-    function processDelete(link,leaderboardId,sessionId) {
-        $.getJSON('/leaderboard/'+leaderboardId+'/'+sessionId+'/results', function(data) {
-            if (data.length > 0) {
-                alert("Cannot delete session with results");
-            } else {
-                $.ajax({
-                    url: link,
-                    type: 'DELETE',
-                    success: function(result) {
-                        alert('Session deleted');
-                        location.reload();
-                    }
-                });
-            }
-        });
-    }
-    function getResponses(leaderboardId,sessionId) {
-        $.getJSON('/leaderboard/'+leaderboardId+'/'+sessionId+'/results', function(data) {
-            document.getElementById('responses_'+sessionId).innerHTML = data.length;
-        });
-    }
-    $(document).ready( function () {
-        $.getJSON('/leaderboard/<%= id %>', function(data) {
-            document.getElementById('leaderboard-name').innerHTML = data.name;
-        });
-        $.getJSON('/leaderboard/<%= id %>/sessions', function(data) {
-            for (var i=0;i<data.length;i++) {
-                var row = document.createElement('tr');
-                addToRow(row,data[i].name);
-                addToRow(row,data[i].startTime);
-                addToRow(row,data[i].endTime);
-                if (!data[i].tutorMode) {
-                    data[i].tutorMode = "off";
-                }
-                addToRow(row,data[i].tutorMode);
-                //addToRow(row,data[i].timeLimit);
-                var td = document.createElement('td');
-                td.setAttribute('id','responses_'+data[i]._id);
-                td.innerHTML = "";
-                row.append(td);
-                getResponses("<%= id %>",data[i]._id,);
-                addToRowLink(row,"/game/" + data[i]._id,"Copy");
-                addToRowLink(row,"/leaderboard/<%= id %>/" + data[i]._id,"Leaderboard");
-                addToRowLink(row,"/leaderboard/<%= id %>/" + data[i]._id + "/edit","Edit");
-                addDeleteLink(row,"/leaderboard/<%= id %>/" + data[i]._id,"<%= id %>",data[i]._id,"Delete");
-                if (data[i].name) {
-                    document.getElementById('table_body').append(row);
-                }
-            }
-            $('#table').DataTable({
-                dom: 'Bfrtip',
-                responsive: true,
-                pageLength: 25,
-                buttons: [
-                   'copy', 'excel', 'csv'
-                ]
-            });
-        });
-
+      }
+      tr.innerHTML =
+        '<td>' + (session.name || '') + '</td>' +
+        '<td>' + created + '</td>' +
+        '<td>' + session._resultCount + '</td>';
+      body.appendChild(tr);
     });
+    initAdminTable('#table', { order: [[1, 'desc']] });
+    $('#table tbody').on('click', 'tr.clickable-row', function() {
+      var href = $(this).data('href');
+      if (href) {
+        window.location = href;
+      }
+    });
+  });
 </script>
 <%- include('../../partials/footer') %>

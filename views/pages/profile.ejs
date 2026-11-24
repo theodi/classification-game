@@ -1,14 +1,20 @@
 <%- include('../partials/header') %>
-<div class="container box">
-  <h1>Profile</h1>
-  <p><strong>Email</strong>: <%= user.email %></p>
-  <p><strong>Account type</strong>: <%= user.type %></p>
-  <p><a href="/play">Play the game</a></p>
-  <% if (user.type === 'teacher' || user.type === 'admin') { %>
-    <p><a href="/leaderboards">Leaderboards</a></p>
-  <% } %>
-  <% if (user.type === 'admin') { %>
-    <p><a href="/accounts">Approve accounts</a></p>
-  <% } %>
-</div>
+<section class="content-block white">
+  <div class="container">
+    <%- include('../partials/breadcrumbs', {
+      crumbs: [{ label: 'Profile' }]
+    }) %>
+    <div class="page-title"><h1>Profile</h1></div>
+    <dl class="detail-list">
+      <dt>Email</dt><dd><%= user.email %></dd>
+      <dt>Account type</dt><dd><%= user.type %></dd>
+      <% if (user.schoolId) { %>
+        <dt>School</dt><dd><a href="/schools/<%= user.schoolId %>">Open school</a></dd>
+      <% } %>
+    </dl>
+    <% if (user.type === 'selfpaced') { %>
+      <p><a href="/play">Play the game</a></p>
+    <% } %>
+  </div>
+</section>
 <%- include('../partials/footer') %>

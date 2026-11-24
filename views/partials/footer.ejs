@@ -1,23 +1,32 @@
-<!-- views/partials/footer.ejs -->
-</div>
-<footer id='footer'>
-	<div class='container'>
-		<div class='span8 footer-content'>
-			<h1><a href='http://www.theodi.org'>Open Data Institute</a></h1>
-			<p><a href='http://www.openstreetmap.org/?lat=51.534780900551354&amp;lon=-0.12180447578430176&amp;zoom=16&amp;layers=T&amp;mlat=51.53478&amp;mlon=-0.12180'>Open Data Institute</a><span>, 5th Floor, Kings Place, 90 York Way, London N1 9AG</span></p>
-			<p><a href='mailto:info@theodi.org'>info@theodi.org</a> · Company <a href='http://opencorporates.com/companies/gb/08030289'>08030289</a>	· <span>VAT</span> <span>143 7796 80</span></p>
-			<p>Housing data from R2D3, "A Visual Introduction to Machine Learning" by Stephanie Yee and Tony Chu (<a href="http://www.r2d3.us">http://www.r2d3.us</a>), licensed CC BY-NC-SA 4.0. Selected, reduced to five features and arranged into card sets by the Open Data Institute.</p>
-		</div>
-		<div class='span4 footer-nav'>
-			<nav>
-				<ul class='pull-right'>
-					<li><a target="_blank" href="http://www.theodi.org/terms-of-use">Terms of use</a></li>
-					<li><a target="_blank" href="http://www.theodi.org/about">About</a></li>
-					<li><a target="_blank" href="http://www.theodi.org/contact">Get in touch</a></li>
-				</ul>
-			</nav>
-		</div>
-	</div>
+</main>
+<footer class="footer">
+  <div class="container footer-grid">
+    <div class="column">
+      <span class="odi-logo">
+        <svg viewBox="0 0 77.1 32.3" preserveAspectRatio="xMinYMin" xml:space="preserve" aria-hidden="true">
+          <path d="M77 .4v31.5H62V21.4c-2 6.5-8 10.5-15.8 10.5H32.1V21.5c-2.2 6.2-8.3 10.7-15.4 10.7C7.6 32.2.3 25 .3 16.2S7.6.2 16.7.2c7.1 0 13.2 4.5 15.4 10.7V.4h14.1C54 .4 60 4.4 62 10.9V.4h15z"></path>
+        </svg>
+      </span>
+      <address class="footer__address">
+        Open Data Institute,<br>
+        4th Floor, Kings Place, 90 York Way, London N1 9AG
+      </address>
+      <p>© The Open Data Institute. <%= new Date().getFullYear() %></p>
+      <p class="small">Housing data from R2D3, licensed CC BY-NC-SA 4.0.</p>
+    </div>
+    <div class="column">
+      <h3 class="footer__section-title">Classification Game</h3>
+      <ul>
+        <li><a href="/help">Help</a></li>
+        <li><a href="/login">Sign in</a></li>
+      </ul>
+      <h3 class="footer__section-title">Open Data Institute</h3>
+      <ul>
+        <li><a href="https://theodi.org/our-policies/" target="_blank" rel="noopener noreferrer">Our policies</a></li>
+        <li><a href="https://theodi.org/about-the-odi/contact-us/" target="_blank" rel="noopener noreferrer">Contact us</a></li>
+      </ul>
+    </div>
+  </div>
 </footer>
 </body>
 </html>

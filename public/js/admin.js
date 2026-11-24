@@ -45,6 +45,7 @@ function loadAdmin() {
       cell.appendChild(reject);
       body.appendChild(tr);
     });
+    initAdminTable('#requests', { order: [[0, 'asc']], columnDefs: [{ orderable: false, targets: 3 }] });
   }).catch(function(error) { message(error.message); });
 
   jsonFetch('/accounts').then(function(rows) {
@@ -52,7 +53,7 @@ function loadAdmin() {
     body.innerHTML = '';
     rows.forEach(function(row) {
       var tr = document.createElement('tr');
-      tr.innerHTML = '<td>' + row.email + '</td><td><select class="type"></select></td><td><select class="status"></select></td><td><button class="save">Save</button></td>';
+      tr.innerHTML = '<td>' + row.email + '</td><td><select class="type"></select></td><td><select class="status"></select></td><td class="school"></td><td><button class="save">Save</button></td>';
       var type = tr.querySelector('.type');
       ['selfpaced', 'teacher', 'admin'].forEach(function(value) {
         var option = document.createElement('option');
@@ -69,6 +70,7 @@ function loadAdmin() {
         if (value === row.status) option.selected = true;
         status.appendChild(option);
       });
+      tr.querySelector('.school').textContent = row.schoolId || '—';
       tr.querySelector('.save').addEventListener('click', function() {
         jsonFetch('/accounts/' + row.id, {
           method: 'PATCH',
@@ -77,6 +79,10 @@ function loadAdmin() {
         }).then(function() { message('Saved ' + row.email); }).catch(function(error) { message(error.message); });
       });
       body.appendChild(tr);
+    });
+    initAdminTable('#accounts', {
+      order: [[0, 'asc']],
+      columnDefs: [{ orderable: false, targets: [1, 2, 4] }]
     });
   }).catch(function(error) { message(error.message); });
 }

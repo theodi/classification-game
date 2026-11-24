@@ -396,7 +396,9 @@ function renderLeaderboard(data,prefix) {
   		$('#'+prefix+'-leaderboard-body').append(row);
   	}
   }
-  $('#'+prefix+'-leaderboard').DataTable();
+  $('#'+prefix+'-leaderboard').DataTable({
+    dom: '<"dt-top"f>rt<"dt-bottom"<"dt-length"l><"dt-info"i><"dt-paginate"p>>'
+  });
 }
 
 function loadLeaderboards() {
@@ -406,13 +408,13 @@ function loadLeaderboards() {
 	$('#session-leaderboard-body').html("");
 	$('#organisation-leaderboard-body').html("");
 	$('#public-leaderboard-body').html("");
-	$.getJSON('/leaderboard/' + leaderboardId + '/' + sessionId + '/results', function(data) {
+	$.getJSON('/schools/' + leaderboardId + '/sessions/' + sessionId + '/results', function(data) {
 		renderLeaderboard(data,"session");
   });
-  $.getJSON('/leaderboard/' + leaderboardId + '/results', function(data) {
+  $.getJSON('/schools/' + leaderboardId + '/results', function(data) {
 		renderLeaderboard(data,"organisation");
   });
-  $.getJSON('/leaderboard/all/results', function(data) {
+  $.getJSON('/schools/' + leaderboardId + '/public-results', function(data) {
 		renderLeaderboard(data,"public");
   });
 }
@@ -448,6 +450,59 @@ function renderRecordingSheet() {
         player_name = presetTeam;
     }
     document.getElementById('sheet-rows').innerHTML = sheetRow('');
+    hydrateRecordingSheetFromStorage();
+}
+
+function hydrateRecordingSheetFromStorage() {
+    if (typeof sessionId === 'undefined' || !sessionId) {
+        return;
+    }
+    var raw = sessionStorage.getItem('entrySheet:' + sessionId);
+    if (!raw) {
+        return;
+    }
+    var payload;
+    try {
+        payload = JSON.parse(raw);
+    } catch (error) {
+        return;
+    }
+    sessionStorage.removeItem('entrySheet:' + sessionId);
+    if (payload.team) {
+        var team = document.getElementById('sheet-team');
+        if (team) {
+            team.value = payload.team;
+        }
+        player_name = payload.team;
+        $('#playerWelcome').html('Welcome ' + player_name);
+        $('#playerWelcome').css('display', 'inline');
+    }
+    if (payload.writtenConfidence !== undefined && payload.writtenConfidence !== null && payload.writtenConfidence !== '') {
+        var confidence = document.getElementById('written-confidence');
+        if (confidence) {
+            confidence.value = payload.writtenConfidence;
+        }
+    }
+    (payload.rows || []).forEach(function(row) {
+        ensureSheetRow(row.position || '');
+        var el = document.querySelector('.sheet-row[data-pos="' + (row.position || '') + '"]');
+        if (!el) {
+            return;
+        }
+        el.querySelector('.sheet-feature').value = row.feature || '';
+        el.querySelector('.sheet-threshold').value = row.threshold || '';
+        el.querySelector('.sheet-left').value = row.left || '';
+        el.querySelector('.sheet-right').value = row.right || '';
+        if (row.left === 'split') {
+            ensureSheetRow((row.position || '') + 'l');
+        }
+        if (row.right === 'split') {
+            ensureSheetRow((row.position || '') + 'r');
+        }
+    });
+    if (typeof applyRecordingSheet === 'function') {
+        applyRecordingSheet();
+    }
 }
 
 function sheetRow(position) {

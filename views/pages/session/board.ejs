@@ -1,22 +1,30 @@
 <%- include('../../partials/header') %>
 <style>
-  body { background: #111; color: #fff; }
-  main { padding: 2rem; }
-  h1 { font-size: 4rem; margin: 0 0 1rem; }
-  table { width: 100%; border-collapse: collapse; font-size: 2.4rem; }
-  th, td { text-align: left; padding: 0.6rem 0.4rem; border-bottom: 1px solid #444; }
-  a { color: #fff; }
+  .class-board { background: #111; color: #fff; padding: 2rem; }
+  .class-board h1 { font-size: 3rem; margin: 0 0 1rem; color: #fff; }
+  .class-board table { width: 100%; border-collapse: collapse; font-size: 2rem; }
+  .class-board th, .class-board td { text-align: left; padding: 0.6rem 0.4rem; border-bottom: 1px solid #444; }
+  .class-board a { color: #fff; }
+  .class-board .breadcrumbs a { color: #fff; }
+  .class-board .breadcrumbs span { color: #ccc; }
 </style>
-<main>
+<section class="class-board">
+  <%- include('../../partials/breadcrumbs', {
+    crumbs: [
+      { label: 'Schools', href: '/schools' },
+      { label: typeof schoolName !== 'undefined' ? schoolName : 'School', href: '/schools/' + id },
+      { label: 'Session', href: '/schools/' + id + '/sessions/' + sessionId },
+      { label: 'Class board' }
+    ]
+  }) %>
   <h1>Class board</h1>
-  <p><a href="/leaderboard/<%= id %>/<%= sessionId %>">Back to the session</a></p>
   <table>
     <thead><tr><th>Team</th><th>Total</th><th>Training</th><th>Gap</th></tr></thead>
     <tbody id="board"></tbody>
   </table>
-</main>
+</section>
 <script>
-  var resultsUrl = '/leaderboard/<%= id %>/<%= sessionId %>/results';
+  var resultsUrl = '/schools/<%= id %>/sessions/<%= sessionId %>/results';
   function gap(result) {
     if (!result.result || !result.confidences) return '';
     var scores = [1, 2, 3, 4].map(function(n) {

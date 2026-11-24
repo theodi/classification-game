@@ -1,0 +1,20 @@
+<%- include('../../partials/header') %>
+<section class="content-block white">
+  <div class="container">
+    <div class="page-title"><h1>Teachers</h1></div>
+    <p class="stack-row"><a href="/schools/<%= schoolId %>">Back to school</a></p>
+    <form id="add-teacher-form" class="stack-row add-form">
+      <label for="email">Add teacher email</label>
+      <input id="email" type="email" required placeholder="teacher@school.edu">
+      <button type="submit">Add teacher</button>
+    </form>
+    <p id="teachers-message" class="message"></p>
+    <table class="admin-table" id="teachers-table">
+      <thead><tr><th>Email</th><th>Status</th><th></th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</section>
+<script>window.SCHOOL_ID = '<%= schoolId %>';</script>
+<script src="/js/teachers.js"></script>
+<%- include('../../partials/footer') %>

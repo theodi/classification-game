@@ -1,0 +1,50 @@
+<%- include('../../partials/header') %>
+<section class="content-block white">
+  <div class="container">
+    <%- include('../../partials/breadcrumbs', {
+      crumbs: [
+        { label: 'Schools', href: '/schools' },
+        { label: 'Create school' }
+      ]
+    }) %>
+    <div class="page-title"><h1>Create school</h1></div>
+    <form id="school-form" class="detail-form">
+      <label for="name">School name</label>
+      <input id="name" name="name" required>
+      <label for="domain">Email domain</label>
+      <input id="domain" name="domain" placeholder="school.edu" required>
+      <label for="expiresAt">Expiry date</label>
+      <input id="expiresAt" name="expiresAt" type="date" required>
+      <p>Teacher and student emails must use this domain. Only listed teachers get teacher access. Access ends at the end of the expiry date (UTC).</p>
+      <div class="form-actions">
+        <button type="submit">Create school</button>
+      </div>
+    </form>
+    <p id="school-message" class="message"></p>
+  </div>
+</section>
+<script>
+document.getElementById('school-form').addEventListener('submit', function(event) {
+  event.preventDefault();
+  fetch('/schools', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+    body: JSON.stringify({
+      name: document.getElementById('name').value,
+      domain: document.getElementById('domain').value,
+      expiresAt: document.getElementById('expiresAt').value
+    })
+  }).then(function(response) {
+    return response.json().then(function(body) {
+      return { ok: response.ok, body: body };
+    });
+  }).then(function(result) {
+    if (!result.ok) {
+      document.getElementById('school-message').textContent = result.body.error || 'Could not create school';
+      return;
+    }
+    window.location = '/schools/' + result.body.id;
+  });
+});
+</script>
+<%- include('../../partials/footer') %>

@@ -10,7 +10,12 @@ document.getElementById('email-form').addEventListener('submit', function(event)
       return { ok: response.ok, body: body };
     });
   }).then(function(result) {
-    document.getElementById('login-message').textContent = result.body.message || result.body.error || 'Something went wrong';
+    var message = result.body.message || result.body.error || 'Something went wrong';
+    if (result.ok && result.body.developmentCode) {
+      message = 'Development code: ' + result.body.developmentCode;
+      document.getElementById('code').value = result.body.developmentCode;
+    }
+    document.getElementById('login-message').textContent = message;
     if (result.ok) {
       document.getElementById('code-form').hidden = false;
       document.getElementById('code-form').dataset.email = email;

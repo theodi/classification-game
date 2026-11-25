@@ -341,6 +341,30 @@ function returnCardsInstant(cardset, boxid, color) {
     });
 }
 
+function clearNonEvaluationCardsFromTree() {
+    if (typeof cards !== 'undefined' && cards.trainingSet && typeof returnCardsInstant === 'function') {
+        returnCardsInstant(cards.trainingSet, 'training-set', 'b');
+    }
+    if (typeof cards !== 'undefined' && cards.testSet) {
+        clearRendered(cards.testSet, 'p');
+        cards.testSet = [];
+    }
+    document.querySelectorAll('.game-leaf-dropzone card').forEach(function(cardEl) {
+        var id = cardEl.id || '';
+        if (id.charAt(0) === 'r') {
+            return;
+        }
+        var trayId = id.charAt(0) === 'p' ? 'test-set' : 'training-set';
+        var tray = document.getElementById(trayId);
+        if (tray) {
+            cardEl.removeAttribute('style');
+            tray.appendChild(cardEl);
+        } else {
+            cardEl.remove();
+        }
+    });
+}
+
 function currentTreeModel() {
     if (typeof liveGameTree === 'function') {
         return liveGameTree();
@@ -382,7 +406,7 @@ function assignBoxes(cardset) {
     });
 }
 
-function sortCards(cardset, color, number) {
+function sortCards(cardset, color, number, onSettled) {
     if ((color === 'p' || color === 'r') &&
         window.gameTree && typeof window.gameTree.showAllLeafCards === 'function') {
         window.gameTree.showAllLeafCards();
@@ -398,12 +422,15 @@ function sortCards(cardset, color, number) {
     });
     var settleMs = interval + 700;
     if (color === 'b') {
-        // Wait until the last card finishes its flight; do not auto-end leaves.
+        // Wait until the last card finishes its flight, then show/fill leaf predictions.
         setTimeout(function() {
             modelHasRun = true;
-            getPredictions(cardset, true, { applyToTree: false });
+            getPredictions(cardset, true, { applyToTree: true });
             if (typeof showTrainingRunSummary === 'function') {
                 showTrainingRunSummary(cardset);
+            }
+            if (typeof onSettled === 'function') {
+                onSettled();
             }
         }, settleMs);
     } else if (color === 'p') {
@@ -411,8 +438,14 @@ function sortCards(cardset, color, number) {
             if (typeof showTestRunSummary === 'function') {
                 showTestRunSummary(cardset);
             }
+            if (typeof onSettled === 'function') {
+                onSettled();
+            }
         }, settleMs);
+    } else if (typeof onSettled === 'function') {
+        setTimeout(onSettled, settleMs);
     }
+    return settleMs;
 }
 
 function branchLabel(path) {
@@ -800,7 +833,7 @@ function getPredictions(cardset, keepExisting, options) {
             prediction = treeCity;
         }
         if (!applyToTree && !treeCity) {
-            // Keep vote counts, but do not invent a leaf prediction until End branch.
+            // Keep vote counts; leave empty predictions unset until the user chooses.
             if (!existing || existing === '?') {
                 prediction = '';
             }
@@ -957,19 +990,45 @@ function scoreRun(cardset, number) {
     }, 10, 0, -20);
 }
 
-function paintRun(number) {
+function paintUserRun(number, level) {
     var run = results[number];
-    $('#result' + number + '-user').html(run.player + '<br/>' + run.playerDiff + '<br/><b>' + (run.player - run.playerDiff) + '</b>');
+    if (!run) return;
+    var depth = level || 3;
+    var html = '';
+    if (depth >= 1 && (run.player || run.player === 0)) {
+        html += String(run.player);
+    }
+    if (depth >= 2 && (run.playerDiff || run.playerDiff === 0)) {
+        html += (html ? '<br/>' : '') + String(run.playerDiff);
+    }
+    if (depth >= 3 && (run.player || run.player === 0) && (run.playerDiff || run.playerDiff === 0)) {
+        html += (html ? '<br/>' : '') + '<b>' + (run.player - run.playerDiff) + '</b>';
+    }
+    $('#result' + number + '-user').html(html);
+}
+
+function paintRun(number, options) {
+    options = options || {};
+    var run = results[number];
+    if (!run) return;
+    var userLevel = options.userLevel || 3;
+    paintUserRun(number, userLevel);
+    if (options.skipOpponents) {
+        return;
+    }
     if (run.hybridLabel) {
         $('#result' + number + '-hybrid').html(run.hybridLabel);
     }
     if (run.machineLabel) {
         $('#result' + number + '-stoopid-ai').html(run.machineLabel);
     }
-    $('#result' + number + '-score').html('<b>' + run.score + '</b>');
+    if (!options.skipTotal) {
+        $('#result' + number + '-score').html('<b>' + run.score + '</b>');
+    }
 }
 
-function showRun(cardset, number) {
+function showRun(cardset, number, onSettled) {
+    clearNonEvaluationCardsFromTree();
     clearRendered(cards.evaluationSet, 'r');
     cards.evaluationSet = cardset;
     cardset.forEach(function(card) {
@@ -977,8 +1036,42 @@ function showRun(cardset, number) {
         rCount += 1;
         rDone[card.index] = true;
     });
-    paintRun(number);
-    sortCards(cardset, 'r', number);
+    sortCards(cardset, 'r', number, function() {
+        paintRun(number);
+        if (typeof onSettled === 'function') {
+            onSettled();
+        }
+    });
+}
+
+function scoreGuideBand(score) {
+    var value = Number(score) || 0;
+    if (value >= 500) return 'incredible';
+    if (value >= 450) return 'expert';
+    if (value >= 400) return 'solid';
+    if (value >= 300) return 'average';
+    return 'trying';
+}
+
+function highlightScoreGuide(score) {
+    var guide = document.getElementById('game-score-guide');
+    if (!guide) return;
+    var band = scoreGuideBand(score);
+    guide.querySelectorAll('[data-score-band]').forEach(function(item) {
+        item.classList.toggle('is-active', item.getAttribute('data-score-band') === band);
+    });
+}
+
+function setEvaluationStatusMessage(html) {
+    var status = document.getElementById('evaluationStatus');
+    if (!status) return;
+    if (html) {
+        status.innerHTML = html;
+        status.classList.remove('hidden');
+    } else {
+        status.innerHTML = '';
+        status.classList.add('hidden');
+    }
 }
 
 function finishEvaluation() {
@@ -987,29 +1080,83 @@ function finishEvaluation() {
     $('#result3-score').html('<b>' + results[3].score + '</b>');
     $('#result4-score').html('<b>' + results[4].score + '</b>');
     results.score = confidences.player + results[1].score + results[2].score + results[3].score + results[4].score;
-    var guide = '<table class="results" style="font-size: 0.8em; max-width: 66%; margin-left: auto; margin-right: auto;"><tr><td>500+</td><td>Incredible!</td></tr><tr><td>450 - 500</td><td>Expert</td></tr><tr><td>400 - 450</td><td>Solid effort</td></tr><tr><td>300 - 400</td><td>Average</td></tr><tr><td>0 - 300</td><td>Points for trying (did you overfit?)</td></tr></table>';
-    $('#evaluationStatus').html('Your score: ' + results.score + '<br/><br/>' + guide);
-    if (typeof replayOnly === 'undefined' || !replayOnly) {
-        saveResult();
+    highlightScoreGuide(results.score);
+    if (typeof evalFlowPhase !== 'undefined') {
+        evalFlowPhase = 'done';
     }
-    if (typeof loadLeaderboards === 'function' && leaderboardId) {
+    if (typeof setEvalFlowChrome === 'function') {
+        setEvalFlowChrome('done');
+    } else {
+        var primary = document.getElementById('play-primary-action');
+        var rerun = document.getElementById('rerunEvaluation');
+        var fresh = document.getElementById('newEvaluation');
+        if (primary) primary.classList.add('hidden');
+        if (rerun) rerun.classList.remove('hidden');
+        if (fresh) fresh.classList.add('hidden');
+        if (typeof updateEvalTutorialReplayButton === 'function') {
+            updateEvalTutorialReplayButton();
+        }
+        if (typeof updateEvalActionButtons === 'function') {
+            updateEvalActionButtons();
+        }
+    }
+    setEvaluationStatusMessage('Your score: <strong>' + results.score + '</strong>');
+    if (typeof replayOnly === 'undefined' || !replayOnly) {
+        if (typeof saveResult === 'function') {
+            saveResult();
+        }
+        if (typeof snapshotEvaluatedTree === 'function') {
+            snapshotEvaluatedTree();
+        }
+    }
+    if (typeof clearSessionPendingTeam === 'function') {
+        clearSessionPendingTeam();
+    }
+    if (typeof renderSessionLeaderboardFromLocal === 'function') {
+        renderSessionLeaderboardFromLocal();
+    }
+    if (typeof loadLeaderboards === 'function') {
         loadLeaderboards();
+    }
+    if (typeof updateEvalActionButtons === 'function') {
+        updateEvalActionButtons();
     }
 }
 
 function playRuns(runs, number) {
-    $('#evaluationStatus').html('Showing run ' + number);
-    showRun(runs[number - 1], number);
-    if (number < 4) {
-        setTimeout(function() {
-            playRuns(runs, number + 1);
-        }, 8000);
-    } else {
-        setTimeout(finishEvaluation, 6000);
-    }
+    setEvaluationStatusMessage('Showing run ' + number + '…');
+    showRun(runs[number - 1], number, function() {
+        var pauseMs = 2200;
+        if (number < 4) {
+            setTimeout(function() {
+                playRuns(runs, number + 1);
+            }, pauseMs);
+        } else {
+            setTimeout(finishEvaluation, pauseMs);
+        }
+    });
 }
 
 function autoEvaluate() {
+    if (typeof getEvalTeamName === 'function' && !getEvalTeamName()) {
+        if (typeof setEvalFlowChrome === 'function') {
+            setEvalFlowChrome('team');
+        }
+        alert('Enter a team name before running evaluation.');
+        return;
+    }
+    if (typeof setEvalTeamName === 'function' && typeof getEvalTeamName === 'function') {
+        setEvalTeamName(getEvalTeamName());
+    }
+    // Leaderboard-loaded trees, or same tree as last saved eval → replay only.
+    if (typeof leaderboardReplayOnly !== 'undefined' && leaderboardReplayOnly) {
+        replayOnly = true;
+    } else if (typeof hasCompletedEvaluation === 'function' &&
+        typeof hasTreeChangedSinceEvaluation === 'function' &&
+        hasCompletedEvaluation() &&
+        !hasTreeChangedSinceEvaluation()) {
+        replayOnly = true;
+    }
     if (typeof entryMode !== 'undefined' && entryMode && typeof applyRecordingSheet === 'function') {
         applyRecordingSheet();
     }
@@ -1032,13 +1179,22 @@ function autoEvaluate() {
         scoreRun(runCards, number);
         runs.push(runCards);
     }
-    var primary = document.getElementById('play-primary-action');
-    if (primary) {
-        primary.classList.add('hidden');
+    clearNonEvaluationCardsFromTree();
+    if (typeof setEvalResultsPending === 'function') {
+        setEvalResultsPending(false);
     }
-    var rerun = document.getElementById('rerunEvaluation');
-    if (rerun) {
-        rerun.classList.remove('hidden');
+    if (typeof setEvalFlowChrome === 'function') {
+        setEvalFlowChrome('running');
+    } else {
+        var primary = document.getElementById('play-primary-action');
+        var rerun = document.getElementById('rerunEvaluation');
+        var fresh = document.getElementById('newEvaluation');
+        if (primary) primary.classList.add('hidden');
+        if (rerun) rerun.classList.add('hidden');
+        if (fresh) fresh.classList.add('hidden');
+        if (typeof evalFlowPhase !== 'undefined') {
+            evalFlowPhase = 'running';
+        }
     }
     playRuns(runs, 1);
 }

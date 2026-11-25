@@ -95,6 +95,15 @@
         renderChart();
       }
       getRandomPurples(20);
+      try {
+        if (new URLSearchParams(window.location.search).get('resetEval') === '1' &&
+            typeof clearEvaluationProgress === 'function') {
+          clearEvaluationProgress();
+          if (window.history && window.history.replaceState) {
+            window.history.replaceState({}, document.title, window.location.pathname);
+          }
+        }
+      } catch (err) {}
       if (leaderboardId && !entryMode) {
         loadLeaderboardData();
       } else if (presetTeam) {
@@ -109,13 +118,11 @@
       }
       if (replayOnly && typeof setPlayMode === 'function') {
         setPlayMode('evaluation', { force: true });
-        var rerun = document.getElementById('rerunEvaluation');
-        var primary = document.getElementById('play-primary-action');
-        if (rerun) {
-          rerun.classList.remove('hidden');
+        if (typeof setEvalFlowChrome === 'function') {
+          setEvalFlowChrome('done');
         }
-        if (primary) {
-          primary.classList.add('hidden');
+        if (typeof updateEvalActionButtons === 'function') {
+          updateEvalActionButtons();
         }
       }
     });

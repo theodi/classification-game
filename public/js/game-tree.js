@@ -33,6 +33,9 @@
     if (typeof cards !== 'undefined' && cards.trainingSet && typeof updateConfidence === 'function') {
       updateConfidence(cards.trainingSet);
     }
+    if (typeof updateEvalActionButtons === 'function') {
+      updateEvalActionButtons();
+    }
   }
 
   function afterRender() {

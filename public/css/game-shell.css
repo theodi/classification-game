@@ -39,6 +39,8 @@ body.game-page .hidden {
 
 .game-main {
   flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
   min-width: 0;
   width: 100%;
   max-width: none;
@@ -55,11 +57,15 @@ body.game-page .hidden {
 }
 
 .game-main #footer {
-  margin-top: 2rem;
+  margin-top: auto;
   padding-top: 1rem;
   border-top: 1px solid var(--color-light-grey);
   font-size: 0.85rem;
   color: #667;
+}
+
+.game-main #footer p {
+  margin: 0;
 }
 
 /* Train / test / eval workspace: tree scrolls; deck floats over it */
@@ -148,7 +154,7 @@ body.game-page .hidden {
 /*
  * Leaf dropzones: top branch = 2-column stack; deeper leaves = single column.
  * Hover actions sit in a sibling overlay so cards stay nth-child 1..n.
- * Empty: End branch + Add branch. With cards: those two + Browse cluster.
+ * Empty: Add branch. With cards: Add branch + Browse cluster.
  */
 .game-leaf-slot {
   --card-stack-peek: 24px;
@@ -498,15 +504,27 @@ dialog.admin-modal.cluster-browse-modal {
 }
 
 .game-play-actions .flow-leaf-btn {
-  width: 9.5rem;
+  width: 11.5rem;
   max-width: 100%;
 }
 
 .game-eval-status {
-  margin: 0.35rem 0 0;
-  font-size: 0.85rem;
-  color: #445;
-  text-align: left;
+  margin: 0;
+  width: 100%;
+  color: #122;
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.game-eval-status.hidden {
+  display: none !important;
+}
+
+.game-eval-status strong {
+  color: var(--color-dark-blue, #072589);
+  font-size: 1.45rem;
 }
 
 
@@ -516,37 +534,432 @@ body.game-page.stage-evaluation .game-main {
   padding-top: 0.75rem;
 }
 
-/* Eval band: results + session LB above the tree */
-.game-eval-band {
+.game-eval-nav {
   display: none;
-  grid-template-columns: minmax(0, 1fr) minmax(220px, 280px);
-  gap: 1rem;
-  align-items: start;
+  width: 100%;
+  margin-bottom: 0.35rem;
+}
+
+body.game-page.stage-evaluation .game-eval-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.game-eval-back-btn {
+  margin: 0;
+  width: auto;
+  height: auto;
+  padding: 0.4rem 0.75rem;
+  background: var(--color-dark-blue, #072589) !important;
+  color: #fff !important;
+}
+
+.game-eval-replay-btn {
+  margin: 0 0 0 auto;
+  width: auto;
+  height: auto;
+  padding: 0.4rem 0.75rem;
+  background: #fff !important;
+  color: var(--color-dark-blue, #072589) !important;
+}
+
+.game-eval-replay-btn.hidden {
+  display: none !important;
+}
+
+.game-eval-flow {
+  display: none;
+  width: 100%;
+  margin-top: 0.35rem;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid #aeb9d4;
+  background: #f7f9fc;
+  box-sizing: border-box;
+}
+
+body.game-page.stage-evaluation .game-eval-flow:not(.hidden) {
+  display: block;
+}
+
+body.game-page.stage-evaluation .game-play-actions.is-flow-hidden {
+  display: none;
+}
+
+.game-eval-flow-step.hidden {
+  display: none !important;
+}
+
+.game-eval-flow-message {
+  margin: 0 0 0.55rem;
+  color: #222;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.game-eval-tutorial-message {
+  min-height: 4.5rem;
   margin: 0 0 0.75rem;
-  padding: 0.75rem 0 0.5rem;
-  border-bottom: 1px solid var(--color-light-grey, #c5c5c5);
+  color: #122;
+  font-size: 1.35rem;
+  font-weight: 600;
+  line-height: 1.45;
+  text-align: center;
+  opacity: 1;
+  transition: opacity 0.32s ease;
 }
 
-body.game-page.stage-evaluation .game-eval-band {
-  display: grid;
+.game-eval-tutorial-message.is-faded {
+  opacity: 0;
 }
 
+.game-eval-tutorial-actions {
+  justify-content: center;
+}
+
+.game-eval-team-message {
+  min-height: 0;
+  margin: 0 0 0.85rem;
+  color: #122;
+  font-size: 1.35rem;
+  font-weight: 600;
+  line-height: 1.45;
+  text-align: center;
+}
+
+.game-eval-team-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  width: 100%;
+}
+
+.game-eval-team-label {
+  display: block;
+  margin: 0;
+  color: var(--color-dark-blue, #072589);
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.game-eval-team-row,
+.game-eval-flow-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  align-items: center;
+}
+
+.game-eval-team-row {
+  justify-content: center;
+  width: 100%;
+  max-width: 28rem;
+}
+
+.game-eval-team-input {
+  flex: 1 1 12rem;
+  min-width: 10rem;
+  margin: 0;
+  padding: 0.55rem 0.7rem;
+  border: 2px solid var(--color-dark-blue, #072589);
+  background: #fff;
+  color: #222;
+  font-size: 1.1rem;
+  text-align: center;
+}
+
+.game-eval-flow-actions .flow-leaf-btn,
+.game-eval-team-row .flow-leaf-btn {
+  margin: 0;
+  width: auto;
+  height: auto;
+  padding: 0.45rem 0.85rem;
+}
+
+.game-eval-team-form .game-eval-flow-error {
+  text-align: center;
+}
+
+.game-eval-skip-btn {
+  background: #fff !important;
+  color: var(--color-dark-blue, #072589) !important;
+}
+
+.game-eval-flow-error {
+  margin: 0.45rem 0 0;
+  color: #9b1c1c;
+  font-size: 0.85rem;
+}
+
+.game-eval-flow-error.hidden {
+  display: none !important;
+}
+
+/* Evaluation scores live inside the left floating deck box */
 .game-eval-results {
+  display: none;
   min-width: 0;
-  overflow-x: auto;
+  margin-top: 0.65rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid #d5dbe8;
 }
 
-.game-eval-session-lb {
-  min-width: 0;
+body.game-page.stage-evaluation .game-eval-results {
+  display: block;
 }
 
-.game-eval-session-lb h3 {
-  margin: 0 0 0.4rem;
+body.game-page.stage-evaluation .game-eval-results.is-pending {
+  display: none;
+}
+
+.game-eval-score-table [data-eval-reveal]:not(.is-revealed) {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.game-eval-score-table [data-eval-reveal].is-revealed {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.35s ease;
+}
+
+.game-eval-score-table .is-eval-pulse {
+  animation: eval-pulse 1.1s ease-in-out 2;
+  outline: 2px solid var(--color-mid-blue, #6DF8FF);
+  outline-offset: -2px;
+  background: rgba(109, 248, 255, 0.22) !important;
+}
+
+.game-eval-score-table thead th.is-eval-pulse {
+  color: #fff !important;
+  background: var(--color-dark-blue, #072589) !important;
+  animation: eval-pulse-th 1.1s ease-in-out 2;
+  outline-color: var(--color-mid-blue, #6DF8FF);
+}
+
+@keyframes eval-pulse {
+  0%, 100% { background: rgba(109, 248, 255, 0.12); }
+  50% { background: rgba(109, 248, 255, 0.38); }
+}
+
+@keyframes eval-pulse-th {
+  0%, 100% { background: var(--color-dark-blue, #072589); filter: brightness(1); }
+  50% { background: #0a3ab5; filter: brightness(1.15); }
+}
+
+.game-eval-results-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.45rem;
+}
+
+.game-eval-results-title {
+  margin: 0;
   font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-dark-blue, #072589);
 }
 
-.game-session-lb-table {
+.game-eval-results-toolbar .flow-leaf-btn {
+  margin: 0;
+  width: auto;
+  height: auto;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.85rem;
+}
+
+.game-eval-results-scroll {
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.game-odi-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  color: #222;
+  font-size: 0.9rem;
+}
+
+.game-odi-table thead th {
+  background: var(--color-dark-blue, #072589);
+  color: #fff;
+  font-weight: 600;
+  text-align: left;
+  padding: 0.45rem 0.55rem;
+  border-bottom: 2px solid #04175a;
+  white-space: nowrap;
+}
+
+.game-odi-table tbody td {
+  padding: 0.4rem 0.55rem;
+  border-bottom: 1px solid #d5dbe8;
+  vertical-align: top;
+}
+
+.game-odi-table tbody tr:nth-child(even) {
+  background: #f4f6fb;
+}
+
+.game-odi-table tbody tr.user {
+  background: #e8eef8;
+  font-weight: 600;
+}
+
+.game-odi-table tbody tr.is-pending-score td:last-child {
+  color: #667;
+  letter-spacing: 0.04em;
+}
+
+.game-odi-table tbody tr:hover {
+  background: #e8eef8;
+}
+
+.game-session-lb-table tbody tr[data-result-id].is-loadable {
+  cursor: pointer;
+}
+
+.game-session-lb-table tbody tr[data-result-id].is-loadable:hover {
+  background: #dce6f8;
+}
+
+.game-session-lb-table tbody tr[data-result-id].is-loadable:focus {
+  outline: 2px solid var(--color-dark-blue, #072589);
+  outline-offset: -2px;
+}
+
+.game-eval-score-table th:nth-child(n+4),
+.game-eval-score-table td:nth-child(n+4),
+.game-session-lb-table th:last-child,
+.game-session-lb-table td:last-child {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.game-eval-detail {
+  color: #445;
   font-size: 0.8rem;
+  line-height: 1.35;
+  min-width: 11rem;
+}
+
+.game-eval-total-row td {
+  font-weight: 600;
+  background: #eef1f7 !important;
+}
+
+body.game-page.stage-evaluation .game-deck-stack-area {
+  display: none !important;
+}
+
+body.game-page.stage-evaluation .game-eval-results {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+
+.game-session-lb-float {
+  display: none;
+  position: absolute;
+  top: 0.25rem;
+  right: 0.25rem;
+  left: auto;
+  z-index: 40;
+  width: 300px;
+  min-width: 260px;
+  box-shadow: 0 8px 24px rgba(7, 37, 137, 0.16);
+  background: #fff;
+  box-sizing: border-box;
+  touch-action: none;
+}
+
+body.game-page.stage-evaluation .game-session-lb-float {
+  display: block;
+}
+
+.game-session-lb-float.is-dragging {
+  box-shadow: 0 12px 32px rgba(7, 37, 137, 0.22);
+  opacity: 0.97;
+  user-select: none;
+}
+
+.game-session-lb-panel {
+  padding: 0.65rem 0.75rem 0.85rem;
+  border: 1px solid #aeb9d4;
+  border-top: 0;
+  background: #fff;
+}
+
+.game-session-lb-panel h3 {
+  margin: 0 0 0.45rem;
+  font-size: 1rem;
+  color: var(--color-dark-blue, #072589);
+}
+
+.game-score-guide {
+  margin-top: 0.85rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #d5dbe8;
+}
+
+.game-score-guide-title {
+  margin: 0 0 0.45rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-dark-blue, #072589);
+}
+
+.game-score-guide-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.game-score-guide-list li {
+  display: grid;
+  grid-template-columns: 5.5rem 1fr;
+  gap: 0.45rem;
+  align-items: baseline;
+  padding: 0.35rem 0.45rem;
+  border: 1px solid transparent;
+  background: #f7f9fc;
+  color: #334;
+  font-size: 0.82rem;
+  line-height: 1.3;
+}
+
+.game-score-guide-range {
+  color: var(--color-dark-blue, #072589);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.game-score-guide-label {
+  color: #445;
+}
+
+.game-score-guide-list li.is-active {
+  border-color: var(--color-dark-blue, #072589);
+  background: #e8eef8;
+  box-shadow: inset 3px 0 0 var(--color-dark-blue, #072589);
+}
+
+.game-score-guide-list li.is-active .game-score-guide-label {
+  color: #122;
+  font-weight: 600;
+}
+
+body.game-page.stage-evaluation .game-deck-chrome {
+  width: min(860px, calc(100% - 1.5rem));
+  min-width: 560px;
 }
 
 .game-instructions-card {
@@ -1059,8 +1472,13 @@ body.game-page.stage-evaluation .game-deck-stack-area:has(#evaluation-set card):
 }
 
 @media (max-width: 960px) {
-  .game-eval-band {
-    grid-template-columns: 1fr;
+  body.game-page.stage-evaluation .game-deck-chrome {
+    width: min(100% - 1rem, 860px);
+    min-width: 0;
+  }
+
+  .game-session-lb-float {
+    width: min(280px, calc(100% - 1rem));
   }
 }
 

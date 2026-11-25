@@ -1,11 +1,36 @@
 <div id="game-workspace" class="game-workspace">
-  <div class="game-deck-chrome" aria-label="Card set" data-deck-float>
+  <div class="game-deck-chrome" aria-label="Card set" data-float-panel data-deck-float>
     <div class="game-deck-drag-handle" title="Drag to move" aria-label="Move card box"></div>
     <aside class="game-training-deck">
       <div class="game-deck-actions">
+        <div class="game-eval-nav">
+          <button type="button" class="flow-leaf-btn game-eval-back-btn" data-eval-back-training>Back to training</button>
+          <button type="button" class="flow-leaf-btn game-eval-replay-btn hidden" data-eval-tutorial-replay>Replay tutorial</button>
+        </div>
         <div id="game-play-actions" class="game-play-actions">
           <button type="button" id="play-primary-action" class="flow-leaf-btn" title="Try your tree with the cards">Run model</button>
-          <button type="button" id="rerunEvaluation" class="flow-leaf-btn hidden" name="rerun-evaluation">Re-run evaluation</button>
+          <button type="button" id="newEvaluation" class="flow-leaf-btn hidden" name="new-evaluation" title="Evaluate again because your tree has changed">Run new evaluation</button>
+          <button type="button" id="rerunEvaluation" class="flow-leaf-btn hidden" name="replay-evaluation" title="Watch the same evaluation again without saving a new attempt">Replay evaluation</button>
+          <p id="evaluationStatus" class="game-eval-status hidden" aria-live="polite"></p>
+        </div>
+        <div id="game-eval-flow" class="game-eval-flow hidden" aria-live="polite">
+          <div class="game-eval-flow-step" data-eval-step="team">
+            <p class="game-eval-flow-message game-eval-team-message">Before evaluation, choose a team name. Use a team name or first names only.</p>
+            <div class="game-eval-team-form">
+              <label class="game-eval-team-label visually-hidden" for="eval-team-name">Team name</label>
+              <div class="game-eval-team-row">
+                <input id="eval-team-name" class="game-eval-team-input" type="text" maxlength="80" autocomplete="organization" placeholder="e.g. Blue Team">
+                <button type="button" class="flow-leaf-btn" data-eval-team-continue>Continue</button>
+              </div>
+              <p id="eval-team-error" class="game-eval-flow-error hidden" role="alert">Please enter a team name to continue.</p>
+            </div>
+          </div>
+          <div class="game-eval-flow-step hidden" data-eval-step="tutorial">
+            <p id="eval-tutorial-message" class="game-eval-flow-message game-eval-tutorial-message is-faded"></p>
+            <div class="game-eval-flow-actions game-eval-tutorial-actions">
+              <button type="button" class="flow-leaf-btn game-eval-skip-btn" data-eval-tutorial-skip>Skip tutorial</button>
+            </div>
+          </div>
         </div>
       </div>
       <div class="game-deck-stack-area">
@@ -32,15 +57,104 @@
           <button type="button" class="flow-leaf-btn game-run-submit-eval" data-enter-evaluation>Submit your tree and evaluate</button>
         </div>
       </div>
+      <div id="game-eval-results" class="game-eval-results results is-pending">
+        <div class="game-eval-results-toolbar">
+          <h2 class="game-eval-results-title">Evaluation scores</h2>
+        </div>
+        <div class="game-eval-results-scroll">
+          <table class="game-odi-table game-eval-score-table" id="eval-score-table">
+            <thead>
+              <tr>
+                <th data-eval-reveal="col-player">Player</th>
+                <th data-eval-reveal="col-confidence">Confidence</th>
+                <th data-eval-reveal="col-detail">Detail</th>
+                <th data-eval-reveal="col-runs" data-eval-pulse="col-runs">Run 1</th>
+                <th data-eval-reveal="col-runs" data-eval-pulse="col-runs">Run 2</th>
+                <th data-eval-reveal="col-runs" data-eval-pulse="col-runs">Run 3</th>
+                <th data-eval-reveal="col-runs" data-eval-pulse="col-runs">Run 4</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr data-eval-reveal="row-you" data-eval-pulse="you">
+                <td data-eval-reveal="col-player">You</td>
+                <td id="confidence-user" data-eval-reveal="col-confidence" data-eval-pulse="you-confidence"></td>
+                <td class="game-eval-detail" data-eval-reveal="col-detail">
+                  <span data-eval-reveal="detail-a" data-eval-pulse="detail-a">% correctly classified (a)</span><br>
+                  <span data-eval-reveal="detail-b" data-eval-pulse="detail-b">Difference from confidence (b)</span><br>
+                  <span data-eval-reveal="detail-score" data-eval-pulse="detail-score">Score (a − b)</span>
+                </td>
+                <td id="result1-user" data-eval-reveal="run-user" data-eval-pulse="run-user"></td>
+                <td id="result2-user" data-eval-reveal="run-user" data-eval-pulse="run-user"></td>
+                <td id="result3-user" data-eval-reveal="run-user" data-eval-pulse="run-user"></td>
+                <td id="result4-user" data-eval-reveal="run-user" data-eval-pulse="run-user"></td>
+              </tr>
+              <tr data-eval-reveal="row-machine" data-eval-pulse="machine">
+                <td data-eval-reveal="col-player">vs Machine</td>
+                <td id="confidence-stoopid-ai" data-eval-reveal="machine-confidence" data-eval-pulse="machine-confidence"></td>
+                <td data-eval-reveal="col-detail"></td>
+                <td id="result1-stoopid-ai" data-eval-reveal="run-machine" data-eval-pulse="run-machine"></td>
+                <td id="result2-stoopid-ai" data-eval-reveal="run-machine" data-eval-pulse="run-machine"></td>
+                <td id="result3-stoopid-ai" data-eval-reveal="run-machine" data-eval-pulse="run-machine"></td>
+                <td id="result4-stoopid-ai" data-eval-reveal="run-machine" data-eval-pulse="run-machine"></td>
+              </tr>
+              <tr data-eval-reveal="row-hybrid" data-eval-pulse="hybrid">
+                <td data-eval-reveal="col-player">vs Human+ML</td>
+                <td id="confidence-hybrid" data-eval-reveal="hybrid-confidence" data-eval-pulse="hybrid-confidence"></td>
+                <td data-eval-reveal="col-detail"></td>
+                <td id="result1-hybrid" data-eval-reveal="run-hybrid" data-eval-pulse="run-hybrid"></td>
+                <td id="result2-hybrid" data-eval-reveal="run-hybrid" data-eval-pulse="run-hybrid"></td>
+                <td id="result3-hybrid" data-eval-reveal="run-hybrid" data-eval-pulse="run-hybrid"></td>
+                <td id="result4-hybrid" data-eval-reveal="run-hybrid" data-eval-pulse="run-hybrid"></td>
+              </tr>
+              <tr class="game-eval-total-row" data-eval-reveal="row-total" data-eval-pulse="total">
+                <td data-eval-reveal="col-player">Total</td>
+                <td data-eval-reveal="col-confidence"></td>
+                <td data-eval-reveal="col-detail"></td>
+                <td id="result1-score" data-eval-reveal="run-total" data-eval-pulse="run-total"></td>
+                <td id="result2-score" data-eval-reveal="run-total" data-eval-pulse="run-total"></td>
+                <td id="result3-score" data-eval-reveal="run-total" data-eval-pulse="run-total"></td>
+                <td id="result4-score" data-eval-reveal="run-total" data-eval-pulse="run-total"></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </aside>
-    <p id="evaluationStatus" class="game-eval-status hidden">Click Evaluate model to obtain a score</p>
   </div>
+
+  <div class="game-float-panel game-session-lb-float" aria-label="Session leaderboard" data-float-panel data-float-default="right">
+    <div class="game-deck-drag-handle" title="Drag to move" aria-label="Move session leaderboard"></div>
+    <aside class="game-session-lb-panel">
+      <h3>Session leaderboard</h3>
+      <table id="session-leaderboard" class="game-odi-table game-session-lb-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Score</th>
+          </tr>
+        </thead>
+        <tbody id="session-leaderboard-body"></tbody>
+      </table>
+      <div class="game-score-guide" id="game-score-guide" aria-label="Score guide">
+        <h4 class="game-score-guide-title">Score guide</h4>
+        <ul class="game-score-guide-list">
+          <li data-score-band="incredible"><span class="game-score-guide-range">500+</span><span class="game-score-guide-label">Incredible!</span></li>
+          <li data-score-band="expert"><span class="game-score-guide-range">450 – 500</span><span class="game-score-guide-label">Expert</span></li>
+          <li data-score-band="solid"><span class="game-score-guide-range">400 – 450</span><span class="game-score-guide-label">Solid effort</span></li>
+          <li data-score-band="average"><span class="game-score-guide-range">300 – 400</span><span class="game-score-guide-label">Average</span></li>
+          <li data-score-band="trying"><span class="game-score-guide-range">0 – 300</span><span class="game-score-guide-label">Points for trying (did you overfit?)</span></li>
+        </ul>
+      </div>
+    </aside>
+  </div>
+
   <div class="game-workspace-scroll">
     <div id="decision-tree-wrapper" class="game-workspace-tree">
       <div id="game-decision-tree" class="admin-decision-tree game-decision-tree" aria-label="Decision tree"></div>
     </div>
   </div>
 </div>
+
 <dialog id="cluster-browse-modal" class="admin-modal cluster-browse-modal" aria-label="Browse cards">
   <div class="admin-modal-card cluster-browse-card">
     <div class="cluster-browse-toolbar">

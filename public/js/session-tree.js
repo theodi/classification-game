@@ -102,26 +102,6 @@
       '</svg></button>';
   }
 
-  function eyeButton(path, cardsHidden) {
-    var title = cardsHidden ? 'Show cards' : 'Hide cards';
-    var svg;
-    if (cardsHidden) {
-      svg = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' +
-        '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/>' +
-        '<circle cx="12" cy="12" r="3"/>' +
-        '</svg>';
-    } else {
-      svg = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' +
-        '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/>' +
-        '<circle cx="12" cy="12" r="3"/>' +
-        '<path d="M4 4l16 16"/>' +
-        '</svg>';
-    }
-    return '<button type="button" class="flow-eye" data-tree-action="toggle-cards" data-path="' +
-      escapeHtml(path) + '" title="' + title + '" aria-label="' + title + '" aria-pressed="' +
-      (cardsHidden ? 'true' : 'false') + '">' + svg + '</button>';
-  }
-
   function SessionTree(host, options) {
     options = options || {};
     this.host = typeof host === 'string' ? document.querySelector(host) : host;
@@ -297,52 +277,48 @@
     var allowSplit = depth <= MAX_DEPTH;
     var city = (node && node.city) || '';
     var showChooser = allowSplit && (!node || node.pending !== false) && !city;
-    var cardsHidden = !!(node && node.hideCards);
     var isGame = this.mode === 'game';
     var html = '<div class="flow-node flow-leaf" data-path="' + escapeHtml(path) + '">';
-    if (!isGame || !showChooser) {
+    if (isGame) {
+      // Game leaves always show a city prediction; Add branch stays available on hover.
       html += '<div class="flow-leaf-card">';
-      if (showChooser) {
-        html += '<div class="flow-leaf-actions">';
-        html += '<button type="button" class="flow-leaf-btn" data-tree-action="predict" data-path="' +
-          escapeHtml(path) + '">End branch</button>';
-        html += '<button type="button" class="flow-leaf-btn" data-tree-action="branch" data-path="' +
-          escapeHtml(path) + '">Add branch</button>';
-        html += '</div>';
-      } else {
-        html += '<div class="flow-city-row' + (isGame ? ' flow-city-row--full' : '') + '">';
-        html += '<label class="flow-field flow-field--city">';
-        if (isGame) {
-          html += '<span class="flow-city-display" aria-hidden="true">' + cityDisplayHtml(city) + '</span>';
-        }
-        html += '<select data-tree-city data-path="' + escapeHtml(path) + '" aria-label="City">' +
-          cityOptions(city, isGame) + '</select>';
-        html += '</label>';
-        if (isGame) {
-          html += eyeButton(path, cardsHidden);
-        }
-        html += trashButton(path, 'delete-city');
-        html += '</div>';
-      }
-      html += '</div>';
+      html += '<div class="flow-city-row flow-city-row--full">';
+      html += '<label class="flow-field flow-field--city">';
+      html += '<span class="flow-city-display" aria-hidden="true">' + cityDisplayHtml(city) + '</span>';
+      html += '<select data-tree-city data-path="' + escapeHtml(path) + '" aria-label="City">' +
+        cityOptions(city, true) + '</select>';
+      html += '</label>';
+      html += '</div></div>';
+    } else if (!showChooser) {
+      html += '<div class="flow-leaf-card">';
+      html += '<div class="flow-city-row">';
+      html += '<label class="flow-field flow-field--city">';
+      html += '<select data-tree-city data-path="' + escapeHtml(path) + '" aria-label="City">' +
+        cityOptions(city, false) + '</select>';
+      html += '</label>';
+      html += trashButton(path, 'delete-city');
+      html += '</div></div>';
+    } else {
+      html += '<div class="flow-leaf-card">';
+      html += '<div class="flow-leaf-actions">';
+      html += '<button type="button" class="flow-leaf-btn" data-tree-action="predict" data-path="' +
+        escapeHtml(path) + '">End branch</button>';
+      html += '<button type="button" class="flow-leaf-btn" data-tree-action="branch" data-path="' +
+        escapeHtml(path) + '">Add branch</button>';
+      html += '</div></div>';
     }
     if (this.renderLeafFooter) {
       html += this.renderLeafFooter(path, node, depth) || '';
     } else if (isGame) {
       var stackClass = depth <= 1 ? 'game-leaf-dropzone--cols2' : 'game-leaf-dropzone--cols1';
-      html += '<div class="game-leaf-slot ' + stackClass +
-        (cardsHidden ? ' game-leaf-slot--collapsed' : '') + '">';
+      html += '<div class="game-leaf-slot ' + stackClass + '">';
       html += '<div id="box_' + escapeHtml(path) +
         '" class="cardbox game-leaf-dropzone" data-tree-dropzone data-path="' +
         escapeHtml(path) + '"></div>';
       html += '<div class="game-leaf-hover">';
-      if (showChooser) {
-        html += '<button type="button" class="flow-leaf-btn" data-tree-action="predict" data-path="' +
-          escapeHtml(path) + '">End branch</button>';
-        if (allowSplit) {
-          html += '<button type="button" class="flow-leaf-btn" data-tree-action="branch" data-path="' +
-            escapeHtml(path) + '">Add branch</button>';
-        }
+      if (allowSplit) {
+        html += '<button type="button" class="flow-leaf-btn" data-tree-action="branch" data-path="' +
+          escapeHtml(path) + '">Add branch</button>';
       }
       html += '<button type="button" class="flow-leaf-btn game-leaf-browse" data-browse-cluster="' +
         escapeHtml(path) + '">Browse cluster</button>';
@@ -412,9 +388,8 @@
     });
   };
 
-  SessionTree.prototype.applyLeafCities = function(cityMap, options) {
+  SessionTree.prototype.applyLeafCities = function(cityMap) {
     var self = this;
-    var hideCards = !options || options.hideCards !== false;
     var needsRender = false;
     Object.keys(cityMap || {}).forEach(function(path) {
       var city = cityMap[path];
@@ -423,13 +398,9 @@
       }
       var node = self.find(path);
       if (node && node.mode === 'leaf') {
-        var wasPending = node.pending !== false || !node.city;
         node.city = city;
         node.pending = false;
-        if (hideCards && wasPending) {
-          node.hideCards = true;
-          needsRender = true;
-        }
+        node.hideCards = false;
         var select = self.host && self.host.querySelector('select[data-tree-city][data-path="' + path + '"]');
         if (select) {
           select.value = city;
@@ -438,7 +409,7 @@
           needsRender = true;
         }
       } else if (!node || node.mode !== 'split') {
-        self.setChild(path, leaf(city, false, hideCards));
+        self.setChild(path, leaf(city, false, false));
         needsRender = true;
       }
     });
@@ -483,7 +454,7 @@
             city = majorityCityForBox(path);
           }
           if (city && city !== '?') {
-            self.setChild(path, leaf(city, false, true));
+            self.setChild(path, leaf(city, false, false));
             if (typeof predictions !== 'undefined') {
               if (!predictions[path]) {
                 predictions[path] = {};
@@ -492,12 +463,7 @@
             }
           } else {
             // Tie or empty: open the city picker so the user can choose.
-            self.setChild(path, leaf('', false, true));
-          }
-        } else if (action === 'toggle-cards') {
-          var leafNode = self.find(path);
-          if (leafNode && leafNode.mode === 'leaf') {
-            leafNode.hideCards = !leafNode.hideCards;
+            self.setChild(path, leaf('', false, false));
           }
         } else if (action === 'delete-node') {
           if (path) {

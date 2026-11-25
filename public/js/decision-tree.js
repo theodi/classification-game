@@ -52,13 +52,13 @@ function sendResult(result) {
 function saveResult() {
 	if (resultId || (typeof replayOnly !== 'undefined' && replayOnly)) {
 		console.log("Not saving result, view only");
-		return;
+		return null;
 	}
-	if (isTutor && (typeof entryMode === 'undefined' || !entryMode)) {
-		console.log("Not saving result, view only");
-		return;
+	try {
+		storage = JSON.parse(window.localStorage.getItem(sessionId) || '{}');
+	} catch (err) {
+		storage = storage || {};
 	}
-	storage = JSON.parse(window.localStorage.getItem(sessionId) || '{}');
 	if (!storage.results) {
 		storage.results = [];
 	}
@@ -66,7 +66,7 @@ function saveResult() {
 	var result = {};
 	result.playerName = storage.playerName || player_name;
 	result.date = new Date().getTime();
-	result.id = CryptoJS.MD5(result.playerName + result.date).toString();
+	result.id = CryptoJS.MD5(String(result.playerName || 'Team') + result.date).toString();
 	result.cardSet = 'group1';
 	result.sessionId = sessionId;
 	result.evalSetId = (typeof evalSetId === 'undefined') ? null : evalSetId;
@@ -94,9 +94,18 @@ function saveResult() {
 	delete result.result.vsMachine;
 	delete result.result.vsHybrid;
 
+	// Keep a local copy so the in-game session board can show this score
+	// even when the teacher-only leaderboard APIs are unavailable.
 	storage.results.push(result);
-	sendResult(result);
+	storage.playerName = result.playerName;
 	window.localStorage.setItem(sessionId, JSON.stringify(storage));
+
+	if (isTutor && (typeof entryMode === 'undefined' || !entryMode)) {
+		console.log("Not posting result to server, tutor view only");
+		return result;
+	}
+	sendResult(result);
+	return result;
 }
 
 function changeName() {
@@ -134,6 +143,12 @@ function processLoad(storage) {
 			document.getElementById('changeName').style.display = "none";
 		}
 		attempt = storage.attempt;
+		if (storage.lastEvaluatedTreeFingerprint && typeof lastEvaluatedTreeFingerprint !== 'undefined') {
+			lastEvaluatedTreeFingerprint = storage.lastEvaluatedTreeFingerprint;
+		}
+		if (typeof leaderboardReplayOnly !== 'undefined') {
+			leaderboardReplayOnly = !!storage.leaderboardReplayOnly;
+		}
 		if (storage.playerName == ""){
 	      player_name = prompt("Team name. Use a team name or first names only.", "");
 	      $('#playerWelcome').html("Welcome " + player_name);
@@ -573,57 +588,415 @@ function addBranch(branch) {
 	$('.'+branch+'_invert').hide();
 }
 
-function renderLeaderboard(data,prefix) {
+function renderLeaderboard(data, prefix) {
   resultsCount = data.length;
-  var rank = 0;
-  var currentScore = 0;
-  for (i=0;i<data.length;i++) {
-  	var userClass = "";
-  	if (data[i].score != currentScore) {
-  		currentScore = data[i].score;
-  		rank = rank + 1;
-  	}
-  	try {
-  		for (j=0;j<storage.results.length;j++) {
-	  		if (storage.results[j]["id"] == data[i].id) {
-  				userClass = "user";
-  				data[i].playerName = storage.playerName;
-  			}
-  		}
-  	} catch (err) {}
-  	if (data[i].playerName) {
-		var displayName = data[i].playerName.substring(0,16);
-		if (isTutor || prefix == "session") {
-			displayName = data[i].playerName;
-		}
-  		var row = '<tr class="'+userClass+'"><td>'+rank+'</td><td>'+data[i].attempt+'</td><td>'+displayName+'</td><td>'+data[i].score+'</td></tr>';
-  		$('#'+prefix+'-leaderboard-body').append(row);
-  	} else {
-  		var row = '<tr class="'+userClass+'"><td>'+rank+'</td><td>'+data[i].attempt+'</td><td>'+data[i].id.substring(0,10)+'</td><td>'+data[i].score+'</td></tr>';
-  		$('#'+prefix+'-leaderboard-body').append(row);
-  	}
+  var rows = (data || []).slice().sort(function(a, b) {
+    return Number(b.score) - Number(a.score);
+  });
+
+  if (prefix === 'session') {
+    var sessionBody = document.getElementById('session-leaderboard-body');
+    if (!sessionBody) return;
+    sessionBody.innerHTML = '';
+    var pendingName = (typeof sessionPendingTeam !== 'undefined' && sessionPendingTeam && sessionPendingTeam.name)
+      ? String(sessionPendingTeam.name).trim().toLowerCase()
+      : '';
+    var pendingMatched = false;
+    rows.forEach(function(item) {
+      indexSessionLeaderboardResult(item);
+      try {
+        for (var j = 0; j < storage.results.length; j++) {
+          if (storage.results[j].id == item.id) {
+            indexSessionLeaderboardResult(storage.results[j]);
+            if (!item.tree && storage.results[j].tree) {
+              item = Object.assign({}, item, { tree: storage.results[j].tree, confidences: storage.results[j].confidences || item.confidences });
+              indexSessionLeaderboardResult(item);
+            }
+            item.playerName = item.playerName || storage.playerName;
+          }
+        }
+      } catch (err) {}
+      var userClass = '';
+      try {
+        for (var k = 0; k < storage.results.length; k++) {
+          if (storage.results[k].id == item.id) {
+            userClass = 'user';
+          }
+        }
+      } catch (err2) {}
+      var name = item.playerName
+        ? ((isTutor || prefix === 'session') ? item.playerName : item.playerName.substring(0, 16))
+        : String(item.id || '').substring(0, 10);
+      if (pendingName && String(name).trim().toLowerCase() === pendingName) {
+        pendingMatched = true;
+      }
+      var attemptLabel = item.attempt !== undefined && item.attempt !== null ? item.attempt : '';
+      var label = name + (attemptLabel !== '' ? ' (' + attemptLabel + ')' : '');
+      var tr = document.createElement('tr');
+      if (userClass) tr.className = userClass;
+      if (item.id) {
+        tr.setAttribute('data-result-id', String(item.id));
+      }
+      var indexed = item.id ? sessionLeaderboardById[item.id] : null;
+      if (indexed && indexed.tree) {
+        tr.classList.add('is-loadable');
+        tr.title = 'Click to load this tree and replay evaluation';
+        tr.setAttribute('tabindex', '0');
+        tr.setAttribute('role', 'button');
+      }
+      tr.innerHTML = '<td>' + label + '</td><td>' + item.score + '</td>';
+      sessionBody.appendChild(tr);
+    });
+    if (pendingName && !pendingMatched && typeof sessionPendingTeam !== 'undefined' && sessionPendingTeam) {
+      appendSessionPendingLeaderboardRow(sessionBody, sessionPendingTeam);
+    }
+    return;
   }
-  $('#'+prefix+'-leaderboard').DataTable({
-    dom: '<"dt-top"f>rt<"dt-bottom"<"dt-length"l><"dt-info"i><"dt-paginate"p>>'
+
+  var rank = 0;
+  var currentScore = null;
+  for (var i = 0; i < rows.length; i++) {
+    var userClass = '';
+    if (rows[i].score != currentScore) {
+      currentScore = rows[i].score;
+      rank = rank + 1;
+    }
+    try {
+      for (var j = 0; j < storage.results.length; j++) {
+        if (storage.results[j].id == rows[i].id) {
+          userClass = 'user';
+          rows[i].playerName = storage.playerName;
+        }
+      }
+    } catch (err) {}
+    if (rows[i].playerName) {
+      var displayName = rows[i].playerName.substring(0, 16);
+      if (isTutor) {
+        displayName = rows[i].playerName;
+      }
+      $('#' + prefix + '-leaderboard-body').append(
+        '<tr class="' + userClass + '"><td>' + rank + '</td><td>' + rows[i].attempt + '</td><td>' + displayName + '</td><td>' + rows[i].score + '</td></tr>'
+      );
+    } else {
+      $('#' + prefix + '-leaderboard-body').append(
+        '<tr class="' + userClass + '"><td>' + rank + '</td><td>' + rows[i].attempt + '</td><td>' + String(rows[i].id).substring(0, 10) + '</td><td>' + rows[i].score + '</td></tr>'
+      );
+    }
+  }
+  var $table = $('#' + prefix + '-leaderboard');
+  if ($.fn.dataTable && $.fn.dataTable.isDataTable($table)) {
+    $table.DataTable().clear().destroy();
+  }
+  $table.DataTable({
+    dom: '<"dt-top"f>rt<"dt-bottom"<"dt-length"l><"dt-info"i><"dt-paginate"p>>',
+    retrieve: true,
+    destroy: true
   });
 }
 
+function appendSessionPendingLeaderboardRow(sessionBody, pending) {
+	if (!sessionBody || !pending || !pending.name) return;
+	var existing = sessionBody.querySelector('[data-pending-team="1"]');
+	if (existing) {
+		existing.remove();
+	}
+	var attemptLabel = pending.attempt !== undefined && pending.attempt !== null ? pending.attempt : '';
+	var label = pending.name + (attemptLabel !== '' ? ' (' + attemptLabel + ')' : '');
+	var tr = document.createElement('tr');
+	tr.className = 'user is-pending-score';
+	tr.setAttribute('data-pending-team', '1');
+	tr.innerHTML = '<td>' + label + '</td><td>???</td>';
+	sessionBody.insertBefore(tr, sessionBody.firstChild);
+}
+
+function renderSessionLeaderboardPending() {
+	var sessionBody = document.getElementById('session-leaderboard-body');
+	if (!sessionBody) return;
+	if (typeof sessionPendingTeam === 'undefined' || !sessionPendingTeam || !sessionPendingTeam.name) {
+		var stale = sessionBody.querySelector('[data-pending-team="1"]');
+		if (stale) stale.remove();
+		return;
+	}
+	var pendingName = String(sessionPendingTeam.name).trim().toLowerCase();
+	var hasReal = false;
+	sessionBody.querySelectorAll('tr').forEach(function(row) {
+		if (row.getAttribute('data-pending-team') === '1') return;
+		var cell = row.querySelector('td');
+		if (!cell) return;
+		var text = cell.textContent || '';
+		var nameOnly = text.replace(/\s*\(\d+\)\s*$/, '').trim().toLowerCase();
+		if (nameOnly === pendingName) {
+			hasReal = true;
+		}
+	});
+	if (hasReal) {
+		var old = sessionBody.querySelector('[data-pending-team="1"]');
+		if (old) old.remove();
+		return;
+	}
+	appendSessionPendingLeaderboardRow(sessionBody, sessionPendingTeam);
+}
+
+function destroyLeaderboardDataTable(prefix) {
+	var $table = $('#' + prefix + '-leaderboard');
+	if (!$table.length || !$.fn.dataTable || !$.fn.dataTable.isDataTable($table)) {
+		return;
+	}
+	try {
+		$table.DataTable().clear().destroy();
+	} catch (err) {}
+}
+
+var sessionLeaderboardById = {};
+
+function indexSessionLeaderboardResult(item) {
+	if (!item || !item.id) return;
+	var existing = sessionLeaderboardById[item.id];
+	if (!existing || (item.tree && !existing.tree)) {
+		sessionLeaderboardById[item.id] = item;
+	}
+}
+
+function findSessionLeaderboardResult(resultId) {
+	if (!resultId) return null;
+	if (sessionLeaderboardById[resultId]) {
+		return sessionLeaderboardById[resultId];
+	}
+	try {
+		var store = storage;
+		if ((!store || !store.results) && window.localStorage && sessionId) {
+			store = JSON.parse(window.localStorage.getItem(sessionId) || '{}');
+		}
+		var found = null;
+		((store && store.results) || []).forEach(function(item) {
+			if (item && String(item.id) === String(resultId)) {
+				found = item;
+			}
+		});
+		return found;
+	} catch (err) {
+		return null;
+	}
+}
+
+function getLocalSessionLeaderboardRows() {
+	var rows = [];
+	var store = storage;
+	try {
+		if ((!store || !store.results) && window.localStorage && sessionId) {
+			store = JSON.parse(window.localStorage.getItem(sessionId) || '{}');
+		}
+	} catch (err) {
+		store = store || {};
+	}
+	((store && store.results) || []).forEach(function(item) {
+		if (!item) return;
+		indexSessionLeaderboardResult(item);
+		rows.push(item);
+	});
+	return rows;
+}
+
+function applyLoadedEvaluationResult(result) {
+	if (!result || !result.tree) {
+		alert('That leaderboard entry does not include a tree to load.');
+		return false;
+	}
+	if (window.gameTree && typeof window.gameTree.fromGameTree === 'function') {
+		window.gameTree.fromGameTree({
+			factors: result.tree.factors || {},
+			boundaries: result.tree.boundaries || {},
+			predictions: result.tree.predictions || {}
+		});
+	}
+	predictions = Object.assign({}, result.tree.predictions || {});
+	if (result.confidences) {
+		confidences = Object.assign({}, confidences || {}, result.confidences);
+	}
+	if (typeof updateConfidence === 'function' && typeof cards !== 'undefined' && cards.trainingSet) {
+		try {
+			updateConfidence(cards.trainingSet);
+		} catch (err) {}
+	}
+	if (typeof saveData === 'function') {
+		saveData();
+	}
+	leaderboardReplayOnly = true;
+	replayOnly = true;
+	try {
+		if (typeof storage !== 'object' || !storage) storage = {};
+		if (window.localStorage && sessionId && window.localStorage.getItem(sessionId)) {
+			storage = JSON.parse(window.localStorage.getItem(sessionId) || '{}');
+		}
+		storage.leaderboardReplayOnly = true;
+		window.localStorage.setItem(sessionId, JSON.stringify(storage));
+	} catch (err) {}
+	if (typeof snapshotEvaluatedTree === 'function') {
+		snapshotEvaluatedTree();
+	}
+	if (typeof clearSessionPendingTeam === 'function') {
+		clearSessionPendingTeam();
+	}
+	if (typeof setPlayMode === 'function') {
+		setPlayMode('evaluation', { force: true });
+	}
+	if (typeof setEvalFlowChrome === 'function') {
+		setEvalFlowChrome('done');
+	}
+	if (typeof setEvaluationStatusMessage === 'function') {
+		var label = result.playerName || 'this team';
+		var attemptLabel = result.attempt !== undefined && result.attempt !== null ? ' (attempt ' + result.attempt + ')' : '';
+		setEvaluationStatusMessage('Loaded tree from <strong>' + label + attemptLabel + '</strong>. Replay only — new scores cannot be submitted.');
+	}
+	if (typeof updateEvalActionButtons === 'function') {
+		updateEvalActionButtons();
+	}
+	return true;
+}
+
+function loadSessionLeaderboardResult(resultId) {
+	var result = findSessionLeaderboardResult(resultId);
+	if (!result) {
+		alert('Could not find that leaderboard entry.');
+		return;
+	}
+	if (!result.tree) {
+		alert('That leaderboard entry does not include a saved tree.');
+		return;
+	}
+	var label = result.playerName || 'this team';
+	var ok = window.confirm(
+		'Load the tree from "' + label + '"?\n\n' +
+		'This replaces your current tree. You will only be able to replay evaluation for this tree — you cannot submit a new score from a leaderboard load.'
+	);
+	if (!ok) {
+		return;
+	}
+	applyLoadedEvaluationResult(result);
+}
+
+function clearEvaluationProgress() {
+	try {
+		if (window.localStorage && sessionId && window.localStorage.getItem(sessionId)) {
+			storage = JSON.parse(window.localStorage.getItem(sessionId) || '{}');
+		} else {
+			storage = storage || {};
+		}
+	} catch (err) {
+		storage = storage || {};
+	}
+	storage.results = [];
+	storage.attempt = 0;
+	delete storage.lastEvaluatedTreeFingerprint;
+	delete storage.leaderboardReplayOnly;
+	try {
+		window.localStorage.setItem(sessionId, JSON.stringify(storage));
+	} catch (err) {}
+
+	attempt = 0;
+	if (typeof lastEvaluatedTreeFingerprint !== 'undefined') {
+		lastEvaluatedTreeFingerprint = '';
+	}
+	leaderboardReplayOnly = false;
+	replayOnly = false;
+	sessionLeaderboardById = {};
+	if (typeof sessionPendingTeam !== 'undefined') {
+		sessionPendingTeam = null;
+	}
+	results = {
+		vsMachine: { win: 0, draw: 0, lost: 0 },
+		vsHybrid: { win: 0, draw: 0, lost: 0 }
+	};
+	for (var n = 1; n <= 4; n++) {
+		['user', 'stoopid-ai', 'hybrid', 'score'].forEach(function(kind) {
+			var el = document.getElementById('result' + n + '-' + kind);
+			if (el) el.innerHTML = '';
+		});
+	}
+	['confidence-user', 'confidence-stoopid-ai', 'confidence-hybrid'].forEach(function(id) {
+		var el = document.getElementById(id);
+		if (el) el.textContent = '';
+	});
+	if (typeof setEvaluationStatusMessage === 'function') {
+		setEvaluationStatusMessage('');
+	}
+	if (typeof highlightScoreGuide === 'function') {
+		var guide = document.getElementById('game-score-guide');
+		if (guide) {
+			guide.querySelectorAll('.is-active').forEach(function(item) {
+				item.classList.remove('is-active');
+			});
+		}
+	}
+	if (typeof evalFlowPhase !== 'undefined') {
+		evalFlowPhase = 'idle';
+	}
+	if (typeof renderSessionLeaderboardFromLocal === 'function') {
+		renderSessionLeaderboardFromLocal();
+	}
+	if (typeof currentPlayMode !== 'undefined' && currentPlayMode === 'evaluation' && typeof beginEvaluationFlow === 'function') {
+		beginEvaluationFlow();
+	}
+	if (typeof updateEvalActionButtons === 'function') {
+		updateEvalActionButtons();
+	}
+	return true;
+}
+
+function mergeSessionLeaderboardRows(serverRows, localRows) {
+	var merged = [];
+	var seen = {};
+	(serverRows || []).forEach(function(item) {
+		if (!item) return;
+		var key = String(item.id || '') + '::' + String(item.playerName || '') + '::' + String(item.attempt || '');
+		seen[key] = true;
+		merged.push(item);
+	});
+	(localRows || []).forEach(function(item) {
+		if (!item) return;
+		var key = String(item.id || '') + '::' + String(item.playerName || '') + '::' + String(item.attempt || '');
+		if (seen[key]) return;
+		// Prefer matching by name+attempt when server assigned a different id shape.
+		var nameAttempt = String(item.playerName || '').trim().toLowerCase() + '::' + String(item.attempt || '');
+		var already = merged.some(function(row) {
+			return String(row.playerName || '').trim().toLowerCase() + '::' + String(row.attempt || '') === nameAttempt;
+		});
+		if (!already) {
+			merged.push(item);
+		}
+	});
+	return merged;
+}
+
+function renderSessionLeaderboardFromLocal() {
+	renderLeaderboard(getLocalSessionLeaderboardRows(), 'session');
+	renderSessionLeaderboardPending();
+}
+
 function loadLeaderboards() {
+	// Always paint local session scores first (works for students; teacher APIs are auth-gated).
+	renderSessionLeaderboardFromLocal();
 	if (!leaderboardId) {
 		return;
 	}
-	$('#session-leaderboard-body').html("");
-	$('#organisation-leaderboard-body').html("");
-	$('#public-leaderboard-body').html("");
-	$.getJSON('/schools/' + leaderboardId + '/sessions/' + sessionId + '/results', function(data) {
-		renderLeaderboard(data,"session");
-  });
-  $.getJSON('/schools/' + leaderboardId + '/results', function(data) {
-		renderLeaderboard(data,"organisation");
-  });
-  $.getJSON('/schools/' + leaderboardId + '/public-results', function(data) {
-		renderLeaderboard(data,"public");
-  });
+	destroyLeaderboardDataTable('organisation');
+	destroyLeaderboardDataTable('public');
+	$('#organisation-leaderboard-body').html('');
+	$('#public-leaderboard-body').html('');
+	$.getJSON('/schools/' + leaderboardId + '/sessions/' + sessionId + '/results')
+		.done(function(data) {
+			renderLeaderboard(mergeSessionLeaderboardRows(data, getLocalSessionLeaderboardRows()), 'session');
+			renderSessionLeaderboardPending();
+		})
+		.fail(function() {
+			renderSessionLeaderboardFromLocal();
+		});
+	$.getJSON('/schools/' + leaderboardId + '/results', function(data) {
+		renderLeaderboard(data, 'organisation');
+	});
+	$.getJSON('/schools/' + leaderboardId + '/public-results', function(data) {
+		renderLeaderboard(data, 'public');
+	});
 }
 
 function toggleContent(button) {

@@ -25,6 +25,61 @@ body.game-page .hidden {
   gap: 1rem;
 }
 
+.game-header .main-nav {
+  display: flex;
+  align-items: center;
+}
+
+.game-header .main-nav ul {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.game-header .main-nav ul li {
+  display: flex;
+  align-items: center;
+  padding: 0;
+  margin: 0;
+  line-height: 1;
+}
+
+.game-header .main-nav .game-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  height: 2.25rem;
+  padding: 0 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: 0;
+  background: transparent;
+  color: #fff;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: normal;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  box-sizing: border-box;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.game-header .main-nav .game-nav-btn:hover,
+.game-header .main-nav .game-nav-btn:focus {
+  background: #fff;
+  color: var(--color-dark-blue, #072589);
+  border-color: #fff;
+  text-decoration: none;
+}
+
 .game-header-pin {
   display: none;
   margin: 0;
@@ -97,7 +152,8 @@ body.game-page .hidden {
   max-width: none;
   overflow-x: visible;
   overflow-y: visible;
-  padding: 0.25rem 0 1rem;
+  /* Extra top pad: rotated root diamond tips extend past the box */
+  padding: 1.75rem 0 1rem;
   margin: 0 auto;
   box-sizing: border-box;
 }
@@ -202,12 +258,14 @@ body.game-page .hidden {
 }
 
 .game-leaf-slot:hover .game-leaf-hover,
-.game-leaf-slot:focus-within .game-leaf-hover {
+.game-leaf-slot:focus-within .game-leaf-hover,
+.game-leaf-slot.is-guide-hover .game-leaf-hover {
   opacity: 1;
 }
 
 .game-leaf-slot:hover .game-leaf-hover .flow-leaf-btn,
-.game-leaf-slot:focus-within .game-leaf-hover .flow-leaf-btn {
+.game-leaf-slot:focus-within .game-leaf-hover .flow-leaf-btn,
+.game-leaf-slot.is-guide-hover .game-leaf-hover .flow-leaf-btn {
   pointer-events: auto;
 }
 
@@ -494,6 +552,115 @@ dialog.admin-modal.cluster-browse-modal {
 .game-leaf-dropzone--cols1 .game-leaf-dropzone card:nth-child(19) { top: calc(var(--card-stack-peek) * 18); z-index: 19; }
 .game-leaf-dropzone--cols1 .game-leaf-dropzone card:nth-child(20) { top: calc(var(--card-stack-peek) * 19); z-index: 20; }
 
+.game-guide-float {
+  display: none;
+  position: absolute;
+  top: 0.25rem;
+  right: 0.25rem;
+  left: auto;
+  z-index: 41;
+  width: 340px;
+  min-width: 280px;
+  box-shadow: 0 8px 24px rgba(7, 37, 137, 0.16);
+  background: #fff;
+  box-sizing: border-box;
+  touch-action: none;
+}
+
+.game-guide-float.is-visible {
+  display: block;
+}
+
+.game-guide-float.is-dragging {
+  box-shadow: 0 12px 32px rgba(7, 37, 137, 0.22);
+  opacity: 0.97;
+  user-select: none;
+}
+
+/* Native dialog top-layer: sit below Close / Download dropdown (top/right set in JS) */
+.game-guide-float.is-over-modal {
+  position: fixed;
+  left: auto;
+  z-index: 20;
+  width: min(340px, calc(100vw - 1.5rem));
+}
+
+body.game-page.stage-evaluation .game-guide-float {
+  display: none !important;
+}
+
+.game-guide-panel {
+  padding: 0.65rem 0.75rem 0.85rem;
+  border: 1px solid #aeb9d4;
+  border-top: 0;
+  background: #fff;
+}
+
+.game-guide-panel-title {
+  margin: 0 0 0.55rem;
+  font-size: 1rem;
+  color: var(--color-dark-blue, #072589);
+}
+
+.game-guide-float.is-running .game-guide-panel-title {
+  display: none;
+}
+
+.game-guide-nav {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.35rem;
+  width: 100%;
+}
+
+.game-guide-nav.hidden,
+.game-guide-nav.is-guide-running {
+  display: none !important;
+}
+
+.game-guide-nav-btn {
+  margin: 0;
+  width: 100%;
+  height: auto;
+  padding: 0.45rem 0.75rem;
+  font-size: 0.9rem;
+  background: #fff !important;
+  color: var(--color-dark-blue, #072589) !important;
+  border: 1px solid #aeb9d4;
+}
+
+.game-guide-flow {
+  display: none;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.game-guide-flow:not(.hidden) {
+  display: block;
+}
+
+.game-guide-message {
+  min-height: 4.5rem;
+  margin: 0 0 0.75rem;
+  color: #122;
+  font-size: 1.15rem;
+  font-weight: 600;
+  line-height: 1.45;
+  text-align: center;
+  opacity: 1;
+  transition: opacity 0.32s ease;
+}
+
+.game-guide-message.is-faded {
+  opacity: 0;
+}
+
+.game-guide-flow-actions {
+  display: flex;
+  justify-content: center;
+}
+
 .game-play-actions {
   display: flex;
   flex-direction: column;
@@ -501,6 +668,25 @@ dialog.admin-modal.cluster-browse-modal {
   align-items: center;
   justify-content: center;
   width: 100%;
+}
+
+.is-guide-pulse {
+  animation: guide-pulse 1.1s ease-in-out infinite;
+  outline: 2px solid #d32f2f;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.28);
+  position: relative;
+  z-index: 5;
+}
+
+.game-deck-chrome.is-guide-pulse,
+.game-training-deck.is-guide-pulse {
+  outline-offset: 0;
+}
+
+@keyframes guide-pulse {
+  0%, 100% { box-shadow: 0 0 0 2px rgba(211, 47, 47, 0.2); }
+  50% { box-shadow: 0 0 0 6px rgba(211, 47, 47, 0.45); }
 }
 
 .game-play-actions .flow-leaf-btn {
@@ -1450,14 +1636,19 @@ body.game-page.stage-evaluation .game-deck-stack-area:has(#evaluation-set card) 
   display: inline-block;
 }
 
-/* Stacked deck: browse on hover */
+/* Stacked deck: browse on hover (and during guided tour) */
 body.game-page.stage-training .game-deck-stack-area:has(#training-set card):hover .game-deck-hover,
 body.game-page.stage-training .game-deck-stack-area:has(#training-set card):focus-within .game-deck-hover,
+body.game-page.stage-training .game-deck-stack-area:has(#training-set card).is-guide-hover .game-deck-hover,
 body.game-page.stage-test .game-deck-stack-area:has(#test-set card):hover .game-deck-hover,
 body.game-page.stage-test .game-deck-stack-area:has(#test-set card):focus-within .game-deck-hover,
 body.game-page.stage-evaluation .game-deck-stack-area:has(#evaluation-set card):hover .game-deck-hover,
 body.game-page.stage-evaluation .game-deck-stack-area:has(#evaluation-set card):focus-within .game-deck-hover {
   opacity: 1;
+}
+
+body.game-page.stage-training .game-deck-stack-area:has(#training-set card).is-guide-hover .game-deck-browse {
+  pointer-events: auto;
 }
 
 body.game-page.stage-training .game-deck-stack-area:has(#training-set card):hover .game-deck-browse,

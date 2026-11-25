@@ -122,6 +122,24 @@
     </aside>
   </div>
 
+  <div class="game-float-panel game-guide-float" id="game-guide-float" aria-label="Tutorials" data-float-panel>
+    <div class="game-deck-drag-handle" title="Drag to move" aria-label="Move tutorials"></div>
+    <aside class="game-guide-panel">
+      <h3 class="game-guide-panel-title">Tutorials</h3>
+      <div id="game-guide-nav" class="game-guide-nav">
+        <button type="button" class="flow-leaf-btn game-guide-nav-btn" data-guide-tour="treeBasics">Getting started</button>
+        <button type="button" class="flow-leaf-btn game-guide-nav-btn" data-guide-tour="exploreData">Exploring the training data</button>
+        <button type="button" class="flow-leaf-btn game-guide-nav-btn" data-guide-tour="testEvaluate">Testing and evaluating your tree</button>
+      </div>
+      <div id="game-guide-flow" class="game-guide-flow hidden" aria-live="polite">
+        <p id="game-guide-message" class="game-guide-message is-faded"></p>
+        <div class="game-guide-flow-actions">
+          <button type="button" class="flow-leaf-btn game-eval-skip-btn" data-guide-skip>Skip tutorial</button>
+        </div>
+      </div>
+    </aside>
+  </div>
+
   <div class="game-float-panel game-session-lb-float" aria-label="Session leaderboard" data-float-panel data-float-default="right">
     <div class="game-deck-drag-handle" title="Drag to move" aria-label="Move session leaderboard"></div>
     <aside class="game-session-lb-panel">

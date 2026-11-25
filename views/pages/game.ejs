@@ -37,6 +37,7 @@
   <script src="/js/game-tree.js"></script>
   <script src="/js/cards.js"></script>
   <script src="/js/decision-tree.js"></script>
+  <script src="/js/guided-tours.js"></script>
 </head>
 <body class="game-page stage-training">
   <header class="header game-header">
@@ -45,10 +46,23 @@
         <a href="#play" class="logo toggle-link" aria-label="Open Data Institute"></a>
         <nav class="main-nav" aria-label="Game">
           <ul>
-            <li><a href="#instructions" class="toggle-link" data-instructions-open>Instructions</a></li>
-            <li><a href="#play" class="toggle-link selected">Play</a></li>
-            <li><a href="#about" class="toggle-link">About</a></li>
-            <li><a href="#" class="sign-out">Sign out</a></li>
+            <% if ((typeof isTutor !== 'undefined' && isTutor) || (typeof user !== 'undefined' && user && (user.type === 'teacher' || user.type === 'admin'))) { %>
+              <%
+                var manageSessionHref = '/schools';
+                if (typeof user !== 'undefined' && user && user.schoolId) {
+                  manageSessionHref = '/schools/' + user.schoolId;
+                }
+                if (typeof leaderboardId !== 'undefined' && leaderboardId && typeof session !== 'undefined' && session && session !== 'selfpaced') {
+                  manageSessionHref = '/schools/' + leaderboardId + '/sessions/' + session;
+                }
+              %>
+              <li>
+                <a class="game-nav-btn" href="<%= manageSessionHref %>">Manage session</a>
+              </li>
+            <% } %>
+            <li>
+              <button type="button" class="game-nav-btn" data-guide-overlay-toggle aria-pressed="true">Hide tutorials</button>
+            </li>
           </ul>
         </nav>
         <div id="pin" class="pinCode game-header-pin"></div>
@@ -125,6 +139,14 @@
           updateEvalActionButtons();
         }
       }
+      if (typeof updateGuideNavVisibility === 'function') {
+        updateGuideNavVisibility();
+      }
+      if (typeof maybeAutoStartTreeBasicsTour === 'function') {
+        window.setTimeout(function() {
+          maybeAutoStartTreeBasicsTour();
+        }, 700);
+      }
     });
 
     if (requireEvaluationPin) {
@@ -145,14 +167,6 @@
     if (groupCsv) groupCsv.href = '/data/csvs/Group_1.csv';
     if (groupPdf) groupPdf.href = '/data/pdfs/Group_1.pdf';
 
-    document.querySelectorAll('.sign-out').forEach(function(link) {
-      link.addEventListener('click', function(event) {
-        event.preventDefault();
-        fetch('/sessions', { method: 'DELETE' }).then(function() {
-          window.location = '/login';
-        });
-      });
-    });
   });
 </script>
 </body>

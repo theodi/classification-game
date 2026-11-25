@@ -790,6 +790,9 @@ function syncPlayChrome(mode) {
 	if (mode === 'training' && summary && !summary.classList.contains('hidden')) {
 		/* keep training summary if already showing */
 	}
+	if (typeof updateGuideNavVisibility === 'function') {
+		updateGuideNavVisibility();
+	}
 }
 
 function setPlayMode(mode, options) {
@@ -800,6 +803,11 @@ function setPlayMode(mode, options) {
 	if (!options.force && mode !== currentPlayMode && !canEnterPlayMode(mode)) {
 		syncPlayChrome(currentPlayMode);
 		return false;
+	}
+	if (!options.fromGuide && !options.fromGuideRestore &&
+		typeof guideTourActive === 'function' && guideTourActive() &&
+		mode === 'evaluation' && typeof skipGuidedTour === 'function') {
+		skipGuidedTour();
 	}
 
 	currentPlayMode = mode;

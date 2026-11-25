@@ -105,7 +105,8 @@ function gameView(options) {
     requireEvaluationPin: !!options.requireEvaluationPin,
     entryMode: !!options.entryMode,
     replayOnly: !!options.replayOnly,
-    teamName: options.teamName || ''
+    teamName: options.teamName || '',
+    sessionName: options.sessionName ? String(options.sessionName) : ''
   };
 }
 
@@ -120,7 +121,8 @@ function renderGame(req, res, data, options) {
     isTutor: isTutor,
     requireEvaluationPin: false,
     entryMode: entryMode,
-    teamName: options.teamName || ''
+    teamName: options.teamName || '',
+    sessionName: data.name || ''
   }));
 }
 
@@ -362,7 +364,8 @@ app.get('/result/:resultId/tree', function(req, res) {
             requireEvaluationPin: false,
             entryMode: false,
             replayOnly: true,
-            teamName: data.playerName || ''
+            teamName: data.playerName || '',
+            sessionName: (lbdata && lbdata.name) || ''
           }));
         }
         if (!data.sessionId || !ObjectId.isValid(data.sessionId)) {

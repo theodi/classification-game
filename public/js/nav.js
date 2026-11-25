@@ -10,6 +10,115 @@ var lastEvaluatedTreeFingerprint = '';
 var leaderboardReplayOnly = false;
 var EVAL_TUTORIAL_FADE_MS = 320;
 var EVAL_TUTORIAL_GAP_MS = 180;
+var gameMessageResolver = null;
+
+function ensureGameMessageDialog() {
+	return document.getElementById('game-message-dialog');
+}
+
+function closeGameMessageDialog(result) {
+	var dialog = ensureGameMessageDialog();
+	var resolve = gameMessageResolver;
+	gameMessageResolver = null;
+	if (dialog && dialog.open) {
+		try {
+			dialog.close();
+		} catch (err) {}
+	}
+	if (typeof resolve === 'function') {
+		resolve(!!result);
+	}
+}
+
+function showGameMessageDialog(options) {
+	options = options || {};
+	var dialog = ensureGameMessageDialog();
+	if (!dialog) {
+		if (options.showCancel) {
+			return Promise.resolve(window.confirm(options.message || ''));
+		}
+		window.alert(options.message || '');
+		return Promise.resolve(true);
+	}
+	if (gameMessageResolver) {
+		closeGameMessageDialog(false);
+	}
+	var title = dialog.querySelector('#game-message-title');
+	var body = dialog.querySelector('#game-message-body');
+	var confirmBtn = dialog.querySelector('[data-game-message-confirm]');
+	var cancelBtn = dialog.querySelector('[data-game-message-cancel]');
+	if (title) {
+		title.textContent = options.title || (options.showCancel ? 'Please confirm' : 'Notice');
+	}
+	if (body) {
+		body.textContent = options.message || '';
+	}
+	if (confirmBtn) {
+		confirmBtn.textContent = options.confirmLabel || (options.showCancel ? 'Continue' : 'OK');
+	}
+	if (cancelBtn) {
+		cancelBtn.textContent = options.cancelLabel || 'Cancel';
+	}
+	dialog.classList.toggle('is-alert', !options.showCancel);
+	return new Promise(function(resolve) {
+		gameMessageResolver = resolve;
+		try {
+			dialog.showModal();
+		} catch (err) {
+			gameMessageResolver = null;
+			if (options.showCancel) {
+				resolve(window.confirm(options.message || ''));
+			} else {
+				window.alert(options.message || '');
+				resolve(true);
+			}
+		}
+	});
+}
+
+function gameAlert(message, options) {
+	options = options || {};
+	return showGameMessageDialog({
+		title: options.title || 'Notice',
+		message: message,
+		confirmLabel: options.confirmLabel || 'OK',
+		showCancel: false
+	});
+}
+
+function gameConfirm(message, options) {
+	options = options || {};
+	return showGameMessageDialog({
+		title: options.title || 'Please confirm',
+		message: message,
+		confirmLabel: options.confirmLabel || 'Continue',
+		cancelLabel: options.cancelLabel || 'Cancel',
+		showCancel: true
+	});
+}
+
+window.gameAlert = gameAlert;
+window.gameConfirm = gameConfirm;
+window.closeGameMessageDialog = closeGameMessageDialog;
+
+document.addEventListener('click', function(event) {
+	if (event.target.closest('[data-game-message-confirm]')) {
+		if (event.preventDefault) event.preventDefault();
+		closeGameMessageDialog(true);
+		return;
+	}
+	if (event.target.closest('[data-game-message-cancel]')) {
+		if (event.preventDefault) event.preventDefault();
+		closeGameMessageDialog(false);
+	}
+});
+
+document.addEventListener('cancel', function(event) {
+	if (event.target && event.target.id === 'game-message-dialog') {
+		event.preventDefault();
+		closeGameMessageDialog(false);
+	}
+});
 
 function canEnterPlayMode(mode) {
 	if (mode === 'training') {
@@ -18,15 +127,15 @@ function canEnterPlayMode(mode) {
 	if (typeof ensureLeafPredictionsForEval === 'function') {
 		var finalizeError = ensureLeafPredictionsForEval(cards.trainingSet);
 		if (finalizeError) {
-			alert(finalizeError);
+			gameAlert(finalizeError);
 			return false;
 		}
 	} else if (typeof predictionsComplete === 'function' && !predictionsComplete(cards.trainingSet)) {
-		alert('You must ensure you have a valid prediction (not ?) for all branch ends in your tree before you can continue.');
+		gameAlert('You must ensure you have a valid prediction (not ?) for all branch ends in your tree before you can continue.');
 		return false;
 	}
 	if (!modelHasRun && !confidences.player && confidences.player !== 0) {
-		alert('You must run your model on the training set before you can proceed to test or evaluation.');
+		gameAlert('You must run your model on the training set before you can proceed to test or evaluation.');
 		return false;
 	}
 	if (mode === 'evaluation' && requireEvaluationPin) {
@@ -646,6 +755,15 @@ function setEvalFlowChrome(phase) {
 			}
 			setEvalStatusVisible(true);
 		}
+		if (evalFlowPhase === 'done') {
+			if (typeof syncEvalResultsCollapsedFromStorage === 'function') {
+				syncEvalResultsCollapsedFromStorage();
+			} else if (typeof setEvalResultsCollapsed === 'function') {
+				setEvalResultsCollapsed(false, { skipPersist: true });
+			}
+		} else if (typeof setEvalResultsCollapsed === 'function') {
+			setEvalResultsCollapsed(false, { skipPersist: true });
+		}
 		updateEvalActionButtons();
 		updateEvalTutorialReplayButton();
 		return;
@@ -653,6 +771,9 @@ function setEvalFlowChrome(phase) {
 
 	if (flow) flow.classList.remove('hidden');
 	if (actions) actions.classList.add('is-flow-hidden');
+	if (typeof setEvalResultsCollapsed === 'function') {
+		setEvalResultsCollapsed(false, { skipPersist: true });
+	}
 	updateEvalTutorialReplayButton();
 	if (evalFlowPhase === 'team') {
 		setEvalResultsPending(true);
@@ -1044,6 +1165,7 @@ $(document).ready(function() {
 
 	document.addEventListener('keydown', function(event) {
 		if (event.key !== 'Enter' && event.key !== ' ') return;
+		if (typeof canLoadSessionLeaderboardResult === 'function' && !canLoadSessionLeaderboardResult()) return;
 		var lbRow = event.target.closest && event.target.closest('#session-leaderboard-body tr[data-result-id].is-loadable');
 		if (!lbRow || lbRow.getAttribute('data-pending-team')) return;
 		event.preventDefault();
@@ -1055,6 +1177,7 @@ $(document).ready(function() {
 	document.addEventListener('click', function(event) {
 		var lbRow = event.target.closest('#session-leaderboard-body tr[data-result-id]');
 		if (lbRow && !lbRow.getAttribute('data-pending-team') && lbRow.classList.contains('is-loadable')) {
+			if (typeof canLoadSessionLeaderboardResult === 'function' && !canLoadSessionLeaderboardResult()) return;
 			if (event.preventDefault) event.preventDefault();
 			if (typeof loadSessionLeaderboardResult === 'function') {
 				loadSessionLeaderboardResult(lbRow.getAttribute('data-result-id'));
@@ -1111,6 +1234,44 @@ $(document).ready(function() {
 	initFloatPanels();
 });
 
+function isGuideFloatVisible(guide) {
+	if (!guide || !guide.classList.contains('is-visible')) {
+		return false;
+	}
+	try {
+		return window.getComputedStyle(guide).display !== 'none';
+	} catch (err) {
+		return true;
+	}
+}
+
+function syncSessionLeaderboardStack() {
+	var lb = document.querySelector('.game-session-lb-float');
+	var guide = document.getElementById('game-guide-float');
+	var workspace = document.getElementById('game-workspace');
+	if (!lb) {
+		return;
+	}
+	if (lb.getAttribute('data-user-positioned') === '1') {
+		return;
+	}
+	if (isGuideFloatVisible(guide)) {
+		var gap = 8;
+		var nextTop = guide.offsetTop + guide.offsetHeight + gap;
+		if (workspace) {
+			var maxTop = Math.max(0, workspace.clientHeight - Math.min(lb.offsetHeight, workspace.clientHeight));
+			nextTop = Math.min(nextTop, maxTop);
+		}
+		lb.style.top = nextTop + 'px';
+		lb.style.right = '0.25rem';
+		lb.style.left = 'auto';
+	} else {
+		lb.style.top = '';
+		lb.style.right = '';
+		lb.style.left = '';
+	}
+}
+
 function initFloatPanels() {
 	var workspace = document.getElementById('game-workspace');
 	if (!workspace) {
@@ -1119,7 +1280,18 @@ function initFloatPanels() {
 	document.querySelectorAll('[data-float-panel]').forEach(function(chrome) {
 		initOneFloatPanel(chrome, workspace);
 	});
+	var guide = document.getElementById('game-guide-float');
+	if (guide && typeof ResizeObserver !== 'undefined' && !guide._lbStackObserver) {
+		guide._lbStackObserver = new ResizeObserver(function() {
+			syncSessionLeaderboardStack();
+		});
+		guide._lbStackObserver.observe(guide);
+	}
+	window.addEventListener('resize', syncSessionLeaderboardStack);
+	syncSessionLeaderboardStack();
 }
+
+window.syncSessionLeaderboardStack = syncSessionLeaderboardStack;
 
 function initOneFloatPanel(chrome, workspace) {
 	var handle = chrome.querySelector('.game-deck-drag-handle');
@@ -1160,12 +1332,16 @@ function initOneFloatPanel(chrome, workspace) {
 		dragging = false;
 		pointerId = null;
 		chrome.classList.remove('is-dragging');
+		chrome.setAttribute('data-user-positioned', '1');
 		try {
 			handle.releasePointerCapture(event.pointerId);
 		} catch (err) {}
 		window.removeEventListener('pointermove', onPointerMove);
 		window.removeEventListener('pointerup', onPointerUp);
 		window.removeEventListener('pointercancel', onPointerUp);
+		if (chrome.id === 'game-guide-float' || chrome.classList.contains('game-guide-float')) {
+			syncSessionLeaderboardStack();
+		}
 	}
 
 	handle.addEventListener('pointerdown', function(event) {

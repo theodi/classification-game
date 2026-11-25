@@ -337,7 +337,11 @@ function openBrowseModal(indexes, title, options) {
 	var opts = options || {};
 	var list = (indexes || []).filter(function(n) { return n !== undefined && n !== null && n !== ''; });
 	if (!list.length) {
-		alert('No cards to browse in this cluster yet.');
+		if (typeof gameAlert === 'function') {
+			gameAlert('No cards to browse in this cluster yet.');
+		} else {
+			alert('No cards to browse in this cluster yet.');
+		}
 		return;
 	}
 	browseDownloadState.indexes = list.slice();
@@ -460,7 +464,172 @@ function closeClusterBrowse() {
 	}
 }
 
+var DECK_ROLLED_PREF_KEY = 'deckRolled';
+var EVAL_COLLAPSED_PREF_KEY = 'evalResultsCollapsed';
+
+function isDeckRolled() {
+	var deck = document.querySelector('.game-training-deck');
+	return !!(deck && deck.classList.contains('is-deck-rolled'));
+}
+
+function setDeckRolled(rolled) {
+	var deck = document.querySelector('.game-training-deck');
+	var btn = document.querySelector('[data-deck-roll]');
+	var label = document.querySelector('[data-deck-roll-label]');
+	var next = !!rolled;
+	if (deck) {
+		deck.classList.toggle('is-deck-rolled', next);
+	}
+	if (btn) {
+		btn.setAttribute('aria-expanded', next ? 'false' : 'true');
+		btn.title = next ? 'Expand cards' : 'Roll up cards to save space';
+	}
+	if (label) {
+		label.textContent = next ? 'Expand cards' : 'Roll up cards';
+	}
+	try {
+		window.localStorage.setItem(DECK_ROLLED_PREF_KEY, next ? '1' : '0');
+	} catch (err) {}
+}
+
+function syncDeckRolledFromStorage() {
+	var preferred = false;
+	try {
+		preferred = window.localStorage.getItem(DECK_ROLLED_PREF_KEY) === '1';
+	} catch (err) {}
+	setDeckRolled(preferred);
+}
+
+function isEvalResultsCollapsed() {
+	var chrome = document.querySelector('.game-deck-chrome');
+	return !!(chrome && chrome.classList.contains('is-eval-collapsed'));
+}
+
+function syncEvalCompactScore(html) {
+	var compact = document.querySelector('[data-eval-compact-score]');
+	var panel = document.querySelector('.game-eval-compact');
+	if (!compact) return;
+	var content = html;
+	if (content === undefined) {
+		var status = document.getElementById('evaluationStatus');
+		content = status && !status.classList.contains('hidden') ? status.innerHTML : '';
+	}
+	if (!content && typeof results !== 'undefined' && results && (results.score || results.score === 0)) {
+		content = 'Your score: <strong>' + results.score + '</strong>';
+	}
+	compact.innerHTML = content || '';
+	if (panel) {
+		panel.setAttribute('aria-hidden', content ? 'false' : 'true');
+	}
+}
+
+function setEvalResultsCollapsible(canCollapse) {
+	var chrome = document.querySelector('.game-deck-chrome');
+	if (chrome) {
+		chrome.classList.toggle('is-eval-collapsible', !!canCollapse);
+	}
+}
+
+function setEvalResultsCollapsed(collapsed, options) {
+	options = options || {};
+	var chrome = document.querySelector('.game-deck-chrome');
+	var btn = document.querySelector('[data-eval-results-toggle]');
+	var label = document.querySelector('[data-eval-results-label]');
+	var canCollapse = options.force || (typeof evalFlowPhase === 'undefined') || evalFlowPhase === 'done';
+	var next = !!collapsed && canCollapse;
+	setEvalResultsCollapsible(canCollapse);
+	if (chrome) {
+		chrome.classList.toggle('is-eval-collapsed', next);
+	}
+	if (btn) {
+		btn.setAttribute('aria-expanded', next ? 'false' : 'true');
+		btn.title = next ? 'Expand evaluation panel' : 'Compress evaluation panel';
+	}
+	if (label) {
+		label.textContent = next ? 'Expand evaluation panel' : 'Compress evaluation panel';
+	}
+	if (next) {
+		syncEvalCompactScore();
+	}
+	if (!options.skipPersist && canCollapse) {
+		try {
+			window.localStorage.setItem(EVAL_COLLAPSED_PREF_KEY, next ? '1' : '0');
+		} catch (err) {}
+	}
+}
+
+function syncEvalResultsCollapsedFromStorage() {
+	var preferred = false;
+	try {
+		preferred = window.localStorage.getItem(EVAL_COLLAPSED_PREF_KEY) === '1';
+	} catch (err) {}
+	var canCollapse = typeof evalFlowPhase === 'undefined' || evalFlowPhase === 'done';
+	setEvalResultsCollapsible(canCollapse);
+	setEvalResultsCollapsed(preferred && canCollapse, { skipPersist: true });
+}
+
+window.setDeckRolled = setDeckRolled;
+window.isDeckRolled = isDeckRolled;
+window.syncDeckRolledFromStorage = syncDeckRolledFromStorage;
+window.setEvalResultsCollapsed = setEvalResultsCollapsed;
+window.isEvalResultsCollapsed = isEvalResultsCollapsed;
+window.syncEvalResultsCollapsedFromStorage = syncEvalResultsCollapsedFromStorage;
+window.syncEvalCompactScore = syncEvalCompactScore;
+
 document.addEventListener('click', function(event) {
+	var newGroupBtn = event.target.closest('[data-new-group-submission]');
+	if (newGroupBtn) {
+		if (event.preventDefault) {
+			event.preventDefault();
+		}
+		startFreshGroupSubmission();
+		return;
+	}
+	var scoreGuideToggle = event.target.closest('[data-score-guide-toggle]');
+	if (scoreGuideToggle) {
+		if (event.preventDefault) {
+			event.preventDefault();
+		}
+		var lbFloat = document.querySelector('.game-session-lb-float');
+		var guideLabel = document.querySelector('[data-score-guide-label]');
+		if (lbFloat) {
+			var collapsed = !lbFloat.classList.contains('is-score-guide-collapsed');
+			lbFloat.classList.toggle('is-score-guide-collapsed', collapsed);
+			scoreGuideToggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+			scoreGuideToggle.title = collapsed ? 'Show score guide' : 'Hide score guide';
+			if (guideLabel) {
+				guideLabel.textContent = collapsed ? 'Show score guide' : 'Hide score guide';
+			}
+		}
+		return;
+	}
+	var evalResultsToggle = event.target.closest('[data-eval-results-toggle]');
+	if (evalResultsToggle) {
+		if (event.preventDefault) {
+			event.preventDefault();
+		}
+		setEvalResultsCollapsed(!isEvalResultsCollapsed());
+		return;
+	}
+	var compactReplay = event.target.closest('[data-eval-compact-replay]');
+	if (compactReplay) {
+		if (event.preventDefault) {
+			event.preventDefault();
+		}
+		var rerun = document.getElementById('rerunEvaluation');
+		if (rerun && !rerun.classList.contains('hidden')) {
+			rerun.click();
+		}
+		return;
+	}
+	var rollBtn = event.target.closest('[data-deck-roll]');
+	if (rollBtn) {
+		if (event.preventDefault) {
+			event.preventDefault();
+		}
+		setDeckRolled(!isDeckRolled());
+		return;
+	}
 	if (event.target.closest('[data-bring-cards-back]')) {
 		if (event.preventDefault) {
 			event.preventDefault();
@@ -638,11 +807,15 @@ function renderLeaderboard(data, prefix) {
         tr.setAttribute('data-result-id', String(item.id));
       }
       var indexed = item.id ? sessionLeaderboardById[item.id] : null;
-      if (indexed && indexed.tree) {
+      if (indexed && indexed.tree && canLoadSessionLeaderboardResult()) {
         tr.classList.add('is-loadable');
         tr.title = 'Click to load this tree and replay evaluation';
         tr.setAttribute('tabindex', '0');
         tr.setAttribute('role', 'button');
+      }
+      if (loadedSessionLeaderboardResultId && item.id && String(item.id) === String(loadedSessionLeaderboardResultId)) {
+        tr.classList.add('is-loaded');
+        tr.setAttribute('aria-current', 'true');
       }
       tr.innerHTML = '<td>' + label + '</td><td>' + item.score + '</td>';
       sessionBody.appendChild(tr);
@@ -650,6 +823,7 @@ function renderLeaderboard(data, prefix) {
     if (pendingName && !pendingMatched && typeof sessionPendingTeam !== 'undefined' && sessionPendingTeam) {
       appendSessionPendingLeaderboardRow(sessionBody, sessionPendingTeam);
     }
+    highlightLoadedSessionLeaderboardRow();
     return;
   }
 
@@ -748,6 +922,7 @@ function destroyLeaderboardDataTable(prefix) {
 }
 
 var sessionLeaderboardById = {};
+var loadedSessionLeaderboardResultId = null;
 
 function indexSessionLeaderboardResult(item) {
 	if (!item || !item.id) return;
@@ -755,6 +930,26 @@ function indexSessionLeaderboardResult(item) {
 	if (!existing || (item.tree && !existing.tree)) {
 		sessionLeaderboardById[item.id] = item;
 	}
+}
+
+function highlightLoadedSessionLeaderboardRow() {
+	var body = document.getElementById('session-leaderboard-body');
+	if (!body) return;
+	var loadedId = loadedSessionLeaderboardResultId ? String(loadedSessionLeaderboardResultId) : '';
+	body.querySelectorAll('tr[data-result-id]').forEach(function(tr) {
+		var match = !!loadedId && tr.getAttribute('data-result-id') === loadedId;
+		tr.classList.toggle('is-loaded', match);
+		if (match) {
+			tr.setAttribute('aria-current', 'true');
+		} else {
+			tr.removeAttribute('aria-current');
+		}
+	});
+}
+
+function setLoadedSessionLeaderboardResult(resultId) {
+	loadedSessionLeaderboardResultId = resultId ? String(resultId) : null;
+	highlightLoadedSessionLeaderboardRow();
 }
 
 function findSessionLeaderboardResult(resultId) {
@@ -797,9 +992,77 @@ function getLocalSessionLeaderboardRows() {
 	return rows;
 }
 
+function restoreEvaluationResultsFromLeaderboard(result) {
+	var runData = (result && result.result) || {};
+	results = {
+		vsMachine: Object.assign({ win: 0, draw: 0, lost: 0 }, result.vsMachine || runData.vsMachine || {}),
+		vsHybrid: Object.assign({ win: 0, draw: 0, lost: 0 }, result.vsHybrid || runData.vsHybrid || {})
+	};
+	for (var n = 1; n <= 4; n++) {
+		results[n] = Object.assign({}, runData[n] || {});
+	}
+	if (result.score || result.score === 0) {
+		results.score = result.score;
+	} else if (runData.score || runData.score === 0) {
+		results.score = runData.score;
+	} else if (confidences && (confidences.player || confidences.player === 0) &&
+		results[1] && (results[1].score || results[1].score === 0)) {
+		results.score = confidences.player +
+			(results[1].score || 0) + (results[2].score || 0) +
+			(results[3].score || 0) + (results[4].score || 0);
+	}
+}
+
+function paintLoadedEvaluationScoreTable() {
+	if (typeof fillEvalTutorialConfidences === 'function') {
+		fillEvalTutorialConfidences();
+	} else if (confidences) {
+		var userEl = document.getElementById('confidence-user');
+		var machineEl = document.getElementById('confidence-stoopid-ai');
+		var hybridEl = document.getElementById('confidence-hybrid');
+		if (userEl && (confidences.player || confidences.player === 0)) {
+			userEl.textContent = confidences.player + '%';
+		}
+		if (machineEl && confidences.machine) {
+			machineEl.textContent = confidences.machine + '%';
+		}
+		if (hybridEl && confidences.hybrid) {
+			hybridEl.textContent = confidences.hybrid + '%';
+		}
+	}
+	if (typeof syncEvalRunResultsPaint === 'function') {
+		syncEvalRunResultsPaint({
+			userLevel: 3,
+			includeMachine: true,
+			includeHybrid: true,
+			includeTotal: true
+		});
+	} else if (typeof paintRun === 'function') {
+		for (var n = 1; n <= 4; n++) {
+			paintRun(n);
+		}
+	}
+	if ((results.score || results.score === 0) && typeof highlightScoreGuide === 'function') {
+		highlightScoreGuide(results.score);
+	}
+	var lbFloat = document.querySelector('.game-session-lb-float');
+	if (lbFloat) {
+		lbFloat.classList.remove('is-score-guide-collapsed');
+	}
+	var guideToggle = document.querySelector('[data-score-guide-toggle]');
+	if (guideToggle) {
+		guideToggle.setAttribute('aria-expanded', 'true');
+		guideToggle.title = 'Hide score guide';
+	}
+}
+
 function applyLoadedEvaluationResult(result) {
 	if (!result || !result.tree) {
-		alert('That leaderboard entry does not include a tree to load.');
+		if (typeof gameAlert === 'function') {
+			gameAlert('That leaderboard entry does not include a tree to load.');
+		} else {
+			alert('That leaderboard entry does not include a tree to load.');
+		}
 		return false;
 	}
 	if (window.gameTree && typeof window.gameTree.fromGameTree === 'function') {
@@ -813,11 +1076,7 @@ function applyLoadedEvaluationResult(result) {
 	if (result.confidences) {
 		confidences = Object.assign({}, confidences || {}, result.confidences);
 	}
-	if (typeof updateConfidence === 'function' && typeof cards !== 'undefined' && cards.trainingSet) {
-		try {
-			updateConfidence(cards.trainingSet);
-		} catch (err) {}
-	}
+	restoreEvaluationResultsFromLeaderboard(result);
 	if (typeof saveData === 'function') {
 		saveData();
 	}
@@ -843,37 +1102,135 @@ function applyLoadedEvaluationResult(result) {
 	if (typeof setEvalFlowChrome === 'function') {
 		setEvalFlowChrome('done');
 	}
+	paintLoadedEvaluationScoreTable();
 	if (typeof setEvaluationStatusMessage === 'function') {
-		var label = result.playerName || 'this team';
-		var attemptLabel = result.attempt !== undefined && result.attempt !== null ? ' (attempt ' + result.attempt + ')' : '';
-		setEvaluationStatusMessage('Loaded tree from <strong>' + label + attemptLabel + '</strong>. Replay only — new scores cannot be submitted.');
+		if (results.score || results.score === 0) {
+			setEvaluationStatusMessage('Your score: <strong>' + results.score + '</strong>');
+		} else {
+			setEvaluationStatusMessage('');
+		}
 	}
 	if (typeof updateEvalActionButtons === 'function') {
 		updateEvalActionButtons();
 	}
+	if (result.id) {
+		setLoadedSessionLeaderboardResult(result.id);
+	}
 	return true;
 }
 
+function canLoadSessionLeaderboardResult() {
+	if (typeof isTutor !== 'undefined' && isTutor) {
+		return true;
+	}
+	return !!(document.body && document.body.classList.contains('is-tutor'));
+}
+
 function loadSessionLeaderboardResult(resultId) {
+	if (!canLoadSessionLeaderboardResult()) {
+		return;
+	}
 	var result = findSessionLeaderboardResult(resultId);
 	if (!result) {
-		alert('Could not find that leaderboard entry.');
+		if (typeof gameAlert === 'function') {
+			gameAlert('Could not find that leaderboard entry.');
+		} else {
+			alert('Could not find that leaderboard entry.');
+		}
 		return;
 	}
 	if (!result.tree) {
-		alert('That leaderboard entry does not include a saved tree.');
+		if (typeof gameAlert === 'function') {
+			gameAlert('That leaderboard entry does not include a saved tree.');
+		} else {
+			alert('That leaderboard entry does not include a saved tree.');
+		}
 		return;
 	}
 	var label = result.playerName || 'this team';
-	var ok = window.confirm(
-		'Load the tree from "' + label + '"?\n\n' +
-		'This replaces your current tree. You will only be able to replay evaluation for this tree — you cannot submit a new score from a leaderboard load.'
-	);
-	if (!ok) {
+	var message = 'Load the tree from "' + label + '"?\n\n' +
+		'This replaces your current tree. You will only be able to replay evaluation for this tree — you cannot submit a new score from a leaderboard load.';
+	var proceed = function(ok) {
+		if (!ok) {
+			return;
+		}
+		applyLoadedEvaluationResult(result);
+	};
+	if (typeof gameConfirm === 'function') {
+		gameConfirm(message, {
+			title: 'Load leaderboard tree',
+			confirmLabel: 'Load tree',
+			cancelLabel: 'Cancel'
+		}).then(proceed);
 		return;
 	}
-	applyLoadedEvaluationResult(result);
+	proceed(window.confirm(message));
 }
+
+function canStartFreshGroupSubmission() {
+	if (typeof canLoadSessionLeaderboardResult === 'function') {
+		if (!canLoadSessionLeaderboardResult()) {
+			return false;
+		}
+	} else if (!(typeof isTutor !== 'undefined' && isTutor) &&
+		!(document.body && document.body.classList.contains('is-tutor'))) {
+		return false;
+	}
+	if (!sessionId || sessionId === 'selfpaced') {
+		return false;
+	}
+	if (!leaderboardId) {
+		return false;
+	}
+	return true;
+}
+
+function wipeSessionLocalPlayState() {
+	var empty = {
+		results: [],
+		attempt: 0,
+		factors: {},
+		boundaries: {},
+		predictions: {}
+	};
+	storage = empty;
+	try {
+		if (window.localStorage && sessionId) {
+			window.localStorage.setItem(sessionId, JSON.stringify(empty));
+		}
+	} catch (err) {}
+	try {
+		window.sessionStorage.removeItem('entrySheet:' + sessionId);
+	} catch (err2) {}
+}
+
+function startFreshGroupSubmission() {
+	if (!canStartFreshGroupSubmission()) {
+		return;
+	}
+	var message = 'Start a new group submission?\n\n' +
+		'This clears the current tree, team name, and evaluation scores so you can enter a group’s tree, check training %, and evaluate on their behalf.';
+	var proceed = function(ok) {
+		if (!ok) {
+			return;
+		}
+		wipeSessionLocalPlayState();
+		var url = '/game/' + encodeURIComponent(String(sessionId)) + '?entry=1&resetEval=1';
+		window.location.assign(url);
+	};
+	if (typeof gameConfirm === 'function') {
+		gameConfirm(message, {
+			title: 'New group submission',
+			confirmLabel: 'Start fresh',
+			cancelLabel: 'Cancel'
+		}).then(proceed);
+		return;
+	}
+	proceed(window.confirm(message));
+}
+
+window.startFreshGroupSubmission = startFreshGroupSubmission;
+window.canStartFreshGroupSubmission = canStartFreshGroupSubmission;
 
 function clearEvaluationProgress() {
 	try {
@@ -900,6 +1257,7 @@ function clearEvaluationProgress() {
 	leaderboardReplayOnly = false;
 	replayOnly = false;
 	sessionLeaderboardById = {};
+	loadedSessionLeaderboardResultId = null;
 	if (typeof sessionPendingTeam !== 'undefined') {
 		sessionPendingTeam = null;
 	}
@@ -973,9 +1331,53 @@ function renderSessionLeaderboardFromLocal() {
 	renderSessionLeaderboardPending();
 }
 
+function setSessionLeaderboardName(name) {
+	var el = document.querySelector('[data-session-name]');
+	var label = name ? String(name).trim() : '';
+	if (typeof sessionName !== 'undefined') {
+		sessionName = label;
+	}
+	if (!el) {
+		return;
+	}
+	var show = !!label && (
+		(typeof canLoadSessionLeaderboardResult === 'function' && canLoadSessionLeaderboardResult()) ||
+		(typeof isTutor !== 'undefined' && isTutor) ||
+		(document.body && document.body.classList.contains('is-tutor'))
+	);
+	el.textContent = label;
+	el.classList.toggle('hidden', !show);
+}
+
+function fillSessionLeaderboardName() {
+	var existing = (typeof sessionName !== 'undefined' && sessionName) ? String(sessionName).trim() : '';
+	if (existing) {
+		setSessionLeaderboardName(existing);
+		return;
+	}
+	var el = document.querySelector('[data-session-name]');
+	if (el && el.textContent && el.textContent.trim()) {
+		setSessionLeaderboardName(el.textContent.trim());
+		return;
+	}
+	var isTeacherView = (typeof canLoadSessionLeaderboardResult === 'function' && canLoadSessionLeaderboardResult()) ||
+		(typeof isTutor !== 'undefined' && isTutor) ||
+		(document.body && document.body.classList.contains('is-tutor'));
+	if (!isTeacherView || !leaderboardId || !sessionId || sessionId === 'selfpaced') {
+		return;
+	}
+	$.getJSON('/schools/' + leaderboardId + '/sessions/' + sessionId)
+		.done(function(data) {
+			if (data && data.name) {
+				setSessionLeaderboardName(data.name);
+			}
+		});
+}
+
 function loadLeaderboards() {
 	// Always paint local session scores first (works for students; teacher APIs are auth-gated).
 	renderSessionLeaderboardFromLocal();
+	fillSessionLeaderboardName();
 	if (!leaderboardId) {
 		return;
 	}

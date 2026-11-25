@@ -39,25 +39,22 @@
   <script src="/js/decision-tree.js"></script>
   <script src="/js/guided-tours.js"></script>
 </head>
-<body class="game-page stage-training">
+<body class="game-page stage-training<%= (typeof isTutor !== 'undefined' && isTutor) || (typeof user !== 'undefined' && user && (user.type === 'teacher' || user.type === 'admin')) ? ' is-tutor' : '' %>">
   <header class="header game-header">
     <div class="container">
       <div class="header-top">
         <a href="#play" class="logo toggle-link" aria-label="Open Data Institute"></a>
         <nav class="main-nav" aria-label="Game">
           <ul>
-            <% if ((typeof isTutor !== 'undefined' && isTutor) || (typeof user !== 'undefined' && user && (user.type === 'teacher' || user.type === 'admin'))) { %>
-              <%
-                var manageSessionHref = '/schools';
-                if (typeof user !== 'undefined' && user && user.schoolId) {
-                  manageSessionHref = '/schools/' + user.schoolId;
-                }
-                if (typeof leaderboardId !== 'undefined' && leaderboardId && typeof session !== 'undefined' && session && session !== 'selfpaced') {
-                  manageSessionHref = '/schools/' + leaderboardId + '/sessions/' + session;
-                }
-              %>
+            <%
+              var showTutorGroupBtn = ((typeof isTutor !== 'undefined' && isTutor) ||
+                (typeof user !== 'undefined' && user && (user.type === 'teacher' || user.type === 'admin'))) &&
+                typeof session !== 'undefined' && session && session !== 'selfpaced' &&
+                typeof leaderboardId !== 'undefined' && leaderboardId;
+            %>
+            <% if (showTutorGroupBtn) { %>
               <li>
-                <a class="game-nav-btn" href="<%= manageSessionHref %>">Manage session</a>
+                <button type="button" class="game-nav-btn" data-new-group-submission title="Clear the current tree and submit a new tree for a group">New group</button>
               </li>
             <% } %>
             <li>
@@ -91,6 +88,7 @@
   var entryMode = <%= entryMode ? 'true' : 'false' %>;
   var replayOnly = <%= replayOnly ? 'true' : 'false' %>;
   var evalSetId = <%- JSON.stringify(evalSetId || '') %>;
+  var sessionName = <%- JSON.stringify(typeof sessionName !== 'undefined' ? sessionName : '') %>;
   var presetTeam = <%- JSON.stringify(teamName || '') %>;
   var player_name = presetTeam || '';
   var attempt = 0;
@@ -127,6 +125,12 @@
       } else if (!entryMode) {
         changeName();
       }
+      if (typeof fillSessionLeaderboardName === 'function') {
+        fillSessionLeaderboardName();
+      }
+      if (entryMode && leaderboardId && typeof loadLeaderboards === 'function') {
+        loadLeaderboards();
+      }
       if (entryMode && typeof renderRecordingSheet === 'function') {
         renderRecordingSheet();
       }
@@ -138,6 +142,12 @@
         if (typeof updateEvalActionButtons === 'function') {
           updateEvalActionButtons();
         }
+      }
+      if (typeof syncDeckRolledFromStorage === 'function') {
+        syncDeckRolledFromStorage();
+      }
+      if (typeof syncEvalResultsCollapsedFromStorage === 'function') {
+        syncEvalResultsCollapsedFromStorage();
       }
       if (typeof updateGuideNavVisibility === 'function') {
         updateGuideNavVisibility();

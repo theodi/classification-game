@@ -41,6 +41,10 @@
           <button type="button" class="flow-leaf-btn game-deck-browse" data-browse-all-cards>Browse cards</button>
           <button type="button" class="flow-leaf-btn game-deck-bring-back" data-bring-cards-back title="Move the cards from the tree back into this box.">Bring cards back</button>
         </div>
+        <button type="button" class="game-deck-roll" data-deck-roll aria-expanded="true" title="Roll up cards to save space">
+          <span class="game-deck-roll-icon" aria-hidden="true"></span>
+          <span class="visually-hidden" data-deck-roll-label>Roll up cards</span>
+        </button>
       </div>
       <div id="game-run-summary" class="game-run-summary hidden">
         <div id="game-run-summary-scores" class="game-run-summary-scores"></div>
@@ -58,66 +62,76 @@
         </div>
       </div>
       <div id="game-eval-results" class="game-eval-results results is-pending">
-        <div class="game-eval-results-toolbar">
-          <h2 class="game-eval-results-title">Evaluation scores</h2>
+        <div class="game-eval-results-body">
+          <div class="game-eval-results-toolbar">
+            <h2 class="game-eval-results-title">Evaluation scores</h2>
+          </div>
+          <div class="game-eval-results-scroll">
+            <table class="game-odi-table game-eval-score-table" id="eval-score-table">
+              <thead>
+                <tr>
+                  <th data-eval-reveal="col-player">Player</th>
+                  <th data-eval-reveal="col-confidence">Confidence</th>
+                  <th data-eval-reveal="col-detail">Detail</th>
+                  <th data-eval-reveal="col-runs" data-eval-pulse="col-runs">Run 1</th>
+                  <th data-eval-reveal="col-runs" data-eval-pulse="col-runs">Run 2</th>
+                  <th data-eval-reveal="col-runs" data-eval-pulse="col-runs">Run 3</th>
+                  <th data-eval-reveal="col-runs" data-eval-pulse="col-runs">Run 4</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr data-eval-reveal="row-you" data-eval-pulse="you">
+                  <td data-eval-reveal="col-player">You</td>
+                  <td id="confidence-user" data-eval-reveal="col-confidence" data-eval-pulse="you-confidence"></td>
+                  <td class="game-eval-detail" data-eval-reveal="col-detail">
+                    <span data-eval-reveal="detail-a" data-eval-pulse="detail-a">% correctly classified (a)</span><br>
+                    <span data-eval-reveal="detail-b" data-eval-pulse="detail-b">Difference from confidence (b)</span><br>
+                    <span data-eval-reveal="detail-score" data-eval-pulse="detail-score">Score (a − b)</span>
+                  </td>
+                  <td id="result1-user" data-eval-reveal="run-user" data-eval-pulse="run-user"></td>
+                  <td id="result2-user" data-eval-reveal="run-user" data-eval-pulse="run-user"></td>
+                  <td id="result3-user" data-eval-reveal="run-user" data-eval-pulse="run-user"></td>
+                  <td id="result4-user" data-eval-reveal="run-user" data-eval-pulse="run-user"></td>
+                </tr>
+                <tr data-eval-reveal="row-machine" data-eval-pulse="machine">
+                  <td data-eval-reveal="col-player">vs Machine</td>
+                  <td id="confidence-stoopid-ai" data-eval-reveal="machine-confidence" data-eval-pulse="machine-confidence"></td>
+                  <td data-eval-reveal="col-detail"></td>
+                  <td id="result1-stoopid-ai" data-eval-reveal="run-machine" data-eval-pulse="run-machine"></td>
+                  <td id="result2-stoopid-ai" data-eval-reveal="run-machine" data-eval-pulse="run-machine"></td>
+                  <td id="result3-stoopid-ai" data-eval-reveal="run-machine" data-eval-pulse="run-machine"></td>
+                  <td id="result4-stoopid-ai" data-eval-reveal="run-machine" data-eval-pulse="run-machine"></td>
+                </tr>
+                <tr data-eval-reveal="row-hybrid" data-eval-pulse="hybrid">
+                  <td data-eval-reveal="col-player">vs Human+ML</td>
+                  <td id="confidence-hybrid" data-eval-reveal="hybrid-confidence" data-eval-pulse="hybrid-confidence"></td>
+                  <td data-eval-reveal="col-detail"></td>
+                  <td id="result1-hybrid" data-eval-reveal="run-hybrid" data-eval-pulse="run-hybrid"></td>
+                  <td id="result2-hybrid" data-eval-reveal="run-hybrid" data-eval-pulse="run-hybrid"></td>
+                  <td id="result3-hybrid" data-eval-reveal="run-hybrid" data-eval-pulse="run-hybrid"></td>
+                  <td id="result4-hybrid" data-eval-reveal="run-hybrid" data-eval-pulse="run-hybrid"></td>
+                </tr>
+                <tr class="game-eval-total-row" data-eval-reveal="row-total" data-eval-pulse="total">
+                  <td data-eval-reveal="col-player">Total</td>
+                  <td data-eval-reveal="col-confidence"></td>
+                  <td data-eval-reveal="col-detail"></td>
+                  <td id="result1-score" data-eval-reveal="run-total" data-eval-pulse="run-total"></td>
+                  <td id="result2-score" data-eval-reveal="run-total" data-eval-pulse="run-total"></td>
+                  <td id="result3-score" data-eval-reveal="run-total" data-eval-pulse="run-total"></td>
+                  <td id="result4-score" data-eval-reveal="run-total" data-eval-pulse="run-total"></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
-        <div class="game-eval-results-scroll">
-          <table class="game-odi-table game-eval-score-table" id="eval-score-table">
-            <thead>
-              <tr>
-                <th data-eval-reveal="col-player">Player</th>
-                <th data-eval-reveal="col-confidence">Confidence</th>
-                <th data-eval-reveal="col-detail">Detail</th>
-                <th data-eval-reveal="col-runs" data-eval-pulse="col-runs">Run 1</th>
-                <th data-eval-reveal="col-runs" data-eval-pulse="col-runs">Run 2</th>
-                <th data-eval-reveal="col-runs" data-eval-pulse="col-runs">Run 3</th>
-                <th data-eval-reveal="col-runs" data-eval-pulse="col-runs">Run 4</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr data-eval-reveal="row-you" data-eval-pulse="you">
-                <td data-eval-reveal="col-player">You</td>
-                <td id="confidence-user" data-eval-reveal="col-confidence" data-eval-pulse="you-confidence"></td>
-                <td class="game-eval-detail" data-eval-reveal="col-detail">
-                  <span data-eval-reveal="detail-a" data-eval-pulse="detail-a">% correctly classified (a)</span><br>
-                  <span data-eval-reveal="detail-b" data-eval-pulse="detail-b">Difference from confidence (b)</span><br>
-                  <span data-eval-reveal="detail-score" data-eval-pulse="detail-score">Score (a − b)</span>
-                </td>
-                <td id="result1-user" data-eval-reveal="run-user" data-eval-pulse="run-user"></td>
-                <td id="result2-user" data-eval-reveal="run-user" data-eval-pulse="run-user"></td>
-                <td id="result3-user" data-eval-reveal="run-user" data-eval-pulse="run-user"></td>
-                <td id="result4-user" data-eval-reveal="run-user" data-eval-pulse="run-user"></td>
-              </tr>
-              <tr data-eval-reveal="row-machine" data-eval-pulse="machine">
-                <td data-eval-reveal="col-player">vs Machine</td>
-                <td id="confidence-stoopid-ai" data-eval-reveal="machine-confidence" data-eval-pulse="machine-confidence"></td>
-                <td data-eval-reveal="col-detail"></td>
-                <td id="result1-stoopid-ai" data-eval-reveal="run-machine" data-eval-pulse="run-machine"></td>
-                <td id="result2-stoopid-ai" data-eval-reveal="run-machine" data-eval-pulse="run-machine"></td>
-                <td id="result3-stoopid-ai" data-eval-reveal="run-machine" data-eval-pulse="run-machine"></td>
-                <td id="result4-stoopid-ai" data-eval-reveal="run-machine" data-eval-pulse="run-machine"></td>
-              </tr>
-              <tr data-eval-reveal="row-hybrid" data-eval-pulse="hybrid">
-                <td data-eval-reveal="col-player">vs Human+ML</td>
-                <td id="confidence-hybrid" data-eval-reveal="hybrid-confidence" data-eval-pulse="hybrid-confidence"></td>
-                <td data-eval-reveal="col-detail"></td>
-                <td id="result1-hybrid" data-eval-reveal="run-hybrid" data-eval-pulse="run-hybrid"></td>
-                <td id="result2-hybrid" data-eval-reveal="run-hybrid" data-eval-pulse="run-hybrid"></td>
-                <td id="result3-hybrid" data-eval-reveal="run-hybrid" data-eval-pulse="run-hybrid"></td>
-                <td id="result4-hybrid" data-eval-reveal="run-hybrid" data-eval-pulse="run-hybrid"></td>
-              </tr>
-              <tr class="game-eval-total-row" data-eval-reveal="row-total" data-eval-pulse="total">
-                <td data-eval-reveal="col-player">Total</td>
-                <td data-eval-reveal="col-confidence"></td>
-                <td data-eval-reveal="col-detail"></td>
-                <td id="result1-score" data-eval-reveal="run-total" data-eval-pulse="run-total"></td>
-                <td id="result2-score" data-eval-reveal="run-total" data-eval-pulse="run-total"></td>
-                <td id="result3-score" data-eval-reveal="run-total" data-eval-pulse="run-total"></td>
-                <td id="result4-score" data-eval-reveal="run-total" data-eval-pulse="run-total"></td>
-              </tr>
-            </tbody>
-          </table>
+        <div class="game-eval-compact" aria-hidden="true">
+          <p class="game-eval-compact-score" data-eval-compact-score></p>
+          <button type="button" class="flow-leaf-btn game-eval-compact-replay" data-eval-compact-replay title="Watch the same evaluation again without saving a new attempt">Replay evaluation</button>
         </div>
+        <button type="button" class="game-deck-roll game-eval-results-roll" data-eval-results-toggle aria-expanded="true" title="Compress evaluation panel">
+          <span class="game-deck-roll-icon" aria-hidden="true"></span>
+          <span class="visually-hidden" data-eval-results-label>Compress evaluation panel</span>
+        </button>
       </div>
     </aside>
   </div>
@@ -140,29 +154,57 @@
     </aside>
   </div>
 
-  <div class="game-float-panel game-session-lb-float" aria-label="Session leaderboard" data-float-panel data-float-default="right">
+  <%
+    var showTutorLbChrome = (typeof isTutor !== 'undefined' && isTutor) ||
+      (typeof user !== 'undefined' && user && (user.type === 'teacher' || user.type === 'admin'));
+    var manageSessionHref = '/schools';
+    if (typeof user !== 'undefined' && user && user.schoolId) {
+      manageSessionHref = '/schools/' + user.schoolId;
+    }
+    if (typeof leaderboardId !== 'undefined' && leaderboardId && typeof session !== 'undefined' && session && session !== 'selfpaced') {
+      manageSessionHref = '/schools/' + leaderboardId + '/sessions/' + session;
+    }
+    var sessionNameLabel = (typeof sessionName !== 'undefined' && sessionName) ? String(sessionName) : '';
+  %>
+  <div class="game-float-panel game-session-lb-float is-score-guide-collapsed<%= showTutorLbChrome ? ' is-tutor-lb' : '' %>" aria-label="Session leaderboard" data-float-panel data-float-default="right">
     <div class="game-deck-drag-handle" title="Drag to move" aria-label="Move session leaderboard"></div>
     <aside class="game-session-lb-panel">
-      <h3>Session leaderboard</h3>
-      <table id="session-leaderboard" class="game-odi-table game-session-lb-table">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Score</th>
-          </tr>
-        </thead>
-        <tbody id="session-leaderboard-body"></tbody>
-      </table>
-      <div class="game-score-guide" id="game-score-guide" aria-label="Score guide">
-        <h4 class="game-score-guide-title">Score guide</h4>
-        <ul class="game-score-guide-list">
-          <li data-score-band="incredible"><span class="game-score-guide-range">500+</span><span class="game-score-guide-label">Incredible!</span></li>
-          <li data-score-band="expert"><span class="game-score-guide-range">450 – 500</span><span class="game-score-guide-label">Expert</span></li>
-          <li data-score-band="solid"><span class="game-score-guide-range">400 – 450</span><span class="game-score-guide-label">Solid effort</span></li>
-          <li data-score-band="average"><span class="game-score-guide-range">300 – 400</span><span class="game-score-guide-label">Average</span></li>
-          <li data-score-band="trying"><span class="game-score-guide-range">0 – 300</span><span class="game-score-guide-label">Points for trying (did you overfit?)</span></li>
-        </ul>
+      <div class="game-session-lb-body">
+        <div class="game-session-lb-heading">
+          <div class="game-session-lb-title-block">
+            <h3>Session leaderboard</h3>
+            <p class="game-session-lb-name<%= showTutorLbChrome ? '' : ' hidden' %>" data-session-name><%= sessionNameLabel %></p>
+          </div>
+          <% if (showTutorLbChrome) { %>
+            <a class="game-session-lb-manage" href="<%= manageSessionHref %>">Manage</a>
+          <% } %>
+        </div>
+        <div class="game-session-lb-scroll">
+          <table id="session-leaderboard" class="game-odi-table game-session-lb-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Score</th>
+              </tr>
+            </thead>
+            <tbody id="session-leaderboard-body"></tbody>
+          </table>
+        </div>
+        <div class="game-score-guide" id="game-score-guide" aria-label="Score guide">
+          <h4 class="game-score-guide-title">Score guide</h4>
+          <ul class="game-score-guide-list">
+            <li data-score-band="incredible"><span class="game-score-guide-range">500+</span><span class="game-score-guide-label">Incredible!</span></li>
+            <li data-score-band="expert"><span class="game-score-guide-range">450 – 500</span><span class="game-score-guide-label">Expert</span></li>
+            <li data-score-band="solid"><span class="game-score-guide-range">400 – 450</span><span class="game-score-guide-label">Solid effort</span></li>
+            <li data-score-band="average"><span class="game-score-guide-range">300 – 400</span><span class="game-score-guide-label">Average</span></li>
+            <li data-score-band="trying"><span class="game-score-guide-range">0 – 300</span><span class="game-score-guide-label">Points for trying (did you overfit?)</span></li>
+          </ul>
+        </div>
       </div>
+      <button type="button" class="game-deck-roll game-score-guide-roll" data-score-guide-toggle aria-expanded="false" title="Show score guide">
+        <span class="game-deck-roll-icon" aria-hidden="true"></span>
+        <span class="visually-hidden" data-score-guide-label>Show score guide</span>
+      </button>
     </aside>
   </div>
 
@@ -172,6 +214,17 @@
     </div>
   </div>
 </div>
+
+<dialog id="game-message-dialog" class="admin-modal game-message-dialog" aria-labelledby="game-message-title">
+  <div class="admin-modal-card game-message-card">
+    <h2 id="game-message-title" class="game-message-title">Notice</h2>
+    <div id="game-message-body" class="game-message-body"></div>
+    <div class="game-message-actions">
+      <button type="button" class="btn-secondary" data-game-message-cancel>Cancel</button>
+      <button type="button" class="flow-leaf-btn game-message-confirm" data-game-message-confirm>OK</button>
+    </div>
+  </div>
+</dialog>
 
 <dialog id="cluster-browse-modal" class="admin-modal cluster-browse-modal" aria-label="Browse cards">
   <div class="admin-modal-card cluster-browse-card">

@@ -688,12 +688,20 @@ function startGuidedTest() {
     if (typeof ensureLeafPredictionsForEval === 'function') {
         var finalizeError = ensureLeafPredictionsForEval(cards.trainingSet);
         if (finalizeError) {
-            alert(finalizeError);
+            if (typeof gameAlert === 'function') {
+                gameAlert(finalizeError);
+            } else {
+                alert(finalizeError);
+            }
             return;
         }
     }
     if (!modelHasRun && !confidences.player && confidences.player !== 0) {
-        alert('Run your model on the training set first.');
+        if (typeof gameAlert === 'function') {
+            gameAlert('Run your model on the training set first.');
+        } else {
+            alert('Run your model on the training set first.');
+        }
         return;
     }
     if (typeof setPlayMode === 'function') {
@@ -1072,6 +1080,9 @@ function setEvaluationStatusMessage(html) {
         status.innerHTML = '';
         status.classList.add('hidden');
     }
+    if (typeof syncEvalCompactScore === 'function') {
+        syncEvalCompactScore(html || '');
+    }
 }
 
 function finishEvaluation() {
@@ -1142,7 +1153,11 @@ function autoEvaluate() {
         if (typeof setEvalFlowChrome === 'function') {
             setEvalFlowChrome('team');
         }
-        alert('Enter a team name before running evaluation.');
+        if (typeof gameAlert === 'function') {
+            gameAlert('Enter a team name before running evaluation.');
+        } else {
+            alert('Enter a team name before running evaluation.');
+        }
         return;
     }
     if (typeof setEvalTeamName === 'function' && typeof getEvalTeamName === 'function') {

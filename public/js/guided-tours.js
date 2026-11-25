@@ -324,6 +324,9 @@ function showLeafBranchHover(path) {
 }
 
 function showDeckBrowseHover() {
+	if (typeof setDeckRolled === 'function') {
+		setDeckRolled(false);
+	}
 	clearGuideHover();
 	var area = document.querySelector('.game-deck-stack-area');
 	if (area) {
@@ -378,6 +381,9 @@ function setGuideFloatOverModal(overModal) {
 }
 
 function prepareExploreWorkspace() {
+	if (typeof setDeckRolled === 'function') {
+		setDeckRolled(false);
+	}
 	if (typeof returnCardsInstant === 'function' && typeof cards !== 'undefined' && cards.trainingSet) {
 		returnCardsInstant(cards.trainingSet, 'training-set', 'b');
 	}
@@ -458,6 +464,11 @@ function updateGuideNavVisibility() {
 		guideNav.classList.toggle('hidden', !inTraining || guideActive || !guideOverlayPreferred);
 	}
 	updateGuideOverlayToggle();
+	if (typeof syncSessionLeaderboardStack === 'function') {
+		window.requestAnimationFrame(function() {
+			syncSessionLeaderboardStack();
+		});
+	}
 }
 
 function snapshotPlayState() {

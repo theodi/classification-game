@@ -7,7 +7,7 @@ function refreshCardboxes() {
         sort: true,
         group: 'cards',
         draggable: 'card',
-        filter: '.game-deck-actions, .game-deck-actions *, .game-deck-hover, .game-run-summary, .game-run-summary *, .game-guide-flow, .game-guide-flow *, .game-guide-nav, .game-guide-nav *',
+        filter: '.game-deck-actions, .game-deck-actions *, .game-deck-hover, .game-deck-roll, .game-run-summary, .game-run-summary *, .game-guide-flow, .game-guide-flow *, .game-guide-nav, .game-guide-nav *',
         preventOnFilter: false
       });
     }

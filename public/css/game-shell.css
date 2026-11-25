@@ -335,6 +335,60 @@ body.game-page .hidden {
   display: inline-block;
 }
 
+dialog.admin-modal.game-message-dialog {
+  max-width: 28rem;
+  width: calc(100% - 2rem);
+}
+
+.game-message-card {
+  padding: 1.35rem 1.4rem 1.2rem;
+}
+
+.game-message-title {
+  margin: 0 0 0.65rem;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--color-dark-blue, #072589);
+  line-height: 1.25;
+}
+
+.game-message-body {
+  margin: 0 0 1.15rem;
+  color: #122;
+  font-size: 1.05rem;
+  font-weight: 500;
+  line-height: 1.45;
+  white-space: pre-line;
+}
+
+.game-message-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.game-message-actions .btn-secondary,
+.game-message-actions .flow-leaf-btn {
+  margin: 0;
+  width: auto;
+  min-width: 5.5rem;
+  height: auto;
+  padding: 0.45rem 0.9rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.game-message-actions .flow-leaf-btn.game-message-confirm {
+  background: var(--color-dark-blue, #072589);
+  color: #fff;
+  border: 2px solid var(--color-dark-blue, #072589);
+}
+
+.game-message-dialog.is-alert [data-game-message-cancel] {
+  display: none;
+}
+
 dialog.admin-modal.cluster-browse-modal {
   width: calc(100vw - 20px);
   max-width: none;
@@ -894,11 +948,121 @@ body.game-page.stage-evaluation .game-play-actions.is-flow-hidden {
 }
 
 body.game-page.stage-evaluation .game-eval-results {
-  display: block;
+  display: flex;
+  flex-direction: column;
 }
 
 body.game-page.stage-evaluation .game-eval-results.is-pending {
   display: none;
+}
+
+.game-eval-results-body {
+  min-width: 0;
+}
+
+.game-eval-compact {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  padding: 0 0.5rem;
+  text-align: center;
+  pointer-events: none;
+  transition: max-height 0.28s ease, opacity 0.22s ease, padding 0.28s ease;
+}
+
+.game-eval-compact-score {
+  margin: 0;
+  color: #122;
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.game-eval-compact-score strong {
+  color: var(--color-dark-blue, #072589);
+  font-size: 1.25rem;
+}
+
+.game-eval-compact-replay {
+  margin: 0;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.85rem;
+}
+
+.game-eval-results > .game-deck-roll.game-eval-results-roll {
+  display: none;
+  position: relative;
+  left: auto;
+  right: auto;
+  bottom: auto;
+  flex: 0 0 auto;
+  width: 100%;
+  margin: 0.45rem 0 0;
+  border: 0;
+  border-top: 1px solid #aeb9d4;
+}
+
+/* Roll bar only once evaluation is finished (score available to compress to) */
+body.game-page.stage-evaluation .game-deck-chrome.is-eval-collapsible .game-eval-results:not(.is-pending) > .game-deck-roll.game-eval-results-roll {
+  display: flex;
+}
+
+/* Animate width when compressing / expanding evaluation chrome */
+body.game-page.stage-evaluation .game-deck-chrome.is-eval-collapsible {
+  transition: width 0.3s ease, min-width 0.3s ease;
+}
+
+body.game-page.stage-evaluation .game-deck-chrome.is-eval-collapsible .game-deck-actions,
+body.game-page.stage-evaluation .game-deck-chrome.is-eval-collapsible .game-eval-results-body {
+  overflow: hidden;
+  max-height: 80rem;
+  opacity: 1;
+  transition: max-height 0.3s ease, opacity 0.22s ease, margin 0.3s ease, padding 0.3s ease, border-color 0.3s ease;
+}
+
+/* Compressed: tiny float with score + replay only */
+body.game-page.stage-evaluation .game-deck-chrome.is-eval-collapsed {
+  width: 11.5rem;
+  min-width: 11.5rem;
+}
+
+body.game-page.stage-evaluation .game-deck-chrome.is-eval-collapsed .game-deck-actions,
+body.game-page.stage-evaluation .game-deck-chrome.is-eval-collapsed .game-eval-results-body {
+  max-height: 0;
+  opacity: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  pointer-events: none;
+}
+
+body.game-page.stage-evaluation .game-deck-chrome.is-eval-collapsed .game-eval-results {
+  margin: 0;
+  padding: 0.15rem 0 0;
+  border-top: 0;
+}
+
+body.game-page.stage-evaluation .game-deck-chrome.is-eval-collapsed .game-eval-compact {
+  max-height: 6rem;
+  opacity: 1;
+  padding: 0.35rem 0.5rem 0.15rem;
+  pointer-events: auto;
+}
+
+body.game-page.stage-evaluation .game-deck-chrome.is-eval-collapsed .game-eval-results > .game-deck-roll.game-eval-results-roll {
+  margin-top: 0.25rem;
+}
+
+body.game-page.stage-evaluation .game-deck-chrome.is-eval-collapsed .game-eval-results-roll .game-deck-roll-icon {
+  transform: rotate(-45deg);
 }
 
 .game-eval-score-table [data-eval-reveal]:not(.is-revealed) {
@@ -1019,6 +1183,16 @@ body.game-page.stage-evaluation .game-eval-results.is-pending {
   outline-offset: -2px;
 }
 
+.game-session-lb-table tbody tr[data-result-id].is-loaded {
+  background: rgba(109, 248, 255, 0.32) !important;
+  box-shadow: inset 3px 0 0 var(--color-dark-blue, #072589);
+  font-weight: 600;
+}
+
+.game-session-lb-table tbody tr[data-result-id].is-loaded:hover {
+  background: rgba(109, 248, 255, 0.42) !important;
+}
+
 .game-eval-score-table th:nth-child(n+4),
 .game-eval-score-table td:nth-child(n+4),
 .game-session-lb-table th:last-child,
@@ -1056,17 +1230,24 @@ body.game-page.stage-evaluation .game-eval-results {
   right: 0.25rem;
   left: auto;
   z-index: 40;
-  width: 300px;
-  min-width: 260px;
+  width: 340px;
+  min-width: 300px;
   box-shadow: 0 8px 24px rgba(7, 37, 137, 0.16);
   background: #fff;
   box-sizing: border-box;
   touch-action: none;
 }
 
-body.game-page.stage-evaluation .game-session-lb-float {
+body.game-page.stage-evaluation .game-session-lb-float,
+body.game-page.is-tutor .game-session-lb-float {
   display: block;
+  top: 0.25rem;
+  right: 0.25rem;
+  bottom: auto;
+  left: auto;
 }
+
+/* When tutorials are open, JS stacks the session LB underneath (same right edge). */
 
 .game-session-lb-float.is-dragging {
   box-shadow: 0 12px 32px rgba(7, 37, 137, 0.22);
@@ -1075,21 +1256,97 @@ body.game-page.stage-evaluation .game-session-lb-float {
 }
 
 .game-session-lb-panel {
-  padding: 0.65rem 0.75rem 0.85rem;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
   border: 1px solid #aeb9d4;
   border-top: 0;
   background: #fff;
+  max-height: min(70vh, 34rem);
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.game-session-lb-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 0.65rem 0.85rem 0.55rem;
+  overflow: auto;
+  box-sizing: border-box;
+}
+
+.game-session-lb-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.55rem;
+  margin: 0 0 0.45rem;
+}
+
+.game-session-lb-title-block {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .game-session-lb-panel h3 {
-  margin: 0 0 0.45rem;
+  margin: 0;
   font-size: 1rem;
   color: var(--color-dark-blue, #072589);
 }
 
+.game-session-lb-name {
+  margin: 0.25rem 0 0;
+  color: var(--color-dark-blue, #072589);
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1.3;
+  word-break: break-word;
+}
+
+.game-session-lb-name.hidden,
+.game-session-lb-name:empty {
+  display: none;
+}
+
+.game-session-lb-manage {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0.35rem 0.65rem;
+  border: 1px solid var(--color-dark-blue, #072589);
+  background: var(--color-dark-blue, #072589);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.1;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.game-session-lb-manage:hover,
+.game-session-lb-manage:focus {
+  background: #0a3ab5;
+  border-color: #0a3ab5;
+  color: #fff;
+  text-decoration: none;
+}
+
+.game-session-lb-scroll {
+  width: 100%;
+  overflow: auto;
+  max-height: min(40vh, 16rem);
+}
+
+.game-session-lb-panel .game-session-lb-table {
+  width: 100%;
+  table-layout: fixed;
+}
+
 .game-score-guide {
   margin-top: 0.85rem;
-  padding-top: 0.75rem;
+  padding-top: 0.55rem;
   border-top: 1px solid #d5dbe8;
 }
 
@@ -1098,6 +1355,28 @@ body.game-page.stage-evaluation .game-session-lb-float {
   font-size: 0.95rem;
   font-weight: 600;
   color: var(--color-dark-blue, #072589);
+}
+
+/* Full-bleed bar on the bottom edge of the leaderboard box */
+.game-session-lb-panel > .game-deck-roll.game-score-guide-roll {
+  display: flex;
+  position: relative;
+  left: auto;
+  right: auto;
+  bottom: auto;
+  flex: 0 0 auto;
+  width: 100%;
+  margin: 0;
+  border: 0;
+  border-top: 1px solid #aeb9d4;
+}
+
+.game-session-lb-float.is-score-guide-collapsed .game-score-guide {
+  display: none;
+}
+
+.game-session-lb-float.is-score-guide-collapsed .game-score-guide-roll .game-deck-roll-icon {
+  transform: rotate(-45deg);
 }
 
 .game-score-guide-list {
@@ -1146,6 +1425,7 @@ body.game-page.stage-evaluation .game-session-lb-float {
 body.game-page.stage-evaluation .game-deck-chrome {
   width: min(860px, calc(100% - 1.5rem));
   min-width: 560px;
+  transition: width 0.3s ease, min-width 0.3s ease;
 }
 
 .game-instructions-card {
@@ -1232,7 +1512,75 @@ body.game-page.stage-evaluation .game-deck-chrome {
   height: 460px;
   min-height: 460px;
   overflow: hidden;
-  transition: height 0.15s ease, min-height 0.15s ease;
+  transition: height 0.2s ease, min-height 0.2s ease;
+}
+
+.game-deck-roll {
+  display: none;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 46;
+  align-items: center;
+  justify-content: center;
+  height: 1.4rem;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  border: 0;
+  border-top: 1px solid #aeb9d4;
+  border-radius: 0;
+  background: #e8edf6;
+  color: var(--color-dark-blue, #072589);
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.game-deck-roll:hover,
+.game-deck-roll:focus {
+  background: #d9e2f2;
+}
+
+.game-deck-roll-icon {
+  display: block;
+  width: 0.7rem;
+  height: 0.7rem;
+  border-left: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(135deg);
+  transition: transform 0.2s ease;
+}
+
+/* Up arrow → down when rolled (deck stack only — not eval/score-guide rolls) */
+.game-training-deck.is-deck-rolled [data-deck-roll] .game-deck-roll-icon {
+  transform: rotate(-45deg);
+}
+
+/* Only show roll bar when the active deck has cards */
+body.game-page.stage-training .game-deck-stack-area:has(#training-set card) .game-deck-roll,
+body.game-page.stage-test .game-deck-stack-area:has(#test-set card) .game-deck-roll,
+body.game-page.stage-evaluation .game-deck-stack-area:has(#evaluation-set card) .game-deck-roll {
+  display: flex;
+}
+
+/* Rolled: peek of cards + browse, compact height */
+.game-training-deck.is-deck-rolled .game-deck-stack-area:has(.game-deck-panel:not(.hidden) card) {
+  height: 7.75rem;
+  min-height: 7.75rem;
+}
+
+.game-training-deck.is-deck-rolled .game-deck-stack-area:has(.game-deck-panel:not(.hidden) card) .game-deck-hover {
+  opacity: 1;
+  padding-bottom: 1.4rem;
+}
+
+.game-training-deck.is-deck-rolled .game-deck-stack-area:has(.game-deck-panel:not(.hidden) card) .game-deck-browse {
+  pointer-events: auto;
+}
+
+.game-training-deck.is-deck-rolled .game-deck-stack-area:has(.game-deck-panel:not(.hidden) card) .game-deck-bring-back {
+  display: none;
 }
 
 /* Empty deck: collapse stack to a compact bordered bring-back strip */
@@ -1668,8 +2016,13 @@ body.game-page.stage-evaluation .game-deck-stack-area:has(#evaluation-set card):
     min-width: 0;
   }
 
+  body.game-page.stage-evaluation .game-deck-chrome.is-eval-collapsed {
+    width: 11.5rem;
+    min-width: 11.5rem;
+  }
+
   .game-session-lb-float {
-    width: min(280px, calc(100% - 1rem));
+    width: min(340px, calc(100% - 1rem));
   }
 }
 
